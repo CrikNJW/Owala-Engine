@@ -59,7 +59,7 @@ namespace Framework {
 
         //Ask resource manager for a reference to the duck texture.
         std::string playerDuckID = "playerSprite_DuckyWucky";
-        player_ = createPlayer(*ecs_, stats, { 0.0f, 0.f }, { 0.1f, 0.1f }, playerDuckID);
+        player_ = createPlayer(*ecs_, stats, { 0.1f, 0.1f }, playerDuckID);
 
     }
 
@@ -107,7 +107,7 @@ namespace Framework {
             std::string textureKey = ecs_->tex[player_].textureKey;
 			//Get a reference to the texture from the resource manager
 			Texture texture = resourceManager_->get<Texture>(textureKey);
-            gfx_->drawSprite(textureKey, pos, halfSize, 0.0f);
+            gfx_->drawSprite(texture, pos, halfSize, 0.0f);
         }
 
         // For now, we can use the console to see the state.

@@ -5,18 +5,19 @@
 #include <string>
 #include <variant>
 #include <iostream>
-#include "Graphics.h" // Assuming Framework::Texture is defined here
+#include "Graphics.h"
+
 
 namespace Framework {
-	using Texture = Framework::Texture; // Assuming Framework::Texture is an alias for Graphics::Texture
+    using Texture = Framework::Texture;
     using VariantValue = std::variant<Framework::Texture>;
 
     class ResourceManager : public ISystem{
     public:
 
-        void Initialize() override;
+        void Initialize() ;
         void Update(float dt) {/*Empty by design*/ };
-        void Shutdown() override {}
+        void Shutdown()  {}
 
         ResourceManager(Graphics& gfx) : gfx_(&gfx) {};
 
@@ -35,7 +36,7 @@ namespace Framework {
         // Convert weak ptr to shared ptr to modify the resource, else weak ptr is READ ONLY!!!
         template<typename ResourceType>
         ResourceType& get(std::string key) {
-            std::unordered_map<std::string, Value>& map = getMap();
+            std::unordered_map<std::string, VariantValue>& map = getMap();
             auto it = map.find(key);
             return (it != map.end()) ? it->second : nullptr;
         }

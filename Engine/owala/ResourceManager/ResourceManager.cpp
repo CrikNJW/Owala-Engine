@@ -44,6 +44,6 @@ bool ResourceManager::loadTexture(const std::string& name, const std::string& fi
 }
 
 // Specialization for Texture
-std::unordered_map<std::string, Value>& ResourceManager::getMap() {
+std::unordered_map<std::string, VariantValue>& ResourceManager::getMap() {
     return resourceMap;
 }
