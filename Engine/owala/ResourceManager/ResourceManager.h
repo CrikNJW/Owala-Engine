@@ -8,7 +8,8 @@
 #include "Graphics.h" // Assuming Framework::Texture is defined here
 
 namespace Framework {
-    using Value = std::variant<Framework::Texture>;
+	using Texture = Framework::Texture; // Assuming Framework::Texture is an alias for Graphics::Texture
+    using VariantValue = std::variant<Framework::Texture>;
 
     class ResourceManager : public ISystem{
     public:
@@ -53,10 +54,10 @@ namespace Framework {
 
     private:
         // Template declaration
-        std::unordered_map<std::string, Value>& getMap();
+        std::unordered_map<std::string, VariantValue>& getMap();
 
         // Resource maps
-        std::unordered_map<std::string, Value> resourceMap;
+        std::unordered_map<std::string, VariantValue> resourceMap;
 
 		Graphics* gfx_ = nullptr; // Graphics instance for loading textures
     };
