@@ -26,7 +26,7 @@ namespace Framework {
 	inline Entity createPlayer(EntityStorage& entityStorage, 
 		PlayerStats stats, 
 		Vector2D halfSize, 
-		std::weak_ptr<Framework::Texture> texture) {
+		std::string textureID) {
 
 			//Create a new entity with a unique ID
 			Entity player = createEntity();

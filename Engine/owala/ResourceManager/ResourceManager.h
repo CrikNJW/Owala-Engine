@@ -54,10 +54,10 @@ namespace Framework {
     private:
         // Template declaration
         template<typename ResourceType>
-        std::unordered_map<std::string, std::shared_ptr<ResourceType>>& getMap();
+        std::unordered_map<std::string, Texture>& getMap();
 
         // Resource maps
-        std::unordered_map<std::string, std::shared_ptr<Texture>> textureMap;
+        std::unordered_map<std::string, Texture> resourceMap;
 
 		Graphics* gfx_ = nullptr; // Graphics instance for loading textures
     };

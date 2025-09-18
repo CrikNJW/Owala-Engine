@@ -39,13 +39,12 @@ bool ResourceManager::loadTexture(const std::string& name, const std::string& fi
 
 	std::cout << "Loaded texture '" << name << "' from '" << filepath << "'" << std::endl;
 
-	auto texturePtr = std::make_shared<Texture>(tex); // Wrap in shared_ptr
 	add<Texture>(name, texturePtr); // Add to resource manager's unordered_map
     return true;
 }
 
 // Specialization for Texture
 template<>
-std::unordered_map<std::string, std::shared_ptr<Texture>>& ResourceManager::getMap<Texture>() {
-    return textureMap;
+std::unordered_map<std::string, Texture>& ResourceManager::getMap<Texture>() {
+    return resourceMap;
 }
