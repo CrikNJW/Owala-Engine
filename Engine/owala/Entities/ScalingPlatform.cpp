@@ -21,10 +21,9 @@ namespace Framework {
     @param      maxScale Maximum scale multiplier (default: 2.0f)
     @return     Entity handle for the created scaling platform
 *//*______________________________________________________________*/
-    Entity createScalingPlatform(EntityStorage& entityStorage, Vector2D pos, Vector2D baseHalfSize, std::string textureID, float scaleSpeed, float minScale, float maxScale)
+    Entity createScalingPlatform(EntityManager& entityMgr, Vector2D pos, Vector2D baseHalfSize, std::string textureID, float scaleSpeed, float minScale, float maxScale)
     {
-		EntityManager entityMgr(entityStorage);
-        Entity scalingPlatform = createPlatform(entityStorage, pos, baseHalfSize, textureID);
+        Entity scalingPlatform = createPlatform(entityMgr, pos, baseHalfSize, textureID);
         ScalingPlatformComponent scalingComp;
         scalingComp.baseHalfSize = baseHalfSize;
         scalingComp.currentScaleX = 1.0f;
@@ -44,9 +43,8 @@ namespace Framework {
     @param      dt Delta time in seconds since last frame
     @return     void
 *//*______________________________________________________________*/
-    void updateScalingPlatforms(EntityStorage& entityStorage, float dt)
+    void updateScalingPlatforms(EntityManager& entityMgr, float dt)
     {
-		EntityManager entityMgr(entityStorage);
         for (const Entity& entity : entityMgr.GetAllEntitiesWithComponent(ScalingPlatformComponentType)) {
 			ScalingPlatformComponent& scalingComp = entityMgr.GetComponent<ScalingPlatformComponent>(entity);
             scalingComp.time += dt;
@@ -83,8 +81,7 @@ namespace Framework {
     @param      entity Entity handle of the scaling platform
     @return     Matrix3x3 transformation matrix (identity if entity invalid)
 *//*______________________________________________________________*/
-    Matrix3x3 getScalingPlatformTransform(EntityStorage& entityStorage, Entity entity) {
-		EntityManager entityMgr(entityStorage);
+    Matrix3x3 getScalingPlatformTransform(EntityManager& entityMgr, Entity entity) {
         if (entityMgr.HasComponent(entity, ScalingPlatformComponentType)) {
             return entityMgr.GetComponent<ScalingPlatformComponent>(entity).transformMatrix;
         }

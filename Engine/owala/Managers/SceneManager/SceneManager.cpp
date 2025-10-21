@@ -78,7 +78,7 @@ namespace Framework {
 	// ---------------------------------------------------------------------------
 	// SceneManager Configuration
 	// ---------------------------------------------------------------------------
-	void SceneManager::SetEntityStorageRef(EntityStorage& entityStorageRef) {
+	void SceneManager::SetEntityStorageRef(EntityManager& entityStorageRef) {
 		entityStorageRef_ = &entityStorageRef;
 		Logger::Get().Info(DebugType::SceneManager) << "Successfully linked to Entity Storage" << std::endl;
 

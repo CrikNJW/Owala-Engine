@@ -33,7 +33,7 @@ namespace Framework {
          * \brief Construct the audio system bound to the ECS storage.
          * \param storage Reference to the entity storage (kept as a raw pointer internally).
          */
-        AudioSystem(EntityStorage& storage);
+        AudioSystem(EntityManager& storage);
 
         /// \brief Default virtual destructor.
         ~AudioSystem() override = default;
@@ -154,7 +154,7 @@ namespace Framework {
         /// \name Engine Integration
         ///@{
         ResourceManager* resourceManager_ = nullptr; //!< Non-owning; may be null if not set.
-        EntityStorage* entityStorage_ = nullptr; //!< Non-owning pointer to ECS storage.
+        EntityManager* entityStorage_ = nullptr; //!< Non-owning pointer to ECS storage.
         ///@}
 
         /// \name Caches

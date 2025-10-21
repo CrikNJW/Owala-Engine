@@ -6,10 +6,6 @@
 
 namespace Framework {
 
-    CameraSystem::CameraSystem(EntityStorage& ecs) : ecs_(ecs) {
-        // Constructor
-    }
-
     void CameraSystem::Update(float dt) {
         EntityManager entityMgr(ecs_);
 

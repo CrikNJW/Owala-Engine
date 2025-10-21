@@ -86,7 +86,7 @@ namespace Framework {
 	// ---------------------------------------------------------------------------
 	// GameManager Config
 	// ---------------------------------------------------------------------------
-	void GameManager::RegisterSystemsToUse(ResourceManager& rcm, EntityStorage& ecs, Graphics& gfx, WindowsSystem& win, InputSystem& input, PhysicsSystem& physics, AudioSystem& audio,
+	void GameManager::RegisterSystemsToUse(ResourceManager& rcm, EntityManager& ecs, Graphics& gfx, WindowsSystem& win, InputSystem& input, PhysicsSystem& physics, AudioSystem& audio,
 		SpriteRenderSystem& renderer, CameraSystem& camera) { 
 		systems_.resourceManager_ = &rcm;
 		systems_.ecs_ = &ecs;

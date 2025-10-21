@@ -259,7 +259,7 @@ namespace Editor {
 			if (!ImGui::GetIO().WantCaptureMouse) {
 
 				Vector2D spawnPos = GetMouseWorldPosition();
-				Framework::EntityStorage* ecs = gameManager_->GetSystems().ecs_;
+				Framework::EntityManager* ecs = gameManager_->GetSystems().ecs_;
 				Framework::SceneManager& sceneMgr = Framework::SceneManager::GetInstance();
 				Entity newEntity = 0;
 
@@ -543,7 +543,7 @@ namespace Editor {
 		ImGui::SeparatorText("Spawn 2500 Objects");
 		if (ImGui::Button("Create 2500 Objects")) {
 
-			Framework::EntityStorage* ecs = gameManager_->GetSystems().ecs_;
+			Framework::EntityManager* ecs = gameManager_->GetSystems().ecs_;
 			Framework::ResourceManager* rcm = gameManager_->GetSystems().resourceManager_;
 			
 			if (ecs) {

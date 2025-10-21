@@ -24,17 +24,18 @@ namespace Framework {
 	class PlayerSystem : public ISystem {
 	public:
 		
-		PlayerSystem(EntityStorage& entityStorage, InputSystem& input, PhysicsSystem& physics)
-			: entityStorage_(&entityStorage), input_(&input), physics_(&physics) {}
+		PlayerSystem(ArchetypeManager& archetypeManager, EntityManager& entityStorage, InputSystem& input, PhysicsSystem& physics)
+			: archetypeManager_(&archetypeManager), entityStorage_(&entityStorage), input_(&input), physics_(&physics) {}
 		void Initialize() override {}
 		void Update(float dt) override;
 		void Shutdown() override;
 
 	private:
 		// Pointer to the entity storage to access and modify entities and their components
-		EntityStorage* entityStorage_ = nullptr;
+		EntityManager* entityStorage_ = nullptr;
 		WindowsSystem* win_ = nullptr;
 		InputSystem* input_ = nullptr; // use our own input system
 		PhysicsSystem* physics_ = nullptr; // use physics sytems
+		ArchetypeManager* archetypeManager_ = nullptr;
 	};
 } // namespace Framework

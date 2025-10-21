@@ -15,15 +15,15 @@
 *********************************************************************/
 #pragma once
 #include "ISystem.h"
-#include "EntityStorage.h"
+#include "EntityManager.h"
 
 namespace Framework {
     class ScalingPlatformSystem : public ISystem {
     private:
-        EntityStorage* ecs_;
+        EntityManager* ecs_;
 
     public:
-        ScalingPlatformSystem(EntityStorage& storage) : ecs_(&storage) {}
+        ScalingPlatformSystem(EntityManager& entityMgr) : ecs_(&entityMgr) {}
 
         void Initialize() override {}
         void Update(float dt) override;

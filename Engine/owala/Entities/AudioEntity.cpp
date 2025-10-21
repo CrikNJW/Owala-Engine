@@ -1,10 +1,8 @@
 #include "AudioEntity.h"
 
 namespace Framework {
-	Entity createBGAudio(EntityStorage& entityStorage,
+	Entity createBGAudio(EntityManager& entityMgr,
 		std::string audioID) {
-
-		EntityManager entityMgr(entityStorage);
 
 		//Create a new entity with a unique ID
 		Entity bg_audio = entityMgr.CreateEntity();

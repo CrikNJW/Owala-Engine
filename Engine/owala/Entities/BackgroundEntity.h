@@ -18,5 +18,5 @@
 #include <string>
 
 namespace Framework{
-	Entity createBackground(EntityStorage& entityStorage, Vector2D pos, std::string textureID);
+	Entity createBackground(EntityManager& entityMgr, Vector2D pos, std::string textureID);
 }	

@@ -60,9 +60,9 @@ namespace Framework {
         void RegisterTrapPlatformPrefab(const TrapPlatformPrefab& prefab);
         void RegisterScalingPlatformPrefab(const ScalingPlatformPrefab& prefab);
 
-        Entity CreatePlatformFromPrefab(EntityStorage& storage, const std::string& prefabName, const Vector2D& position);
-        Entity CreateTrapPlatformFromPrefab(EntityStorage& storage, const std::string& prefabName, const Vector2D& position);
-        Entity CreateScalingPlatformFromPrefab(EntityStorage& storage, const std::string& prefabName, const Vector2D& position);
+        Entity CreatePlatformFromPrefab(EntityManager& storage, const std::string& prefabName, const Vector2D& position);
+        Entity CreateTrapPlatformFromPrefab(EntityManager& storage, const std::string& prefabName, const Vector2D& position);
+        Entity CreateScalingPlatformFromPrefab(EntityManager& storage, const std::string& prefabName, const Vector2D& position);
 
         bool LoadPrefabsFromFile(const std::string& filename);
 

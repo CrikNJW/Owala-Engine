@@ -27,7 +27,7 @@
 // FOR TESTING FOR 2500 PLAYER SPRITES
 
 namespace Framework {
-	inline Entity createFakePlayer(EntityStorage& entityStorage,
+	inline Entity createFakePlayer(EntityManager& entityMgr,
 		ResourceManager& rcm,
 		Vector2D halfSize,
 		std::string textureKey) {
@@ -44,8 +44,6 @@ namespace Framework {
 		Vector2D randomPos = { PosY_Distrib(gen), PosX_Distrib(gen) };
 		Vector2D randomScale = { Scale_DistribX(gen), Scale_DistribX(gen) };
 
-		//Create an EntityManager to access entity creation APIs
-		EntityManager entityMgr(entityStorage);
 		(void)rcm; // suppress warning level
 		(void)halfSize; // suppress warning level
 		//Create a new entity with a unique ID

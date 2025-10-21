@@ -30,6 +30,12 @@ namespace Framework {
     /// \brief RGBA color struct (float channels, 0..1 range).
     struct Color { float r, g, b, a; };
 
+    struct SpriteVertex {
+        Vector2D position;  // Screen space or NDC (Normalized Device Coordinates)
+        Vector2D uv;        // Texture coordinates
+        Color color;        // For tinting (optional)
+    };
+
     class WindowsSystem;                //!< Forward declaration to avoid heavy includes
     using Texture = unsigned;           //!< OpenGL texture handle (GLuint).
     using Texture_WeakPtr = std::weak_ptr<Texture>;   //!< Weak pointer to texture handle.
@@ -194,6 +200,10 @@ namespace Framework {
         void drawSpriteEasy(Texture& tex, const Vector2D& topLeft,
             const Vector2D& size, float rotation = 0.0f,
             const Vector2D& minUV = { 0,0 }, const Vector2D& maxUV = { 1,1 });
+
+        void drawSpriteBatch(const std::vector<SpriteVertex>& vertices,
+            const std::vector<uint32_t>& indices,
+            Texture& tex);
 
     private:
         WindowsSystem* win_ = nullptr; //!< Parent window system for GL context.

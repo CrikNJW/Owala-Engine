@@ -39,7 +39,7 @@ namespace Framework {
     @param      position World position for the new platform
     @return     Entity handle for created platform (0 if prefab not found)
 *//*______________________________________________________________*/
-    Entity PrefabSystem::CreatePlatformFromPrefab(EntityStorage& storage, const std::string& prefabName, const Vector2D& position) {
+    Entity PrefabSystem::CreatePlatformFromPrefab(EntityManager& storage, const std::string& prefabName, const Vector2D& position) {
         auto it = platformPrefabs.find(prefabName);
         if (it == platformPrefabs.end()) {
             std::cerr << "Platform prefab not found: " << prefabName << std::endl;
@@ -63,7 +63,7 @@ namespace Framework {
     @param      position World position for the new trap platform
     @return     Entity handle for created trap platform (0 if prefab not found)
 *//*______________________________________________________________*/
-    Entity PrefabSystem::CreateTrapPlatformFromPrefab(EntityStorage& storage, const std::string& prefabName, const Vector2D& position) {
+    Entity PrefabSystem::CreateTrapPlatformFromPrefab(EntityManager& storage, const std::string& prefabName, const Vector2D& position) {
         auto it = trapPlatformPrefabs.find(prefabName);
         if (it == trapPlatformPrefabs.end()) {
             std::cerr << "Trap platform prefab not found: " << prefabName << std::endl;
@@ -99,7 +99,7 @@ namespace Framework {
     @param      position World position for the new scaling platform
     @return     Entity handle for created scaling platform (0 if prefab not found)
 *//*______________________________________________________________*/
-    Entity PrefabSystem::CreateScalingPlatformFromPrefab(EntityStorage& storage, const std::string& prefabName, const Vector2D& position) {
+    Entity PrefabSystem::CreateScalingPlatformFromPrefab(EntityManager& storage, const std::string& prefabName, const Vector2D& position) {
         auto it = scalingPlatformPrefabs.find(prefabName);
         if (it == scalingPlatformPrefabs.end()) {
             std::cerr << "Scaling platform prefab not found: " << prefabName << std::endl;

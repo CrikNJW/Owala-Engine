@@ -2,9 +2,8 @@
 #include "EntityManager.h"
 
 namespace Framework {
-	Entity createPlatform(EntityStorage& entityStorage, Vector2D pos, Vector2D halfSize, std::string textureID)
+	Entity createPlatform(EntityManager& entityMgr, Vector2D pos, Vector2D halfSize, std::string textureID)
 	{
-		EntityManager entityMgr(entityStorage);
 		Entity ground = entityMgr.CreateEntity();
 
 		entityMgr.AddComponent(ground, PlatformTag{});

@@ -23,8 +23,8 @@
 
 namespace Framework {
     struct TrapPlatformComponent;
-    class EntityStorage;
-    void updateTrapPlatforms(EntityStorage& entityStorage, float dt);
-    void triggerTrapPlatform(EntityStorage& entityStorage, Entity trapPlatform);
-    void resetTrapPlatform(EntityStorage& entityStorage, Entity trapPlatform);
+    class EntityManager;
+    void updateTrapPlatforms(EntityManager& entityMgr, float dt);
+    void triggerTrapPlatform(EntityManager& entityMgr, Entity trapPlatform);
+    void resetTrapPlatform(EntityManager& entityMgr, Entity trapPlatform);
 }

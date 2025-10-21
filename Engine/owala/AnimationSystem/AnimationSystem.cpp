@@ -16,71 +16,71 @@
 namespace Framework {
 
     void AnimationSystem::Update(float dt) {
-		EntityManager entityMgr(*entityStorage_);
-        // Loop through each entity that with AnimationComponent
-		for (const Entity& entity : entityMgr.GetAllEntitiesWithComponent(AnimationComponentType)) {
-			if (entityMgr.HasComponent(entity, TextureComponentType) && entityMgr.HasComponent(entity, AnimationComponentType)) {
-				AnimationComponent& animationComponent = entityMgr.GetComponent<AnimationComponent>(entity);
-				TextureComponent& textureComponent = entityMgr.GetComponent<TextureComponent>(entity);
-				switch (animationComponent.currentState) {
-				case AnimationState::IDLE:    textureComponent.textureKey = "playerSprite_Idle"; /*std::cout << "Player State : IDLE\n";*/ break; //When idle, use idle animation
-				case AnimationState::RUNNING: textureComponent.textureKey = "playerSprite_Run"; /*std::cout << "Player State : RUN\n";*/ break; //When running, use running animation
-				case AnimationState::JUMPING: textureComponent.textureKey = "playerSprite_Jump"; /*std::cout << "Player State : JUMP\n";*/ break; //When jumping, use jumping animation
-				case AnimationState::FALLING: textureComponent.textureKey = "playerSprite_Jump"; /*std::cout << "Player State : FALL\n";*/ break; //When falling, use jumping animation
-				}
+        // Iterate archetypes with AnimationComponent and TextureComponent
+        entityManager_.GetArchetypeManager().ForEachArchetypeWith<AnimationComponent, TextureComponent>(
+            [&](Archetype* archetype) {
+                auto* animations = archetype->GetComponentArray<AnimationComponent>();
+                auto* textures = archetype->GetComponentArray<TextureComponent>();
 
-				AnimationInfo& animationInfo = resourceManager_->get<AnimationInfo>(textureComponent.textureKey); // Retrieve the respective AnimationInfo
+                // Cache-friendly iteration through all entities in this archetype
+                for (size_t i = 0; i < archetype->entities.size(); ++i) {
+                    AnimationComponent& animComp = animations->data[i];
+                    TextureComponent& texComp = textures->data[i];
 
-				//Update animation component properties based on the retrieved AnimationInfo
-				animationComponent.frameCount = animationInfo.frameCount;
-				animationComponent.frameDuration = animationInfo.frameDuration;
-				animationComponent.isLooping = animationInfo.isLooping;
-				animationComponent.startFrame = animationInfo.startFrame;
+                    // Set texture key based on animation state
+                    switch (animComp.currentState) {
+                    case AnimationState::IDLE:    texComp.textureKey = "playerSprite_Idle"; break;
+                    case AnimationState::RUNNING: texComp.textureKey = "playerSprite_Run"; break;
+                    case AnimationState::JUMPING: texComp.textureKey = "playerSprite_Jump"; break;
+                    case AnimationState::FALLING: texComp.textureKey = "playerSprite_Jump"; break;
+                    }
 
-				//	Check if animation is playing
-				if (!animationComponent.isPlaying) continue;
+                    // Retrieve animation info
+                    AnimationInfo& animInfo = resourceManager_->get<AnimationInfo>(texComp.textureKey);
 
-				// Update elapsed time
-				animationComponent.elapsedTime += dt;
+                    // Update animation component properties
+                    animComp.frameCount = animInfo.frameCount;
+                    animComp.frameDuration = animInfo.frameDuration;
+                    animComp.isLooping = animInfo.isLooping;
+                    animComp.startFrame = animInfo.startFrame;
 
-				//	Check if it's time to switch to the next frame
-				if (animationComponent.elapsedTime >= animationComponent.frameDuration) {
-					animationComponent.elapsedTime -= animationComponent.frameDuration;; // Subtract frame duration(to handle any dt overflow). Eg. elapsedTime = 0.12, 0.12 - 0.1 = 0.02, animation will have 0.08 seconds before next frame change.
+                    // Check if animation is playing
+                    if (!animComp.isPlaying) continue;
 
-					animationComponent.currentFrame++; // Move to the next frame
+                    // Update elapsed time
+                    animComp.elapsedTime += dt;
 
-					//Handle looping at the last frame
-					if (animationComponent.currentFrame >= animationComponent.frameCount) {
-						if (animationComponent.isLooping) {
-							animationComponent.currentFrame = 0; // Loop back to the first frame
-						}
+                    // Check if it's time to switch to the next frame
+                    if (animComp.elapsedTime >= animComp.frameDuration) {
+                        animComp.elapsedTime -= animComp.frameDuration;
+                        animComp.currentFrame++;
 
-						else {
-							animationComponent.currentFrame = animationComponent.frameCount - 1; // Stay on the last frame
-							animationComponent.isPlaying = false; // Stop the animation
-						}
-					}
-				}
+                        // Handle looping
+                        if (animComp.currentFrame >= animComp.frameCount) {
+                            if (animComp.isLooping) {
+                                animComp.currentFrame = 0;
+                            }
+                            else {
+                                animComp.currentFrame = animComp.frameCount - 1;
+                                animComp.isPlaying = false;
+                            }
+                        }
+                    }
 
-				// Calculate UV coordinates based on the current frame
-				if (animationComponent.frameCount > 0) {
-					float frameUVWidth = 1.0f / (float)animationComponent.frameCount; // Width of each frame in UV space based on total frame count
-
-					// Calculate U (Horizontal)
-					animationComponent.minUV.x = (float)animationComponent.currentFrame * frameUVWidth;
-					animationComponent.maxUV.x = animationComponent.minUV.x + frameUVWidth;
-
-					// V (Vertical) remains 0.0 to 1.0 for a single-row sprite sheet
-					animationComponent.minUV.y = 0.0f;
-					animationComponent.maxUV.y = 1.0f;
-				}
-			}
-        }
+                    // Calculate UV coordinates
+                    if (animComp.frameCount > 0) {
+                        float frameUVWidth = 1.0f / static_cast<float>(animComp.frameCount);
+                        animComp.minUV.x = static_cast<float>(animComp.currentFrame) * frameUVWidth;
+                        animComp.maxUV.x = animComp.minUV.x + frameUVWidth;
+                        animComp.minUV.y = 0.0f;
+                        animComp.maxUV.y = 1.0f;
+                    }
+                }
+            });
     }
 
+	void AnimationSystem::Shutdown() {
+	}
 
-    void AnimationSystem::Shutdown() {
-        
-    }
 
 } // namespace Framework

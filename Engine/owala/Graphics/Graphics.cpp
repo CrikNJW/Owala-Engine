@@ -541,4 +541,29 @@ namespace Framework {
         return lines;
     }
 
+    void Graphics::drawSpriteBatch(const std::vector<SpriteVertex>& vertices,
+        const std::vector<uint32_t>& indices,
+        Texture& tex)
+    {
+        glUseProgram(progTex_);
+        glBindVertexArray(vaoTex_);
+        glBindTexture(GL_TEXTURE_2D, tex);
+
+        // Upload vertices
+        glBindBuffer(GL_ARRAY_BUFFER, vboTex_);
+        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(SpriteVertex), vertices.data(), GL_DYNAMIC_DRAW);
+
+        // Create or upload index buffer dynamically
+        static unsigned ibo = 0;
+        if (ibo == 0) glGenBuffers(1, &ibo);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(uint32_t), indices.data(), GL_DYNAMIC_DRAW);
+
+        // Draw all sprites in one call
+        glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_INT, 0);
+
+        glBindVertexArray(0);
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
+
 } // namespace Framework

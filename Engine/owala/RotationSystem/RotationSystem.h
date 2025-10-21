@@ -28,13 +28,13 @@
 namespace Framework {
     class RotationSystem : public ISystem {
     public:
-        RotationSystem(EntityStorage& ecs, InputSystem& input, PhysicsSystem& physics);
+        RotationSystem(EntityManager& ecs, InputSystem& input, PhysicsSystem& physics);
         void Initialize() override;
         void Update(float dt) override;
         void Shutdown() override;
 
     private:
-        EntityStorage* ecs_;
+        EntityManager* ecs_;
         InputSystem* input_;
         PhysicsSystem* physics_;
 

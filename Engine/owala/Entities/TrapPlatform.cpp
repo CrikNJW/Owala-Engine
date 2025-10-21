@@ -16,10 +16,9 @@ namespace Framework {
     @param      textureID String identifier for the platform's texture
     @return     Entity handle for the created trap platform
 *//*______________________________________________________________*/
-    Entity createTrapPlatform(EntityStorage& entityStorage, Vector2D pos, Vector2D halfSize, std::string textureID)
+    Entity createTrapPlatform(EntityManager& entityMgr, Vector2D pos, Vector2D halfSize, std::string textureID)
     {
-        EntityManager entityMgr(entityStorage);
-        Entity trapPlatform = createPlatform(entityStorage, pos, halfSize, textureID);
+        Entity trapPlatform = createPlatform(entityMgr, pos, halfSize, textureID);
 
         TrapPlatformComponent trapComponent;
         trapComponent.originalPosition = pos;
@@ -40,9 +39,8 @@ namespace Framework {
     @param      dt Delta time in seconds since last frame
     @return     void
 *//*______________________________________________________________*/
-    void updateTrapPlatforms(EntityStorage& entityStorage, float dt)
+    void updateTrapPlatforms(EntityManager& entityMgr, float dt)
     {
-        EntityManager entityMgr(entityStorage);
 
         for (const Entity& entity : entityMgr.GetAllEntitiesWithComponent(TrapPlatformComponentType)) {
             TrapPlatformComponent& trapComp = entityMgr.GetComponent<TrapPlatformComponent>(entity);
@@ -82,9 +80,8 @@ namespace Framework {
     @param      trapPlatform Entity handle of the trap platform to trigger
     @return     void
 *//*______________________________________________________________*/
-    void triggerTrapPlatform(EntityStorage& entityStorage, Entity trapPlatform)
+    void triggerTrapPlatform(EntityManager& entityMgr, Entity trapPlatform)
     {
-        EntityManager entityMgr(entityStorage);
         if (entityMgr.HasComponent(trapPlatform, TrapPlatformComponentType)) {
             TrapPlatformComponent& trapComp = entityMgr.GetComponent<TrapPlatformComponent>(trapPlatform);
             if (!trapComp.isTriggered && !trapComp.hasFallen) {
@@ -100,9 +97,8 @@ namespace Framework {
     @param      trapPlatform Entity handle of the trap platform to reset
     @return     void
 *//*______________________________________________________________*/
-    void resetTrapPlatform(EntityStorage& entityStorage, Entity trapPlatform)
+    void resetTrapPlatform(EntityManager& entityMgr, Entity trapPlatform)
     {
-        EntityManager entityMgr(entityStorage);
         if (entityMgr.HasComponent(trapPlatform, TrapPlatformComponentType) && entityMgr.HasComponent(trapPlatform, PositionType)) {
             TrapPlatformComponent& trapComp = entityMgr.GetComponent<TrapPlatformComponent>(trapPlatform);
             trapComp.isTriggered = false;

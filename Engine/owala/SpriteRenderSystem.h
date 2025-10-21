@@ -55,14 +55,14 @@ namespace Framework {
          * \param drawColliders Whether to draw collider outlines each frame.
          * \param clearColor    Background clear color (RGBA).
          */
-        SpriteRenderSystem(EntityStorage& ecs,
+        SpriteRenderSystem(ArchetypeManager& archetypeManager,
+            EntityManager& ecs,
             Graphics& gfx,
             ResourceManager& resources,
             bool drawColliders = false,
             const Color& clearColor = { 0.08f, 0.10f, 0.14f, 1.0f })
-            : ecs_(ecs), gfx_(gfx), resources_(resources),
-            drawColliders_(drawColliders), clearColor_(clearColor) {
-        }
+            : archetypeManager_(archetypeManager), ecs_(ecs), gfx_(gfx), resources_(resources),
+            drawColliders_(drawColliders), clearColor_(clearColor) {}
 
         void SetCameraSystem(CameraSystem* cameraSystem) {
             cameraSystem_ = cameraSystem;
@@ -71,7 +71,7 @@ namespace Framework {
          * \brief Initialize the render system.
          * \details No-op here, provided for ISystem compliance.
          */
-        void Initialize() override {}
+        void Initialize() override {};
 
         /**
          * \brief Per-frame update for rendering.
@@ -122,12 +122,14 @@ namespace Framework {
         void RenderColliderOutlines();
 
     private:
-        EntityStorage& ecs_;          //!< ECS storage reference.
+        EntityManager& ecs_;          //!< ECS storage reference.
         Graphics& gfx_;          //!< Graphics subsystem reference.
         ResourceManager& resources_;    //!< Resource manager reference (textures).
         bool             drawColliders_ = false; //!< Flag for collider debug rendering.
         Color            clearColor_;   //!< Background clear color.
         CameraSystem* cameraSystem_ = nullptr;
+		ArchetypeManager& archetypeManager_; //For accessing archetypes
+    
     };
 
 } // namespace Framework

@@ -21,6 +21,6 @@
 #include "EntityManager.h"
 
 namespace Framework{
-	Entity createBGAudio(EntityStorage& entityStorage,
+	Entity createBGAudio(EntityManager& entityMgr,
 		std::string audioID);
 }

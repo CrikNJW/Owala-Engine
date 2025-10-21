@@ -23,7 +23,7 @@
 
 namespace Framework {
 
-    PhysicsSystem::PhysicsSystem(EntityStorage& storage) : ecs_(&storage) {}
+    PhysicsSystem::PhysicsSystem(EntityManager& storage) : ecs_(&storage) {}
 
     // ----------------------------------------------------------------------------
     // The main update loop, which uses a fixed timestep for stability.

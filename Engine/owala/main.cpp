@@ -73,21 +73,25 @@ int main() {
     WindowsSystem *win = new WindowsSystem(engine, "Owala", (int)windowConfig.x, (int)windowConfig.y);
 	g_win = win; // Set global pointer for console handler
     InputSystem *input = new InputSystem(*win);
-    std::unique_ptr<Framework::EntityStorage> ecs = std::make_unique<Framework::EntityStorage>();
-    PhysicsSystem* phx = new PhysicsSystem(*ecs);
-    SceneManager::GetInstance().SetEntityStorageRef(*ecs); // Creates SceneMgr Instance and sets the entity storage reference for the SceneManager
-    RotationSystem* rotation = new RotationSystem(*ecs, *input, *phx);
-    PlayerSystem* player = new PlayerSystem(*ecs, *input ,*phx);
-    AudioSystem* audio = new AudioSystem(*ecs);
+
+    //std::unique_ptr<Framework::EntityStorage> ecs = std::make_unique<Framework::EntityStorage>();
+    std::unique_ptr<Framework::ArchetypeManager> archetypeManager = std::make_unique<Framework::ArchetypeManager>();
+    std::unique_ptr<Framework::EntityManager> entityManager = std::make_unique<Framework::EntityManager>(*archetypeManager, archetypeManager->entityLocations);
+
+    PhysicsSystem* phx = new PhysicsSystem(*entityManager);
+    SceneManager::GetInstance().SetEntityStorageRef(*entityManager); // Creates SceneMgr Instance and sets the entity storage reference for the SceneManager
+    RotationSystem* rotation = new RotationSystem(*entityManager, *input, *phx);
+    PlayerSystem* player = new PlayerSystem(*archetypeManager, *entityManager, *input ,*phx);
+    AudioSystem* audio = new AudioSystem(*entityManager);
     Graphics *gfx = new Graphics(*win);
 	ResourceManager* rcm = new ResourceManager(*gfx, *audio); //Create resource manager on the heap
 	audio->SetResourceManager(*rcm); // Set resource manager for audio system
     GameManager* gm = &GameManager::GetInstance(); // Create GameManager instance
     gm->SetEngine(engine); // Link the engine to the game manager
-	AnimationSystem* animation = new AnimationSystem(*ecs, *rcm);
-    CameraSystem* camera = new CameraSystem(*ecs);
-    SpriteRenderSystem* renderer = new SpriteRenderSystem(*ecs, *gfx, *rcm, /*drawColliders*/false);
-	gm->RegisterSystemsToUse(*rcm, *ecs, *gfx, *win, *input, *phx, *audio, *renderer, *camera); // Register all core systems to the GameManager
+	AnimationSystem* animation = new AnimationSystem(*entityManager, *rcm, *archetypeManager);
+    CameraSystem* camera = new CameraSystem(*entityManager);
+    SpriteRenderSystem* renderer = new SpriteRenderSystem(*archetypeManager, *entityManager, *gfx, *rcm, /*drawColliders*/false);
+	gm->RegisterSystemsToUse(*rcm, *entityManager, *gfx, *win, *input, *phx, *audio, *renderer, *camera); // Register all core systems to the GameManager
 
 	// Editor Registration
 	Editor::Editor* editor = new Editor::Editor(engine, *gm);

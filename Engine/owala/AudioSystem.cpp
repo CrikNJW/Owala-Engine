@@ -5,7 +5,7 @@
 
 namespace Framework {
 
-    AudioSystem::AudioSystem(EntityStorage& storage) : entityStorage_(&storage) {}
+    AudioSystem::AudioSystem(EntityManager& storage) : entityStorage_(&storage) {}
 
     void AudioSystem::check(FMOD_RESULT r, const char* where) {
         if (r != FMOD_OK) {

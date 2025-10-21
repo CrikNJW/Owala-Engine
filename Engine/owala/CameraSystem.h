@@ -3,17 +3,17 @@
 #include "Components.h"  // ? THIS IS CRITICAL - includes Camera struct
 #include <memory>
 #include "entity.h"
-
+#include "EntityManager.h"
 
 namespace Framework {
-    class EntityStorage;
+    class EntityManager;
 }
 
 namespace Framework {
 
     class CameraSystem : public ISystem {
     public:
-        CameraSystem(EntityStorage& ecs);
+        CameraSystem(EntityManager& ecs) : ecs_(ecs) {};
 
         void Initialize() override {}
         void Update(float dt) override;
@@ -33,7 +33,7 @@ namespace Framework {
     private:
         Camera& GetCamera(Entity cameraEntity);
 
-        EntityStorage& ecs_;
+        EntityManager& ecs_;
         Entity activeCamera_ = 0;
     };
 

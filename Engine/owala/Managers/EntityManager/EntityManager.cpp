@@ -17,132 +17,132 @@ namespace Framework {
 	// ---------------------------------------------------------------------------
 // Constructors
 // ---------------------------------------------------------------------------
-	EntityManager::EntityManager(EntityStorage& entityStorage) : ecs(entityStorage) {};
+	EntityManager::EntityManager(ArchetypeManager& archetypemanager, std::unordered_map<Entity, EntityLocation>& entityLocs)
+		: archetypeManager(archetypemanager), entityLocations(entityLocs) {}
 
 	// ---------------------------------------------------------------------------
 	// EntityManager APIs
 	// ---------------------------------------------------------------------------
 	Entity EntityManager::CreateEntity() {
-		ComponentSignature emptySignature; // New entity starts with no components
 		Entity newEntity = nextEntityID++;
-		ecs.entitySignatures[newEntity] = emptySignature;
+
+		// Place entity into the empty archetype
+		ComponentSignature emptySig; // all bits 0
+		Archetype* emptyArchetype = archetypeManager.FindOrCreateArchetype(emptySig);
+		size_t index = emptyArchetype->entities.size();
+		emptyArchetype->entities.push_back(newEntity);
+
+		entityLocations[newEntity] = { emptyArchetype, index };
 
 		return newEntity;
 	}
 
 	Entity EntityManager::CloneEntity(Entity& entity) {
-		if (ecs.entitySignatures.find(entity) == ecs.entitySignatures.end()) {
-			throw std::runtime_error("Attempted to clone a non existent entity!");
-		}
+		auto it = entityLocations.find(entity);
+		if (it == entityLocations.end())
+			throw std::runtime_error("Attempted to clone a non-existent entity!");
+
+		EntityLocation& srcLoc = it->second;
+		Archetype* srcArchetype = srcLoc.archetype;
+		ComponentSignature sig = srcArchetype->signature;
 
 		Entity newEntity = CreateEntity();
-		ComponentSignature otherSignature = ecs.entitySignatures[entity];
 
-		for (int i = 0; i < ComponentType::MAX_COMPONENTS; ++i) {
-			ComponentType componentType = static_cast<ComponentType>(i);
+		// Add all components from source entity
+		for (size_t i = 0; i < MAX_COMPONENTS; ++i) {
+			if (!sig.test(i)) continue;
 
-			if (HasComponent(entity, componentType)) {
-				switch (componentType) {
-					case ComponentType::PlayerStatsType: AddComponent<PlayerStats>(newEntity, GetComponent<PlayerStats>(entity)); break;
-					case ComponentType::PositionType: AddComponent<Position>(newEntity, GetComponent<Position>(entity)); break;
-					case ComponentType::VelocityType: AddComponent<Velocity>(newEntity, GetComponent<Velocity>(entity)); break;
-					case ComponentType::AccelerationType: AddComponent<Acceleration>(newEntity, GetComponent<Acceleration>(entity)); break;
-					case ComponentType::TriangleType: AddComponent<Triangle>(newEntity, GetComponent<Triangle>(entity)); break;
-					case ComponentType::RigidBodyType: AddComponent<RigidBody>(newEntity, GetComponent<RigidBody>(entity)); break;
-					case ComponentType::AABBColliderType: AddComponent<AABBCollider>(newEntity, GetComponent<AABBCollider>(entity)); break;
-					case ComponentType::PlayerStateType: AddComponent<PlayerState>(newEntity, GetComponent<PlayerState>(entity)); break;
-					case ComponentType::RotationFlagType: AddComponent<RotationFlag>(newEntity, GetComponent<RotationFlag>(entity)); break;
-					case ComponentType::TrapPlatformComponentType: AddComponent<TrapPlatformComponent>(newEntity, GetComponent<TrapPlatformComponent>(entity)); break;
-					case ComponentType::ScalingPlatformComponentType: AddComponent<ScalingPlatformComponent>(newEntity, GetComponent<ScalingPlatformComponent>(entity)); break;
-					case ComponentType::TextureComponentType: AddComponent<TextureComponent>(newEntity, GetComponent<TextureComponent>(entity)); break;
-					case ComponentType::AudioComponentType: AddComponent<AudioComponent>(newEntity, GetComponent<AudioComponent>(entity)); break;
-					case ComponentType::AnimationComponentType: AddComponent<AnimationComponent>(newEntity, GetComponent<AnimationComponent>(entity)); break;
-					case ComponentType::TextComponentType: 	AddComponent<TextComponent>(newEntity, GetComponent<TextComponent>(entity)); break;
-					case ComponentType::SceneOwnedType: AddComponent<SceneOwned>(newEntity, GetComponent<SceneOwned>(entity)); break;
-					default:
-						break;
-				}
+			switch (i) {
+			case PlayerStatsType: AddComponent<PlayerStats>(newEntity, GetComponent<PlayerStats>(entity)); break;
+			case PositionType: AddComponent<Position>(newEntity, GetComponent<Position>(entity)); break;
+			case VelocityType: AddComponent<Velocity>(newEntity, GetComponent<Velocity>(entity)); break;
+			case AccelerationType: AddComponent<Acceleration>(newEntity, GetComponent<Acceleration>(entity)); break;
+			case TriangleType: AddComponent<Triangle>(newEntity, GetComponent<Triangle>(entity)); break;
+			case RigidBodyType: AddComponent<RigidBody>(newEntity, GetComponent<RigidBody>(entity)); break;
+			case AABBColliderType: AddComponent<AABBCollider>(newEntity, GetComponent<AABBCollider>(entity)); break;
+			case PlayerStateType: AddComponent<PlayerState>(newEntity, GetComponent<PlayerState>(entity)); break;
+			case RotationFlagType: AddComponent<RotationFlag>(newEntity, GetComponent<RotationFlag>(entity)); break;
+			case TrapPlatformComponentType: AddComponent<TrapPlatformComponent>(newEntity, GetComponent<TrapPlatformComponent>(entity)); break;
+			case ScalingPlatformComponentType: AddComponent<ScalingPlatformComponent>(newEntity, GetComponent<ScalingPlatformComponent>(entity)); break;
+			case TextureComponentType: AddComponent<TextureComponent>(newEntity, GetComponent<TextureComponent>(entity)); break;
+			case AudioComponentType: AddComponent<AudioComponent>(newEntity, GetComponent<AudioComponent>(entity)); break;
+			case AnimationComponentType: AddComponent<AnimationComponent>(newEntity, GetComponent<AnimationComponent>(entity)); break;
+			case TextComponentType: AddComponent<TextComponent>(newEntity, GetComponent<TextComponent>(entity)); break;
+			case CameraType: AddComponent<Camera>(newEntity, GetComponent<Camera>(entity)); break;
+			case SceneOwnedType: AddComponent<SceneOwned>(newEntity, GetComponent<SceneOwned>(entity)); break;
+			default: break;
 			}
 		}
-
-		ecs.entitySignatures[newEntity] = otherSignature;
 
 		return newEntity;
 	}
 
 	bool EntityManager::HasComponent(Entity entity, ComponentType componentType) const {
-		return ecs.entitySignatures[entity].test(componentType);
+		auto it = entityLocations.find(entity);
+		if (it == entityLocations.end()) return false;
+		return it->second.archetype->signature.test(componentType);
 	}
 
-	void EntityManager::AddComponent(Entity entity, ComponentType componentType) {
-		if (HasComponent(entity, componentType)) return;
 
-		switch (componentType)
-		{
-		case ComponentType::PlayerStatsType: AddComponent<PlayerStats>(entity, PlayerStats{}); break;
-		case ComponentType::PositionType: AddComponent<Position>(entity, Position{}); break;
-		case ComponentType::VelocityType: AddComponent<Velocity>(entity, Velocity{}); break;
-		case ComponentType::AccelerationType: AddComponent<Acceleration>(entity, Acceleration{}); break;
-		case ComponentType::TriangleType: AddComponent<Triangle>(entity, Triangle{}); break;
-		case ComponentType::RigidBodyType: AddComponent<RigidBody>(entity, RigidBody{}); break;
-		case ComponentType::AABBColliderType: AddComponent<AABBCollider>(entity, AABBCollider{}); break;
-		case ComponentType::PlayerStateType: AddComponent<PlayerState>(entity, PlayerState{}); break;
-		case ComponentType::RotationFlagType: AddComponent<RotationFlag>(entity, RotationFlag{}); break;
-		case ComponentType::TrapPlatformComponentType: AddComponent<TrapPlatformComponent>(entity, TrapPlatformComponent{}); break;
-		case ComponentType::ScalingPlatformComponentType: AddComponent<ScalingPlatformComponent>(entity, ScalingPlatformComponent{}); break;
-		case ComponentType::TextureComponentType: AddComponent<TextureComponent>(entity, TextureComponent{}); break;
-		case ComponentType::AudioComponentType: AddComponent<AudioComponent>(entity, AudioComponent{}); break;
-		case ComponentType::AnimationComponentType: AddComponent<AnimationComponent>(entity, AnimationComponent{}); break;
-		case ComponentType::TextComponentType: 	AddComponent<TextComponent>(entity, TextComponent{}); break;
-		case ComponentType::CameraType: AddComponent<Camera>(entity, Camera{}); break;
-		case ComponentType::PlayerTagType:
-		case ComponentType::PlatformTagType:
-		case ComponentType::BackgroundTagType:
-		case ComponentType::EnemyTagType: ; break;
-		case ComponentType::SceneOwnedType: AddComponent<SceneOwned>(entity, SceneOwned{}); break;
-		case ComponentType::PersistentTagType:
-		case ComponentType::ActiveTagType: break;
+	void EntityManager::AddComponent(Entity entity, ComponentType type) {
+		if (HasComponent(entity, type)) return;
+
+		switch (type) {
+		case PlayerStatsType: AddComponent<PlayerStats>(entity, PlayerStats{}); break;
+		case PositionType: AddComponent<Position>(entity, Position{}); break;
+		case VelocityType: AddComponent<Velocity>(entity, Velocity{}); break;
+		case AccelerationType: AddComponent<Acceleration>(entity, Acceleration{}); break;
+		case TriangleType: AddComponent<Triangle>(entity, Triangle{}); break;
+		case RigidBodyType: AddComponent<RigidBody>(entity, RigidBody{}); break;
+		case AABBColliderType: AddComponent<AABBCollider>(entity, AABBCollider{}); break;
+		case PlayerStateType: AddComponent<PlayerState>(entity, PlayerState{}); break;
+		case RotationFlagType: AddComponent<RotationFlag>(entity, RotationFlag{}); break;
+		case TrapPlatformComponentType: AddComponent<TrapPlatformComponent>(entity, TrapPlatformComponent{}); break;
+		case ScalingPlatformComponentType: AddComponent<ScalingPlatformComponent>(entity, ScalingPlatformComponent{}); break;
+		case TextureComponentType: AddComponent<TextureComponent>(entity, TextureComponent{}); break;
+		case AudioComponentType: AddComponent<AudioComponent>(entity, AudioComponent{}); break;
+		case AnimationComponentType: AddComponent<AnimationComponent>(entity, AnimationComponent{}); break;
+		case TextComponentType: AddComponent<TextComponent>(entity, TextComponent{}); break;
+		case CameraType: AddComponent<Camera>(entity, Camera{}); break;
+		case SceneOwnedType: AddComponent<SceneOwned>(entity, SceneOwned{}); break;
+		case PlayerTagType:
+		case PlatformTagType:
+		case BackgroundTagType:
+		case EnemyTagType:
+		case PersistentTagType:
+		case ActiveTagType:
+			// Tags are empty and handled via signature only
+			break;
 		default:
-			Logger::Get().Error(DebugType::GameManager) << "AddComponent: Unsupported ComponentType " << static_cast<int>(componentType);
+			Logger::Get().Error(DebugType::GameManager) << "AddComponent: Unsupported ComponentType " << static_cast<int>(type);
 			return;
 		}
-
-		ecs.entitySignatures[entity].set(componentType);
 	}
 
-	void EntityManager::RemoveComponent(Entity entity, ComponentType componentType) {
-		if (!HasComponent(entity, componentType)) return;
+	void EntityManager::RemoveComponent(Entity entity, ComponentType type) {
+		if (!HasComponent(entity, type)) return;
 
-		switch (componentType) {
-			case PlayerStatsType:   ecs.playerStats.erase(entity); break;
-			case PositionType:      ecs.position.erase(entity); break;
-			case VelocityType:      ecs.velocity.erase(entity); break;
-			case AccelerationType:  ecs.acceleration.erase(entity); break;
-			case TriangleType:      ecs.triangle.erase(entity); break;
-			case RigidBodyType:     ecs.rigidBody.erase(entity); break;
-			case AABBColliderType:  ecs.colliders.erase(entity); break;
-			case PlayerStateType:   ecs.playerState.erase(entity); break;
-			case RotationFlagType:  ecs.rotationFlag.erase(entity); break;
-			case TrapPlatformComponentType: ecs.trapPlatform.erase(entity); break;
-			case ScalingPlatformComponentType: ecs.scalingPlatform.erase(entity); break;
-			case TextureComponentType: ecs.tex.erase(entity); break;
-			case AudioComponentType: ecs.audio.erase(entity); break;
-			case AnimationComponentType: ecs.animatedTex.erase(entity); break;
-			case TextComponentType: ecs.text.erase(entity); break;
-			case CameraType: ecs.cameras.erase(entity); break;
-			case PlayerTagType:
-			case PlatformTagType:
-			case BackgroundTagType:
-			case EnemyTagType:; break;
-			case SceneOwnedType: ecs.sceneOwned.erase(entity); break;
-			case PersistentTagType:
-			case ActiveTagType: break;
-			default: 
-				Logger::Get().Error(DebugType::GameManager) << "AddComponent: Unsupported ComponentType " << static_cast<int>(componentType);
-				return;
+		EntityLocation& oldLoc = entityLocations.at(entity);
+		Archetype* oldArchetype = oldLoc.archetype;
+		ComponentSignature newSig = oldArchetype->signature;
+		newSig.set(type, false);
+
+		Archetype* newArchetype = archetypeManager.FindOrCreateArchetype(newSig);
+		size_t newIndex = newArchetype->entities.size();
+		newArchetype->entities.push_back(entity);
+
+		// Move all remaining components
+		for (size_t i = 0; i < MAX_COMPONENTS; ++i) {
+			if (i == type || !oldArchetype->signature.test(i)) continue;
+			auto* oldArray = oldArchetype->componentArrays[i].get();
+			auto* newArray = newArchetype->componentArrays[i].get();
+			if (oldArray && newArray) oldArray->MoveTo(*newArray, oldLoc.index);
 		}
 
-		ecs.entitySignatures[entity].reset(componentType);
+		oldArchetype->RemoveEntity(oldLoc.index, entityLocations);
+
+		// Update location
+		entityLocations[entity] = { newArchetype, newIndex };
 	}
 
 	bool EntityManager::IsTagComponent(ComponentType componentType) {
@@ -161,89 +161,28 @@ namespace Framework {
 	}
 
 	std::vector<Entity> EntityManager::GetAllEntities() const {
-		std::vector<Entity> entities;
-		entities.reserve(ecs.entitySignatures.size());
-		for (const auto& pair : ecs.entitySignatures) {
-			entities.push_back(pair.first);
-		}
-		return entities;
+		std::vector<Entity> all;
+		all.reserve(entityLocations.size());
+		for (const auto& [entity, loc] : entityLocations)
+			all.push_back(entity);
+		return all;
 	}
 
 	std::vector<Entity> EntityManager::GetAllEntitiesWithComponent(ComponentType componentType) const {
 		std::vector<Entity> entities;
-		for (const auto& [entity, signature] : ecs.entitySignatures) {
-			if (signature.test(componentType)) {
-				entities.push_back(entity);
+
+		for (auto& [sig, archetype] : archetypeManager.archetypes) {
+			if (archetype->signature.test(componentType)) {
+				entities.insert(entities.end(), archetype->entities.begin(), archetype->entities.end());
 			}
 		}
+
 		return entities;
 	}
 
-#pragma endregion
+	ArchetypeManager& EntityManager::GetArchetypeManager() { return archetypeManager; }
 
-#pragma region WIP ENTITYMANAGER
 
-	// ---------------------------------------------------------------------------
-	// Constructors
-	// ---------------------------------------------------------------------------
-	WIPEntityManager::WIPEntityManager(WIPEntityStorage& entityStorage) : ecs(entityStorage) {};
-
-	// ---------------------------------------------------------------------------
-	// EntityManager APIs
-	// ---------------------------------------------------------------------------
-	Entity WIPEntityManager::CreateEntity() {
-		using Archetype = WIPEntityStorage::Archetype;
-
-		ComponentSignature emptySignature; // New entity starts with no components
-		Entity newEntity = nextEntityID++;
-
-		size_t archetypeIndex = ecs.archetypes.size();
-		for (size_t i = 0; i < ecs.archetypes.size(); ++i) {
-			// If an archetype with an empty signature exists, use it
-			if (ecs.archetypes[i].signature.none()) {
-				archetypeIndex = i;
-				break;
-			}
-		}
-
-		// If there is no empty archetype, create one
-		if (archetypeIndex == ecs.archetypes.size()) {
-			Archetype newArch;
-			newArch.signature = emptySignature;
-			ecs.archetypes.push_back(newArch);
-		}
-
-		Archetype& emptyArchetype = ecs.archetypes[archetypeIndex];
-		emptyArchetype.entities.push_back(newEntity);
-
-		ecs.entityToArchetype[newEntity] = archetypeIndex;
-		ecs.entitySignatures[newEntity] = emptySignature;
-
-		return newEntity;
-	}
-
-	Entity WIPEntityManager::CloneEntity(/*Entity& entity*/) {
-		using Archetype = WIPEntityStorage::Archetype;
-
-		ComponentSignature otherSignature;
-		Entity newEntity = nextEntityID++;
-
-		return newEntity;
-	}
-
-	bool WIPEntityManager::HasComponent(Entity entity, ComponentType componentType) const {
-		auto it = ecs.entitySignatures.find(entity);
-		if (it != ecs.entitySignatures.end()) {
-			const ComponentSignature& signature = it->second;
-			return signature.test(componentType);
-		}
-
-		return false; // Entity not found or does not have the component
-	}
-
-	/*void WIPEntityManager::AddComponent(Entity entity, ComponentType componentType) {
-		// Empty by design.
-	}*/
 
 #pragma endregion
 }

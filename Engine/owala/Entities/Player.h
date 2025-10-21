@@ -31,14 +31,12 @@
  */
 namespace Framework {
 
-	inline Entity createPlayer(EntityStorage& entityStorage, 
+	inline Entity createPlayer(EntityManager& entityMgr,
 		ResourceManager& rcm,
 		PlayerStats stats, 
 		Vector2D halfSize, 
 		std::string textureKey) {
 
-			//Create an EntityManager to access entity creation APIs
-			EntityManager entityMgr(entityStorage);
 			(void) rcm; // suppress warning level
 			//Create a new entity with a unique ID
 			Entity player = entityMgr.CreateEntity();
@@ -65,9 +63,8 @@ namespace Framework {
 
 	
 
-	void updatePlayerSize(EntityStorage& entityStorage, Entity entity, float scale) {
+	void updatePlayerSize(EntityManager& entityMgr, Entity entity, float scale) {
 		//Create an EntityManager to access entity creation APIs
-		EntityManager entityMgr(entityStorage);
 		entityMgr.GetComponent<AABBCollider>(entity).HalfSize.x *= scale;
 		entityMgr.GetComponent<AABBCollider>(entity).HalfSize.y *= scale;
 	}

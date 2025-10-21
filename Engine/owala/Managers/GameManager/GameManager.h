@@ -57,7 +57,7 @@ namespace Framework {
 		std::unordered_map<SceneGUID, SceneCallBacks> sceneCallbacks_;
 
 		struct RegisteredSystems {
-			EntityStorage* ecs_ = nullptr;
+			EntityManager* ecs_ = nullptr;
 			Graphics* gfx_ = nullptr;
 			WindowsSystem* win_ = nullptr;
 			InputSystem* input_ = nullptr;   // <-- MISSING MEMBER (add this)
@@ -109,7 +109,7 @@ namespace Framework {
 
 		/* GameManager Config */
 		// Registers all the systems that the GameManager will use. Must be called before Initialize.
-		void RegisterSystemsToUse(ResourceManager& rcm, EntityStorage& ecs, Graphics& gfx,
+		void RegisterSystemsToUse(ResourceManager& rcm, EntityManager& ecs, Graphics& gfx,
 			WindowsSystem& win, InputSystem& input, PhysicsSystem& physics,
 			AudioSystem& audio, SpriteRenderSystem& renderer,
 			CameraSystem& camera);		

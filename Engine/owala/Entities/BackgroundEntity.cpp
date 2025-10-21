@@ -2,9 +2,8 @@
 #include "EntityManager.h"
 
 namespace Framework{
-	Entity createBackground(EntityStorage& entityStorage, Vector2D pos, std::string textureID)
+	Entity createBackground(EntityManager& entityMgr, Vector2D pos, std::string textureID)
 	{
-		EntityManager entityMgr(entityStorage);
 		Entity bg = entityMgr.CreateEntity();
 
 		entityMgr.AddComponent(bg, BackgroundTag{});

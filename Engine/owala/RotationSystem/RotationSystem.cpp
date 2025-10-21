@@ -15,7 +15,7 @@ namespace Framework {
     @return     N/A
 *//*______________________________________________________________*/
 
-    RotationSystem::RotationSystem(EntityStorage& ecs, InputSystem& input, PhysicsSystem& physics) : ecs_(&ecs), input_(&input), 
+    RotationSystem::RotationSystem(EntityManager& ecs, InputSystem& input, PhysicsSystem& physics) : ecs_(&ecs), input_(&input),
         physics_(&physics), globalRotation(0.0f), targetGlobalRotation(0.0f), isGlobalRotating(false), 
         rotationCooldown(0.0f), rotationCooldownDuration(0.5f) {
     }

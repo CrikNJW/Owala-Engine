@@ -20,10 +20,10 @@
 namespace Framework {
     class TrapPlatformSystem : public ISystem {
     private:
-        EntityStorage* ecs_;
+        EntityManager* ecs_;
 
     public:
-        TrapPlatformSystem(EntityStorage& storage) : ecs_(&storage) {}
+        TrapPlatformSystem(EntityManager& storage) : ecs_(&storage) {}
 
         void Initialize() override {}
         void Update(float dt) override;

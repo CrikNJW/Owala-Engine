@@ -29,6 +29,7 @@
 #include <TrapPlatformSystem.h>
 #include <ScalingPlatformSystem.h>
 #include "InputSystem.h"   // if you want toggles
+#include "CameraSystem.h"
 #include <iostream>
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -64,7 +65,7 @@ namespace TestScene {
         FileIOSystem fileIO;
 		SceneManager& sceneMgr = SceneManager::GetInstance();
 		GameManager& gm = GameManager::GetInstance();
-		EntityStorage* ecs = gm.GetSystems().ecs_;
+        EntityManager* ecs = gm.GetSystems().ecs_;
 		AudioSystem* audio = gm.GetSystems().audio_;
 		WindowsSystem* win_ = gm.GetSystems().win_;
 		ResourceManager* rcm_ = gm.GetSystems().resourceManager_;
@@ -165,7 +166,7 @@ namespace TestScene {
 
 	void Update() {
         GameManager& gm = GameManager::GetInstance();
-        EntityStorage* ecs_ = gm.GetSystems().ecs_;
+        EntityManager* ecs_ = gm.GetSystems().ecs_;
 		InputSystem* input_ = gm.GetSystems().input_;
 		PhysicsSystem* physics_ = gm.GetSystems().physics_;
 		//Graphics* gfx_ = gm.GetSystems().gfx_;
@@ -212,7 +213,7 @@ namespace TestScene {
         //press arrow up/ arrow down to scale player sprite
         if (input_->KeyPressed(InputSystem::Key::Up) || input_->KeyPressed(InputSystem::Key::Down)) {
             //GameManager& gm = GameManager::GetInstance();
-            EntityStorage* ecs = gm.GetInstance().GetSystems().ecs_;
+            EntityManager* ecs = gm.GetInstance().GetSystems().ecs_;
             float scale = input_->KeyPressed(InputSystem::Key::Up) ? 1.05f : (1.0f / 1.05f);
             updatePlayerSize(*ecs, playerEntity, scale);
             Logger::Get().Info(DebugType::PlayerSystem) << "Player Size *= (" << scale << ')' << std::endl;

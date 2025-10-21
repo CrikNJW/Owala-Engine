@@ -53,7 +53,7 @@ namespace Framework {
 		SceneGUID currentScene_ = 0; // Index of the current scene
 		SceneGUID nextScene_ = 0; // Index of the next scene to be loaded
 
-		EntityStorage* entityStorageRef_ = nullptr;
+		EntityManager* entityStorageRef_ = nullptr;
 		std::unordered_map<SceneGUID, SceneAsset> scenes_; // Storage for all created scenes, mapped by their unique GUID.
 
 		SceneManager(); // Private so no one can construct the SceneManager, only the getInstance function will create the one and only one.
@@ -79,7 +79,7 @@ namespace Framework {
 
 		/* SceneManager Config */
 		// Sets the entity storage reference for the SceneManager to use.
-		void SetEntityStorageRef(EntityStorage& entityStorage);
+		void SetEntityStorageRef(EntityManager& entityStorage);
 
 		/* Scene Management APIs */
 		// Create an empty new Scene at runtime with the given name. Returns the GUID of the created scene if successful.
