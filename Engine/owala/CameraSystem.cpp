@@ -17,7 +17,11 @@ namespace Framework {
             Camera& camera = entityMgr.GetComponent<Camera>(e);
             camera.size = { 2.0f * camera.zoom, 2.0f * camera.zoom };
 
-            if (camera.targetEntity != 0 && entityMgr.HasComponent(camera.targetEntity, PositionType)) {
+            // Only update game cameras with follow behavior
+            if (camera.domain == Camera::Domain::GAME &&
+                camera.targetEntity != 0 &&
+                entityMgr.HasComponent(camera.targetEntity, PositionType)) {
+
                 const auto& targetPos = entityMgr.GetComponent<Position>(camera.targetEntity).Pos;
 
                 if (camera.followSpeed <= 0.0f) {
@@ -27,10 +31,16 @@ namespace Framework {
                     float t = 1.0f - std::exp(-camera.followSpeed * dt);
                     camera.position.x += (targetPos.x - camera.position.x) * t;
                     camera.position.y += (targetPos.y - camera.position.y) * t;
+
+                    // Apply bounds for game camera
+                    camera.position.x = std::max(camera.boundsMin.x, std::min(camera.position.x, camera.boundsMax.x));
+                    camera.position.y = std::max(camera.boundsMin.y, std::min(camera.position.y, camera.boundsMax.y));
                 }
             }
+            // Editor cameras don't auto-update - they're manually controlled
         }
     }
+
     Vector2D CameraSystem::WorldToScreen(const Vector2D& worldPos, Entity cameraEntity) {
         Camera& camera = GetCamera(cameraEntity);
         Vector2D screenPos;
@@ -54,6 +64,14 @@ namespace Framework {
         return activeCamera_;
     }
 
+    Entity CameraSystem::GetGameCamera() const {
+        return gameCamera_;
+    }
+
+    Entity CameraSystem::GetEditorCamera() const {
+        return editorCamera_;
+    }
+
     void CameraSystem::SetActiveCamera(Entity cameraEntity) {
         EntityManager entityMgr(ecs_);
 
@@ -71,10 +89,10 @@ namespace Framework {
     }
 
     void CameraSystem::GetViewBounds(Entity camera, float& left, float& right, float& bottom, float& top) {
-        EntityManager entityMgr(ecs_); // FIX: Create EntityManager instance
+        EntityManager entityMgr(ecs_);
 
         if (entityMgr.HasComponent(camera, CameraType)) {
-            Camera& cam = entityMgr.GetComponent<Camera>(camera); // FIX: Properly initialize cam
+            Camera& cam = entityMgr.GetComponent<Camera>(camera);
 
             // Account for zoom in view bounds calculation
             float zoomedWidth = cam.size.x * cam.zoom;
@@ -91,7 +109,7 @@ namespace Framework {
         }
     }
 
-    Entity CameraSystem::CreateCamera(const Vector2D& position, Entity targetEntity, bool isActive) {
+    Entity CameraSystem::CreateCamera(const Vector2D& position, Entity targetEntity, bool isActive, Camera::Domain domain) {
         EntityManager entityMgr(ecs_);
         Entity cameraEntity = entityMgr.CreateEntity();
 
@@ -99,8 +117,23 @@ namespace Framework {
         camera.position = position;
         camera.targetEntity = targetEntity;
         camera.isActive = isActive;
+        camera.domain = domain;
+
+        // Set domain-specific defaults
+        if (domain == Camera::Domain::EDITOR) {
+            camera.moveSpeed = 10.0f;
+            camera.zoomSpeed = 2.0f;
+        }
 
         entityMgr.AddComponent(cameraEntity, camera);
+
+        // Track domain-specific cameras
+        if (domain == Camera::Domain::GAME) {
+            gameCamera_ = cameraEntity;
+        }
+        else {
+            editorCamera_ = cameraEntity;
+        }
 
         if (isActive) {
             SetActiveCamera(cameraEntity);
@@ -118,6 +151,37 @@ namespace Framework {
         Camera& camera = GetCamera(cameraEntity);
         camera.targetEntity = targetEntity;
         camera.followSpeed = followSpeed;
+    }
+
+    void CameraSystem::SetCameraBounds(Entity cameraEntity, const Vector2D& min, const Vector2D& max) {
+        Camera& camera = GetCamera(cameraEntity);
+        camera.boundsMin = min;
+        camera.boundsMax = max;
+    }
+
+    // Editor-specific controls
+    void CameraSystem::PanCamera(Entity camera, const Vector2D& delta) {
+        Camera& cam = GetCamera(camera);
+        cam.position.x += delta.x * cam.zoom;
+        cam.position.y += delta.y * cam.zoom;
+    }
+
+    void CameraSystem::ZoomCamera(Entity camera, float zoomDelta, const Vector2D& focusPoint) {
+        Camera& cam = GetCamera(camera);
+        float oldZoom = cam.zoom;
+        cam.zoom = std::max(0.1f, cam.zoom + zoomDelta);
+
+        // Zoom towards focus point (usually mouse position)
+        if (focusPoint.x != 0 || focusPoint.y != 0) {
+            float zoomFactor = cam.zoom / oldZoom;
+            cam.position.x = focusPoint.x - (focusPoint.x - cam.position.x) * zoomFactor;
+            cam.position.y = focusPoint.y - (focusPoint.y - cam.position.y) * zoomFactor;
+        }
+    }
+
+    void CameraSystem::FocusOnPoint(Entity camera, const Vector2D& worldPos) {
+        Camera& cam = GetCamera(camera);
+        cam.position = worldPos;
     }
 
     Camera& CameraSystem::GetCamera(Entity cameraEntity) {

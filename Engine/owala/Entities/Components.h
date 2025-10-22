@@ -19,6 +19,7 @@
 #pragma once
 #include "Graphics.h"
 #include "Vector2D.h"
+#include "Entity.h"
 #include <string>
 #include "Matrix3x3.h"
 #include <memory> // for std::shared_ptr
@@ -98,14 +99,24 @@ namespace Framework{
 
 	/* Camera component for view control and transformation */
 	struct Camera {
-		Vector2D position = { 0.0f, 0.0f };  // World position camera is looking at
-		Vector2D size = { 2.0f, 2.0f };      // How much world space is visible (width, height)
-		float zoom = 1.0f;                 // Zoom level (1.0 = normal)
-		uint32_t targetEntity = 0;        // Use uint32_t instead
-		float followSpeed = 5.0f;          // How quickly camera follows target (0 = instant)
-		bool isActive = false;             // Main camera flag
-	};
+		enum class Domain { GAME, EDITOR };
 
+		Vector2D position = { 0.0f, 0.0f };
+		Vector2D size = { 2.0f, 2.0f };
+		float zoom = 1.0f;
+		Entity targetEntity = 0;
+		float followSpeed = 0.0f;
+		bool isActive = false;
+		Domain domain = Domain::GAME;
+
+		// Editor-specific properties
+		float moveSpeed = 10.0f;
+		float zoomSpeed = 2.0f;
+
+		// Optional: camera bounds for game camera
+		Vector2D boundsMin = { -1000.0f, -1000.0f };
+		Vector2D boundsMax = { 1000.0f, 1000.0f };
+	};
 	struct TextureComponent {
 		std::string textureKey; // Key to identify the texture resource
 		Vector2D HalfSize = { 1, 1 };
