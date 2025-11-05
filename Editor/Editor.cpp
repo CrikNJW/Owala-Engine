@@ -80,9 +80,8 @@ namespace {
 		case ComponentType::EnemyTagType:					return "EnemyTag";
 		case ComponentType::SceneOwnedType:					return "SceneOwned";
 		case ComponentType::PersistentTagType:				return "PersistentTag";
-		case ComponentType::ActiveTagType:					return "ActiveTag";
+		case ComponentType::HiddenTagType:					return "ActiveTag";
 		case ComponentType::GUITagType:						return "GUITag";
-		
 		default:											return "Unknown";
 		}
 	}
@@ -251,7 +250,7 @@ namespace Editor {
 				componentTypes.push_back(type);
 			}
 			else {
-				if (type == ComponentType::ActiveTagType) continue; // Skip ActiveTag since user will not be able to manually add/remove it.
+				if (type == ComponentType::LoadedPersistentTagType) continue; // Skip Transient Tags since user will not be able to manually add/remove it.
 				tagNames.push_back(ComponentToString(type));
 				tagTypes.push_back(type);
 			}
@@ -646,7 +645,7 @@ namespace Editor {
 
 		// Prevent duplicates
 		const float tolerance = baseGridCellSize_ * 0.1f;
-		for (const auto& entity : sceneMgr.GetEntitiesInScene(sceneMgr.GetActiveScene().name)) {
+		for (const Entity& entity : sceneMgr.GetEntitiesInScene(sceneMgr.GetActiveScene())) {
 			if (!entityMgr.HasComponent(entity, Framework::PlatformTagType)) continue;
 			if (entityMgr.HasComponent(entity, Framework::PositionType)) {
 				const auto& pos = entityMgr.GetComponent<Framework::Position>(entity).Pos;
@@ -783,7 +782,7 @@ namespace Editor {
 		Entity entityToErase = 0;
 		const float eraseTolerance = baseGridCellSize_ * 0.1f;
 
-		for (const auto& entity : sceneMgr.GetEntitiesInScene(sceneMgr.GetActiveScene().name)) {
+		for (const auto& entity : sceneMgr.GetEntitiesInScene(sceneMgr.GetActiveScene())) {
 			if (!entityMgr.HasComponent(entity, Framework::PlatformTagType)) continue;
 			if (entityMgr.HasComponent(entity, Framework::PositionType)) {
 				const auto& pos = entityMgr.GetComponent<Framework::Position>(entity).Pos;
@@ -864,7 +863,7 @@ namespace Editor {
 		bool found = false;
 
 		// Get the list of entities from the active scene 
-		const std::vector<Entity>& activeEntities = sceneMgr.GetEntitiesInScene(sceneMgr.GetActiveScene().name);
+		const std::vector<Entity>& activeEntities = sceneMgr.GetEntitiesInScene(sceneMgr.GetActiveScene());
 
 		// Iterate through entities to find which one was clicked.
 		// iterate in reverse to correctly select the entity that is rendered on top.
@@ -909,7 +908,7 @@ namespace Editor {
 			EntityManager entityMgr(*(gameManager_->GetSystems().ecs_));
 
 			// Tell the SceneManager to remove the entity
-			if ((selectedEntityIndex >= 1) && (selectedEntityIndex < static_cast<int>(SceneManager::GetInstance().GetEntitiesInScene(currentScene.name).size() + 1))) {
+			if ((selectedEntityIndex >= 1) && (selectedEntityIndex < static_cast<int>(SceneManager::GetInstance().GetEntitiesInScene(currentScene).size() + 1))) {
 				entityMgr.DestroyEntity(selectedEntityIndex - 1);
 
 				selectedEntityIndex = 0;
@@ -1024,7 +1023,7 @@ namespace Editor {
 		ImGui::Begin("Level Editor");
 
 		const SceneAsset& currentScene = SceneManager::GetInstance().GetActiveScene();
-		const std::vector<Entity>& entitiesLoaded = SceneManager::GetInstance().GetEntitiesInScene(currentScene.name);
+		const std::vector<Entity>& entitiesLoaded = SceneManager::GetInstance().GetEntitiesInScene(currentScene);
 		EntityManager entityMgr(*(gameManager_->GetSystems().ecs_));
 
 		// --- Scene Info ---
@@ -1205,7 +1204,7 @@ namespace Editor {
 	void Editor::SaveAndLoadSection() {
 		SceneManager& sceneMgr = SceneManager::GetInstance();
 		const SceneAsset& currentScene = sceneMgr.GetActiveScene();
-		const std::vector<Entity>& entitiesLoaded = sceneMgr.GetEntitiesInScene(currentScene.name);
+		const std::vector<Entity>& entitiesLoaded = sceneMgr.GetEntitiesInScene(currentScene);
 
 		// --- Save (Overwrite/Quick Save. No changes to scene name or file path) ---
 		if (ImGui::Button("Save")) {
@@ -1294,7 +1293,7 @@ namespace Editor {
 					if (!isCurrentScene) {
 						isGamePlaying = false;
 						gameManager_->GetSystems().levelResetter_->RunReset();
-						sceneMgr.LoadScene(id);
+						sceneMgr.LoadScene(id, LoadSceneMode::Additive);
 					}
 				}
 
@@ -1627,7 +1626,7 @@ namespace Editor {
 			return;
 		}
 
-		const std::vector<Entity>& entitiesLoaded = SceneManager::GetInstance().GetEntitiesInScene(currentScene.name);
+		const std::vector<Entity>& entitiesLoaded = SceneManager::GetInstance().GetEntitiesInScene(currentScene);
 		EntityManager entityMgr(*(gameManager_->GetSystems().ecs_));
 		if (ImGui::BeginChild("HierarchyList", ImVec2{ 0, 0 }, true)) {
 			int localWidgetID = 0;
@@ -1865,13 +1864,6 @@ namespace Editor {
 			{
 				ImGui::Text("Active Tags:");
 				int tagCount = 0;
-
-				if (entityMgr.HasComponent(selectedEntity, ComponentType::ActiveTagType)) {
-					ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 255, 0, 255));
-					ImGui::Text("[ActiveTag (Not Removable)]");
-					ImGui::PopStyleColor();
-					++tagCount;
-				}
 
 				for (size_t i = 0; i < tagTypes.size(); ++i) {
 					ComponentType type = tagTypes[i];
@@ -2856,7 +2848,7 @@ namespace Editor {
 		if (!prefab) return;
 
 		// Get all entities in the current scene
-		const std::vector<Entity>& entities = sceneMgr.GetEntitiesInScene(sceneMgr.GetActiveScene().name);
+		const std::vector<Entity>& entities = sceneMgr.GetEntitiesInScene(sceneMgr.GetActiveScene());
 
 		for (const Entity& entity : entities) {
 			// Check if entity name matches prefab name

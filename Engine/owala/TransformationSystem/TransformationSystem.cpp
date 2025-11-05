@@ -5,6 +5,7 @@
 #include <cmath>
 #include <iostream>
 #include "OwalaTime.h"
+#include "SceneManager.h"
 
 namespace Framework {
 
@@ -114,9 +115,8 @@ namespace Framework {
             Matrix3x3 rotationMat = Transformation::CreateRotationMatrix(rotationIncrement);
 
             // Rotate all entities with RotationFlag around world origin (0,0)
-            for (const Entity& entity : entityMgr.GetAllEntitiesWithComponent(RotationFlagType)) {
+            for (const Entity& entity : SceneManager::GetInstance().GetEntitiesInSceneWithComponents(SceneManager::GetInstance().GetActiveScene(), {RotationFlagType})) {
                 if (!entityMgr.HasComponent(entity, PositionType)) continue;
-                if (!entityMgr.HasComponent(entity, ActiveTagType)) continue;
 
                 Vector2D originalPos = entityMgr.GetComponent<Position>(entity).Pos;
                 entityMgr.GetComponent<Position>(entity).Pos = rotationMat * originalPos;
@@ -130,8 +130,7 @@ namespace Framework {
             }
 
             // Reset grounded state for player after rotation
-            for (const Entity& entity : entityMgr.GetAllEntitiesWithComponent(PlayerStateType)) {
-                if (!entityMgr.HasComponent(entity, ActiveTagType)) continue;
+            for (const Entity& entity : SceneManager::GetInstance().GetEntitiesInSceneWithComponents(SceneManager::GetInstance().GetActiveScene(), {PlayerStateType})) {
                 PlayerState& state = entityMgr.GetComponent<PlayerState>(entity);
                 state.isGrounded = true;
             }
@@ -177,15 +176,12 @@ namespace Framework {
         EntityManager entityMgr(*ecs_);
 
         // Update standard entities with position and rotation
-        for (const Entity& entity : entityMgr.GetAllEntitiesWithComponent(PositionType)) {
-            if (!entityMgr.HasComponent(entity, ActiveTagType)) continue;
-            if (!entityMgr.HasComponent(entity, RotationFlagType)) continue;
+        for (const Entity& entity : SceneManager::GetInstance().GetEntitiesInSceneWithComponents(SceneManager::GetInstance().GetActiveScene(), {PositionType, RotationFlagType})) {
             UpdateEntityTransform(entity);
         }
 
         // Handle scaling platforms separately
-        for (const Entity& entity : entityMgr.GetAllEntitiesWithComponent(ScalingPlatformComponentType)) {
-            if (!entityMgr.HasComponent(entity, ActiveTagType)) continue;
+        for (const Entity& entity : SceneManager::GetInstance().GetEntitiesInSceneWithComponents(SceneManager::GetInstance().GetActiveScene(), {ScalingPlatformComponentType})) {
 
             ScalingPlatformComponent& scalingComp =
                 entityMgr.GetComponent<ScalingPlatformComponent>(entity);

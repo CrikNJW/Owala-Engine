@@ -131,10 +131,10 @@ namespace Framework {
         // --- SCENE SWITCH ---
         if (KeyPressed(Key::N)) {
             SceneManager& sceneMgr = SceneManager::GetInstance();
-            auto nextScene = sceneMgr.GetActiveScene().sceneIndex == 1 ?
+            const SceneAsset& nextScene = sceneMgr.GetActiveScene().sceneIndex == 1 ?
                 sceneMgr.GetSceneAt(2) :
                 sceneMgr.GetSceneByName("Test Scene");
-            sceneMgr.LoadScene(nextScene.name);
+            sceneMgr.LoadScene(nextScene, LoadSceneMode::Additive);
         }
 
         // FAKE PLAYER SWITCH ANIMATIONS

@@ -50,10 +50,9 @@ namespace Framework {
             check(r, "System::update");
         }
 
-        for (const Entity& entity : entityMgr.GetAllEntitiesWithComponent(AudioComponentType)) {
-
-			// Check if Entity is active in the scene. Loads if active.
-			if (!entityMgr.HasComponent(entity, ActiveTagType)) continue;
+        SceneManager& sceneMgr = SceneManager::GetInstance();
+        for (const Entity& entity : sceneMgr.GetEntitiesInScene(sceneMgr.GetActiveScene())) {
+            if (!entityMgr.HasComponent(entity, AudioComponentType)) continue;
             // Check if entity is tied to a button
 			if (entityMgr.HasComponent(entity, ButtonType)) {
                 continue; //Skip button entities, handle separately.

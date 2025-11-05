@@ -13,16 +13,16 @@
 #include "WindowsSystem.h" // Include for glfwGetKey
 #include <GLFW/glfw3.h>   // Include for key codes
 #include "OwalaTime.h"
+#include "SceneManager.h"
 
 namespace Framework {
 
     void AnimationSystem::Update() {
 		EntityManager entityMgr(*entityStorage_);
+		SceneManager& sceneMgr = SceneManager::GetInstance();
         // Loop through each entity that with AnimationComponent
-		for (const Entity& entity : entityMgr.GetAllEntitiesWithComponent(AnimationComponentType)) {
-			if (!entityMgr.HasComponent(entity, ActiveTagType)) continue; // Skip if entity is not active
-			if (!entityMgr.HasComponent(entity, TextureComponentType)) continue; // Skip if entity does not have TextureComponent
-			if (!entityMgr.HasComponent(entity, AnimationComponentType)) continue; // Skip if entity does not have AnimationComponent
+		for (const Entity& entity : sceneMgr.GetEntitiesInScene(sceneMgr.GetActiveScene())) {
+			if (!entityMgr.HasComponents(entity, TextureComponentType, AnimationComponentType)) continue;
 			
 			AnimationComponent& animationComponent = entityMgr.GetComponent<AnimationComponent>(entity);
 			TextureComponent& textureComponent = entityMgr.GetComponent<TextureComponent>(entity);

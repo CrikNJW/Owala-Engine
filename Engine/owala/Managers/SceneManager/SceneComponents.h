@@ -25,7 +25,10 @@ namespace Framework {
 	// Tag to indicate that this entity should persist across scene changes
     struct PersistentTag {};
 
+    // Transient Tag to indicate that the persistent entity has been loaded and will not be destroyed when scene changes. \brief DO NOT SERIALIZE THIS
+    struct LoadedPersistentTag {};
+
     // Tag to indicate that this entity is to be loaded in the scene
-    struct ActiveTag {};
+    struct HiddenTag {};
 
 } // namespace Framework

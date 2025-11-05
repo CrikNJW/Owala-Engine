@@ -83,20 +83,20 @@ namespace Framework {
         contacts_.clear();
 
 		EntityManager entityMgr(*ecs_);
+        SceneManager& sceneMgr = SceneManager::GetInstance();
+        const SceneAsset& currentScene = sceneMgr.GetActiveScene();
 
         // Reset player state (assume not grounded until a collision)
-        for (const Entity& entity : entityMgr.GetAllEntitiesWithComponent(PlayerStateType)) {
-            // Check if Player is active in the scene. Updates state if active.
-            if (!entityMgr.HasComponent(entity, ActiveTagType)) continue;
+        for (const Entity& entity : sceneMgr.GetEntitiesInScene(currentScene)) {
+            if (!entityMgr.HasComponent(entity, PlayerStateType)) continue;
 
             PlayerState& state = entityMgr.GetComponent<PlayerState>(entity);
             state.isGrounded = false;
         }
 
         // Apply forces (only gravity for now)
-        for (const Entity& entity : entityMgr.GetAllEntitiesWithComponent(RigidBodyType)) {
-            // Check if Entity is active in the scene. Handle Physics if active.
-            if (!entityMgr.HasComponent(entity, ActiveTagType)) continue;
+        for (const Entity& entity : sceneMgr.GetEntitiesInScene(currentScene)) {
+            if (!entityMgr.HasComponent(entity, RigidBodyType)) continue;
 
 			RigidBody& body = entityMgr.GetComponent<RigidBody>(entity);
 
@@ -115,7 +115,9 @@ namespace Framework {
         ResolveCollisions(dt);
 
         // Clear all forces for the next frame
-        for (const Entity& entity : entityMgr.GetAllEntitiesWithComponent(RigidBodyType)) {
+        for (const Entity& entity : sceneMgr.GetEntitiesInScene(currentScene)) {
+            if (!entityMgr.HasComponent(entity, RigidBodyType)) continue;
+
             RigidBody& body = entityMgr.GetComponent<RigidBody>(entity);
             body.Force = Vector2D::Zero();
         }
@@ -127,11 +129,10 @@ namespace Framework {
     void PhysicsSystem::Integrate(float dt) {
 		EntityManager entityMgr(*ecs_);
 
-        for (const Entity& entity : entityMgr.GetAllEntitiesWithComponent(RigidBodyType)) {
-            // Check if Entity is active in the scene. Handle Physics if active.
-            if (!entityMgr.HasComponent(entity, ActiveTagType)) continue;
+        for (const Entity& entity : SceneManager::GetInstance().GetEntitiesInScene(SceneManager::GetInstance().GetActiveScene())) {
+            if (!entityMgr.HasComponent(entity, RigidBodyType)) continue;
 
-            if (entityMgr.HasComponent(entity, PositionType) && entityMgr.HasComponent(entity, VelocityType)) {
+            if (entityMgr.HasComponents(entity, PositionType, VelocityType)) {
 				RigidBody& body = entityMgr.GetComponent<RigidBody>(entity);
 				Position& pos = entityMgr.GetComponent<Position>(entity);
 				Velocity& vel = entityMgr.GetComponent<Velocity>(entity);
@@ -232,7 +233,7 @@ namespace Framework {
     // ----------------------------------------------------------------------------
     void PhysicsSystem::ResolveCollisions(float dt) {
 		EntityManager entityMgr(*ecs_);
-        std::vector<Entity> allColliders = entityMgr.GetAllEntitiesWithComponents(AABBColliderType, ActiveTagType, PositionType);
+        std::vector<Entity> allColliders = SceneManager::GetInstance().GetEntitiesInSceneWithComponents(SceneManager::GetInstance().GetActiveScene(), {AABBColliderType, PositionType});
 
         // --- Check Entity Count OR DEBUG TOGGLE ---
         if (forceNarrowPhase_ || allColliders.size() > maxCollidableEntities) {

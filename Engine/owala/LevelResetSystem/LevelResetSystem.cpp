@@ -23,7 +23,6 @@ namespace Framework {
     LevelResetSystem::LevelResetSystem(EntityStorage& ecs, TransformationSystem& transSys) : ecs_(ecs), transformationSys_(transSys)
     {
         // Player Signature
-        playerSig.set(ActiveTagType);
         playerSig.set(PlayerTagType);
         playerSig.set(PositionType);
         playerSig.set(VelocityType);
@@ -34,17 +33,14 @@ namespace Framework {
         playerSpawnPtSig.set(SceneOwnedType);
 
         // Platform signatures
-        trapPlatformSig.set(ActiveTagType);
         trapPlatformSig.set(TrapPlatformComponentType);
         trapPlatformSig.set(PositionType);
         trapPlatformSig.set(RotationFlagType);
 
-        scalingPlatformSig.set(ActiveTagType);
         scalingPlatformSig.set(ScalingPlatformComponentType);
         scalingPlatformSig.set(PositionType);
         scalingPlatformSig.set(RotationFlagType);
     
-        basicPlatformSig.set(ActiveTagType);
         basicPlatformSig.set(PlatformTagType);
         basicPlatformSig.set(PositionType);
 

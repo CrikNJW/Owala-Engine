@@ -37,10 +37,7 @@ namespace Framework {
 
 		EntityManager entityMgr(*entityStorage_); // To access entity creation/destruction if needed
 		// Loop through each entity that is in the playerTag map
-		for (const Entity& entity : entityMgr.GetAllEntitiesWithComponent(PlayerTagType)) {
-            // Check if Player Entity is active in the scene. Handle player controller if active.
-            if (!entityMgr.HasComponent(entity, ActiveTagType)) continue;
-
+        for (const Entity& entity : SceneManager::GetInstance().GetEntitiesInSceneWithComponents(SceneManager::GetInstance().GetActiveScene(), {PlayerTagType})) {
 
             // We need a RigidBody, Velocity, and PlayerState to control the player
             if (entityMgr.HasComponent(entity, VelocityType) && entityMgr.HasComponent(entity, PlayerStateType) && entityMgr.HasComponent(entity, AnimationComponentType)) {

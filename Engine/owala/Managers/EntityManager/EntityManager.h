@@ -42,6 +42,9 @@ namespace Framework {
 
 		// Checks if the specified entity has the specified component type attached to it. Returns true if the component is present, false otherwise.
 		bool HasComponent(Entity entity, ComponentType componentType) const;
+		// Checks if the specified entity has the specified component types attached to it. Returns true if the components are present, false otherwise.
+		template <typename... Args>
+		bool HasComponents(Entity entity, Args... componentTypes) const;
 		// Adds a component of type T to the specified entity. The Component must be a valid component type defined in Components.h
 		template <typename T>
 		void AddComponent(Entity entity, const T& component) {
@@ -124,6 +127,8 @@ namespace Framework {
 		// Gets all entities that have the specified component type attached to them.
 		std::vector<Entity> GetAllEntitiesWithComponent(ComponentType componentType) const;
 		// Gets all entities that have all the specified component types attached to them. (Multiple component support)
+		std::vector<Entity> GetAllEntitiesWithComponents(std::initializer_list<ComponentType> componentTypes) const;
+		// Gets all entities that have all the specified component types attached to them. (Multiple component support)
 		template<typename... Args>
 		std::vector<Entity> GetAllEntitiesWithComponents(Args... componentTypes) const;
 		// Get entity signatures
@@ -156,6 +161,20 @@ namespace Framework {
 		// Removes a component of type T from the specified entity. The Component must be a valid component type defined in Components.h
 		//void RemoveComponent(Entity entity, ComponentType componentType);
 	};
+
+	template<typename... Args>
+	bool EntityManager::HasComponents(Entity entity, Args... componentTypes) const {
+		// Create the required signature bitset
+		ComponentSignature requiredSignature;
+
+		// This sets a bit for each component type passed in
+		(requiredSignature.set(static_cast<size_t>(componentTypes)), ...);
+
+		std::unordered_map<Entity, ComponentSignature>::iterator it = ecs.entitySignatures.find(entity);
+		if (it == ecs.entitySignatures.end()) return false; // Entity doesn't exist
+
+		return (it->second & requiredSignature) == requiredSignature;
+	}
 
 	template<typename... Args>
 	std::vector<Entity> EntityManager::GetAllEntitiesWithComponents(Args... componentTypes) const {

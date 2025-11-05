@@ -37,7 +37,8 @@ namespace Framework {
 		bool mouseDown = inputSystem_->MouseDown(InputSystem::MouseButton::Left);
 
 		// Loop through all active entities with Button, Position and AABB
-		for (const Entity& button : entityMgr.GetAllEntitiesWithComponents(ButtonType, PositionType, TextureComponentType, ActiveTagType)){
+		SceneManager& sceneMgr = SceneManager::GetInstance();
+		for (const Entity& button : sceneMgr.GetEntitiesInSceneWithComponents(sceneMgr.GetActiveScene(), {PositionType, TextureComponentType, ButtonType})) {
 			Button& buttonComponent = entityMgr.GetComponent<Button>(button);
 			Position& position = entityMgr.GetComponent<Position>(button);
 			TextureComponent& tex = entityMgr.GetComponent<TextureComponent>(button);

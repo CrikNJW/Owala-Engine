@@ -57,7 +57,6 @@ namespace Framework {
 		entityMgr.AddComponent(fake_player, Position{ position });  // Use grid position
 		entityMgr.AddComponent(fake_player, TextureComponent{ textureKey, randomScale });
 		entityMgr.AddComponent(fake_player, AnimationComponent{ AnimationState::IDLE });
-		entityMgr.AddComponent(fake_player, ActiveTag{});  // Critical for rendering
 
 		// Return the entity ID of the fake player
 		return fake_player;

@@ -277,6 +277,9 @@ namespace Editor {
 		void Update() override;
 		void Shutdown() override;
 
+		/* Getters */
+		bool IsPlaying() const { return isGamePlaying; }
+
 		// Converts world - space coordinates to ImGui screen - space
 		// function that accepts a specific camera ID for movement
 		ImVec2 WorldToImGuiScreen(const Vector2D& worldPos, Entity cameraID);

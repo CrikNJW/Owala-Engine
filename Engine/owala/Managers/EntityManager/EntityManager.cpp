@@ -133,7 +133,8 @@ namespace Framework {
 		case ComponentType::EnemyTagType: ; break;
 		case ComponentType::SceneOwnedType: AddComponent<SceneOwned>(entity, SceneOwned{}); break;
 		case ComponentType::PersistentTagType:
-		case ComponentType::ActiveTagType: break;
+		case ComponentType::LoadedPersistentTagType:
+		case ComponentType::HiddenTagType: break;
 		case ComponentType::GUITagType: break;
 
 		default:
@@ -173,7 +174,8 @@ namespace Framework {
 			case EnemyTagType:; break;
 			case SceneOwnedType: ecs.sceneOwned.erase(entity); break;
 			case PersistentTagType:
-			case ActiveTagType: break;
+			case LoadedPersistentTagType:
+			case HiddenTagType: break;
 			case GUITagType: break;
 			default: 
 				Logger::Get().Error(DebugType::GameManager) << "AddComponent: Unsupported ComponentType " << static_cast<int>(componentType);
@@ -191,7 +193,8 @@ namespace Framework {
 		case ComponentType::BackgroundTagType:
 		case ComponentType::EnemyTagType:
 		case ComponentType::PersistentTagType:
-		case ComponentType::ActiveTagType:
+		case ComponentType::LoadedPersistentTagType:
+		case ComponentType::HiddenTagType:
 		case ComponentType::GUITagType:
 			return true;
 		default:
@@ -212,6 +215,26 @@ namespace Framework {
 		std::vector<Entity> entities;
 		for (const auto& [entity, signature] : ecs.entitySignatures) {
 			if (signature.test(componentType)) {
+				entities.push_back(entity);
+			}
+		}
+		return entities;
+	}
+
+	std::vector<Entity> EntityManager::GetAllEntitiesWithComponents(std::initializer_list<ComponentType> componentTypes) const {
+		// Create the required signature bitset
+		ComponentSignature requiredSignature;
+
+		// This sets a bit for each component type passed in
+		for (ComponentType componentType : componentTypes) {
+			(requiredSignature.set(static_cast<size_t>(componentType)));
+		}
+
+		std::vector<Entity> entities;
+		for (const auto& [entity, entitySignature] : ecs.entitySignatures) {
+
+			// Check if the entity's signature includes all bits in the required signature
+			if ((entitySignature & requiredSignature) == requiredSignature) {
 				entities.push_back(entity);
 			}
 		}

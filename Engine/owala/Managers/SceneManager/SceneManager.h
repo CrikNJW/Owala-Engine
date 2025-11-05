@@ -17,6 +17,13 @@
 #include "EntityStorage.h"
 #include "SceneComponents.h"
 
+#include <unordered_set>
+#ifdef BUILD_EDITOR
+namespace Editor {
+	class Editor; // Forward Declaration
+}
+#endif
+
 namespace SceneManagement {
 	using SceneGUID = unsigned int;
 
@@ -39,6 +46,11 @@ namespace SceneManagement {
 		bool isPopulated = false; // Indicate if it has been populated with asset file data
 		bool IsValid() const { return sceneIndex != 0; };
 	};
+
+	enum class LoadSceneMode : uint8_t {
+		Single = 0,
+		Additive = 1
+	};
 }
 
 namespace Framework {
@@ -55,7 +67,10 @@ namespace Framework {
 		SceneGUID nextScene_ = 0; // Index of the next scene to be loaded
 
 		EntityStorage* entityStorageRef_ = nullptr;
+
+		/* Scenes Storage */
 		std::unordered_map<SceneGUID, SceneAsset> scenes_; // Storage for all created scenes, mapped by their unique GUID.
+		std::unordered_set<SceneGUID> runtimeLoadedScenes_;
 
 		SceneManager(); // Private so no one can construct the SceneManager, only the getInstance function will create the one and only one.
 		~SceneManager() = default;
@@ -66,6 +81,7 @@ namespace Framework {
 
 		// Internal Helpers
 		SceneAsset* GetSceneAssetMutable(SceneGUID sceneIndex);
+		bool IsInPlayMode() const;
 	public:
 		// Singletons should not be cloneable or assignable.
 		SceneManager(const SceneManager&) = delete;
@@ -91,16 +107,20 @@ namespace Framework {
 		const SceneAsset& GetSceneAt(const SceneGUID sceneIndex, bool silenceError = false) const;
 		// Gets the currently active scene. If no scene is active, returns an invalid SceneAsset object.
 		const SceneAsset& GetActiveScene() const;
-		// Loads the specified scene and marks all entities belonging to that scene as active for the Render and GameSystem. Also marks persistent entities.
-		void LoadScene(const std::string& sceneName);
-		// Loads the specified scene and marks all entities belonging to that scene as active for the Render and GameSystem. Also marks persistent entities.
-		// Overloaded Function: Uses the ID of the scene instead.
-		void LoadScene(const SceneGUID sceneIndex);
-		// Loads the specified scene and marks all entities belonging to that scene as active for the Render and GameSystem. Also marks persistent entities.
-		// Overlaoded Function: Uses the Scene Object instead.
-		void LoadScene(const SceneAsset& scene);
-		// Unloads the current scene.
-		void UnloadScene(); // Currently just clears all active tags. Future implementation may make use of the scene param to destroy entities belonging to that scene.
+		// Loads the specified scene by it's name.
+		void LoadScene(const std::string& sceneName, LoadSceneMode mode);
+		// Loads the specified scene by it's ID.
+		void LoadScene(const SceneGUID sceneIndex, LoadSceneMode mode);
+		// Loads the specified scene.
+		void LoadScene(const SceneAsset& scene, LoadSceneMode mode);
+		// Destroys all Entities associated with the given Scene and removes the Scene from the SceneManager.
+		void UnloadScene(const std::string& sceneName);
+		// Destroys all Entities associated with the given Scene and removes the Scene from the SceneManager.
+		void UnloadScene(const SceneGUID sceneIndex);
+		// Destroys all Entities associated with the given Scene and removes the Scene from the SceneManager.
+		void UnloadScene(const SceneAsset& scene);
+		// Set the scene to be active. \return (bool) - Returns false if the Scene is not loaded yet.
+		bool SetActiveScene(const SceneAsset& scene);
 		// Attaches the SceneOwned component to the entity, indicating which scene it belongs to. Uses name of scene in string.
 		void AddEntityToScene(const std::string& sceneName, Entity entity);
 		// Attach the SceneOwned component to the entity, indicating which scene it belongs to. 
@@ -112,7 +132,9 @@ namespace Framework {
 		// Sets or unsets the PersistentTag on the entity, indicating if it should persist across scene changes. Note that the entity must already have a SceneOwned component to be set as persistent.
 		void SetEntityAsPersistent(Entity entity, bool shouldPersist = true);
 		// Retrieves a list of all entities that belong to the specified scene, if the scene exists.
-		std::vector<Entity> GetEntitiesInScene(const std::string& scene) const;
+		std::vector<Entity> GetEntitiesInScene(const SceneAsset& scene) const;
+		// Retrieves a list of all entities with components that belong to the specified scene, if the scene exists.
+		std::vector<Entity> GetEntitiesInSceneWithComponents(const SceneAsset& scene, std::initializer_list<ComponentType> componentTypes) const;
 		// scenes_ map getter
 		const std::unordered_map<SceneGUID, SceneAsset>& GetAllSceneAssets() const;
 
@@ -124,5 +146,13 @@ namespace Framework {
 		/* DEBUG FUNCTIONS */
 		void PrintAllScenesInfo() const;
 		void PrintCurrentSceneInfo() const;
+
+#ifdef BUILD_EDITOR
+	private:
+		Editor::Editor* editorRef_ = nullptr;
+		std::unordered_set<SceneGUID> editorLoadedScenes_;
+	public:
+		void SetEditorRef(Editor::Editor& editor) { editorRef_ = &editor; }
+#endif
 	};
 }

@@ -344,7 +344,7 @@ namespace Framework {
 			rapidjson::Value tagVal(Serialization::PERSISTENT_TAG, alloc);
 			tagsList.PushBack(tagVal, alloc);
 		}
-		if (entityMgr.HasComponent(entity, ComponentType::ActiveTagType)) {
+		if (entityMgr.HasComponent(entity, ComponentType::HiddenTagType)) {
 			rapidjson::Value tagVal(Serialization::ACTIVE_TAG, alloc);
 			tagsList.PushBack(tagVal, alloc);
 		}
@@ -906,7 +906,7 @@ namespace Framework {
 					entityMgr.AddComponent<PersistentTag>(loadedEntity, PersistentTag{});
 				}
 				else if (tag == Serialization::ACTIVE_TAG) {
-					entityMgr.AddComponent<ActiveTag>(loadedEntity, ActiveTag{});
+					entityMgr.AddComponent<HiddenTag>(loadedEntity, HiddenTag{});
 				}
 				else if (tag == Serialization::GUI_TAG) {
 					entityMgr.AddComponent<GUITag>(loadedEntity, GUITag{});

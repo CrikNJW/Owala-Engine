@@ -3,7 +3,7 @@
 
 namespace Framework {
 	// ---------------------------------------------------------------------------
-	// Time Capturing
+	// Setup
 	// ---------------------------------------------------------------------------
 	void Time::Initialize() noexcept {
 		now = prev = clock::now();
@@ -25,11 +25,11 @@ namespace Framework {
 	}
 
 	void Time::EndFrame() noexcept {
-		// No-op for now
+		// Empty by design
 	}
 
 	// ---------------------------------------------------------------------------
-	// Time Capturing
+	// Time Calculations
 	// ---------------------------------------------------------------------------
 	int Time::ConsumeFixedSteps() noexcept {
 		if (fixedDt <= 0.0f) return 0;

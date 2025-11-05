@@ -115,6 +115,7 @@ namespace Framework {
 	#ifdef BUILD_EDITOR
 	void GameManager::RegisterEditor(Editor::Editor& editor) {
 		editor_ = &editor;
+		SceneManager::GetInstance().SetEditorRef(editor);
 	}
 	#endif
 
@@ -167,7 +168,7 @@ namespace Framework {
 		//RegisterScriptToScene(testScene, TestScene::Initialize, TestScene::Update, TestScene::Free);
 
 		Logger::Get().Info(DebugType::GameManager) << "Default Scene: " << sceneMgr.GetSceneAt(testScene).name << ", GUID: " << testScene << std::endl;
-		sceneMgr.LoadScene(sceneMgr.GetSceneAt(testScene));
+		sceneMgr.LoadScene(sceneMgr.GetSceneAt(testScene), LoadSceneMode::Single);
 		sceneCallbacks_[testScene].fpInitialize();
 	}
 

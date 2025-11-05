@@ -53,8 +53,9 @@ namespace Framework {
 
         std::map<BatchKey, std::vector<BatchedSprite>> batches;
 
+        SceneManager& sceneMgr = SceneManager::GetInstance();
         // Iterate all entities that have a sprite component
-        for (const Entity& entity : entityMgr.GetAllEntitiesWithComponents(TextureComponentType, PositionType, ActiveTagType)) {
+        for (const Entity& entity : sceneMgr.GetEntitiesInSceneWithComponents(sceneMgr.GetActiveScene(), {TextureComponentType, PositionType})) {
             TextureComponent& sprite = entityMgr.GetComponent<TextureComponent>(entity);
             if (sprite.textureKey.empty()) continue;
 
@@ -177,7 +178,7 @@ namespace Framework {
         }
 
         // --- Render Text (always on top) ---
-        for (const Entity& entity : entityMgr.GetAllEntitiesWithComponents(TextComponentType, PositionType, ActiveTagType)) {
+        for (const Entity& entity : sceneMgr.GetEntitiesInSceneWithComponents(sceneMgr.GetActiveScene(), {TextComponentType, PositionType})) {
             const TextComponent& component = entityMgr.GetComponent<TextComponent>(entity);
             if (component.fontKey.empty()) continue;
 
