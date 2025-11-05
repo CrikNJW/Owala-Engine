@@ -28,7 +28,6 @@ namespace Framework {
         playerSig.set(VelocityType);
         playerSig.set(RotationFlagType);
 
-        playerSpawnPtSig.set(ActiveTagType);
         playerSpawnPtSig.set(SpawnPointType);
         playerSpawnPtSig.set(SceneOwnedType);
 
