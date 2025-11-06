@@ -25,6 +25,7 @@
 #include "rapidjson/filewritestream.h"
 #include <iostream>
 #include <fstream>
+#include <filesystem>
 
 #include "SceneManager.h"
 #include "Animation.h"
@@ -38,8 +39,12 @@ using namespace rapidjson;
 namespace Framework {
 	class FileIOSystem {
 	public:
+		// --- Helper functions ---
 		// Sanitizes and concats the given string (for now just replacing spaces with underscores)
 		static string SanitizeFileName(const string& name);
+		// Returns file path from a specific component in the full file path. (e.g. if you want the filepath string from "Assets" onwards only)
+		static string GetPathFromComponent(const filesystem::path& fullPath, const string& componentName);
+
 		
 		// Read & Write helpers
 		static const bool ReadFile(const string& fileName, Document& doc);

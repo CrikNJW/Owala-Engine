@@ -17,9 +17,9 @@
  *********************************************************************/
 
 #include "FileUtility.h"
-#include <filesystem>
 
 namespace Framework {
+	// Helper functions
 	std::string FileIOSystem::SanitizeFileName(const std::string& name) {
 		std::string sanitized_name = name;
 		std::transform(sanitized_name.begin(), sanitized_name.end(), sanitized_name.begin(),
@@ -28,6 +28,29 @@ namespace Framework {
 		std::replace(sanitized_name.begin(), sanitized_name.end(), ' ', '_');
 
 		return sanitized_name;
+	}
+
+	std::string FileIOSystem::GetPathFromComponent(const std::filesystem::path& fullPath, const std::string& componentName) {
+		std::filesystem::path relativePath;
+		bool found = false;
+
+		// Iterate over each component of the path
+		for (const auto& component : fullPath) {
+			// Convert the component to a string for comparison
+			std::string currentComponentName = component.string();
+
+			if (found) {
+				// If component was already found, append the rest of the path
+				relativePath /= component;
+			}
+			else if (currentComponentName == componentName) {
+				// Found the starting component, include it and set the flag
+				relativePath /= component;
+				found = true;
+			}
+		}
+
+		return relativePath.string();
 	}
 
 	const bool FileIOSystem::ReadFile(const string& fileName, Document& doc) {

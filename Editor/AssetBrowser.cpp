@@ -18,6 +18,7 @@
 #pragma once
 #include "AssetBrowser.h"
 #include "Logger.h"
+#include "FileUtility.h"
 
 using namespace Framework;
 
@@ -486,23 +487,59 @@ void AssetBrowser::RenderAssetEditor(std::vector<fs::path>& droppedFiles)
                 {
                     try
                     {
+                        bool isImage = ext == ".png" || ext == ".jpg" || ext == ".jpeg";
+
                         // Unload the texture from resource manager first
-                        if (ext == ".png" || ext == ".jpg" || ext == ".jpeg")
+                        if (isImage)
                         {
                             resourceManager_->unload<Texture>(selectedAsset_.string());
                         }
 
 						// Copy the replacement file over the original in the selected asset path
                         fs::copy(replacementFilePath_, selectedAsset_, fs::copy_options::overwrite_existing);
-                        
 
+                        
 
                         Logger::Get().Info(DebugType::Editor)
                             << "Successfully replaced: " << selectedAsset_.string()
                             << " with " << replacementFilePath_.string() << std::endl;
 
+                        // Check if is valid asset file type and root Assets folder exists and do replacement
+                        bool isValidAsset = isImage || ext == ".ttf" || ext == ".tex" || ext == ".wav" || ext == ".ogg" || ext == ".txt";
+
+                        if (isValidAsset && fs::exists(FileIOKeys::ROOT_ASSETS_FOLDER)) {
+                            std::string relativeReplacePath = FileIOSystem::GetPathFromComponent(replacementFilePath_, "Assets");
+                            std::string relativeSelectPath = FileIOSystem::GetPathFromComponent(selectedAsset_, "Assets");
+
+                            if (!relativeReplacePath.empty() && !relativeSelectPath.empty()) {
+                                std::string repPath = FileIOKeys::ROOT_FOLDER_PREFIX + relativeReplacePath;
+                                std::string selPath = FileIOKeys::ROOT_FOLDER_PREFIX + relativeSelectPath;
+                                fs::copy(repPath, selPath, fs::copy_options::overwrite_existing);
+                   
+                                Logger::Get().Info(DebugType::Editor)
+                                << "Successfully replaced: " << selPath
+                                << " with " << repPath << std::endl;
+                            }
+                        }
+                        
+                        // Check if is json and root Data folder exists and do replacement
+                        if (ext == ".json" && fs::exists(FileIOKeys::ROOT_DATA_FOLDER)) {
+                            std::string relativeReplacePath = FileIOSystem::GetPathFromComponent(replacementFilePath_, "Data");
+                            std::string relativeSelectPath = FileIOSystem::GetPathFromComponent(selectedAsset_, "Data");
+
+                            if (!relativeReplacePath.empty() && !relativeSelectPath.empty()) {
+                                std::string repPath = FileIOKeys::ROOT_FOLDER_PREFIX + relativeReplacePath;
+                                std::string selPath = FileIOKeys::ROOT_FOLDER_PREFIX + relativeSelectPath;
+                                fs::copy(repPath, selPath, fs::copy_options::overwrite_existing);
+
+                                Logger::Get().Info(DebugType::Editor)
+                                    << "Successfully replaced: " << selPath
+                                    << " with " << repPath << std::endl;
+                            }
+                        }
+
                         // Reload the texture if it's an image
-                        if (ext == ".png" || ext == ".jpg" || ext == ".jpeg")
+                        if (isImage)
                         {
                             if (resourceManager_->loadTexture(selectedAsset_.filename().string(), selectedAsset_.string()))
                             {
