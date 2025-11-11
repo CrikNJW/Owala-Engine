@@ -160,11 +160,16 @@ namespace Framework {
 		void BindGameFramebuffer() const;
 		void UnbindGameFramebuffer() const;
         unsigned GetGameTexture() const { return gameFramebuffer_ ? gameFramebuffer_->GetColorAttachment() : 0; };
+        void UpdateAspectRatio();
 
     private:
         WindowsSystem* win_ = nullptr;
         int screenWidth = 1920;
         int screenHeight = 1080;
+
+        float aspectRatio_ = 16.0f / 9.0f;
+        int uModelLoc_Tex_ = -1;            // Uniform location for model matrix
+        int uAspectRatioLoc_Tex_ = -1;      // Uniform location for aspect ratio
 
         // Colored triangle pipeline
         unsigned progCol_ = 0;

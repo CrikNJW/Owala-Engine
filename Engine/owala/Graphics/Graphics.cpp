@@ -71,11 +71,27 @@ namespace Framework {
     )";
 
     // Textured quad (pos + uv)
+    // Updated Texture Shader with Model Matrix and Aspect Ratio
     static const char* VS_TEX = R"(#version 330 core
     layout(location=0) in vec2 aPos;
     layout(location=1) in vec2 aUV;
+
+    uniform mat3 uModel;
+    uniform float uAspectRatio;
+
     out vec2 vUV;
-    void main(){ gl_Position = vec4(aPos, 0.0, 1.0); vUV = aUV; }
+
+    void main() {
+        // Apply model transformation
+        vec3 worldPos = uModel * vec3(aPos, 1.0);
+    
+        // Apply aspect ratio correction
+        vec2 screenPos = worldPos.xy;
+        screenPos.x /= uAspectRatio;
+    
+        gl_Position = vec4(screenPos, 0.0, 1.0);
+        vUV = aUV;
+    }
     )";
 
     static const char* FS_TEX = R"(#version 330 core
@@ -220,8 +236,6 @@ namespace Framework {
 
         // ----- Textured sprite pipeline -----
         progTex_ = linkProgram(VS_TEX, FS_TEX);
-        //progTex_ = linkProgramFromFiles("../Shaders/texture.vert", "../Shaders/texture.frag");
-
 
         glGenVertexArrays(1, &vaoTex_);
         glBindVertexArray(vaoTex_);
@@ -229,8 +243,6 @@ namespace Framework {
         glGenBuffers(1, &vboTex_);
         glBindBuffer(GL_ARRAY_BUFFER, vboTex_);
 
-        // Reserve enough for many sprites in one go:
-        // 6 verts * (x,y,u,v) * MAX_SPRITES
         const size_t bytes = sizeof(float) * 6 * 4 * MAX_SPRITES_DEFAULT;
         glBufferData(GL_ARRAY_BUFFER, bytes, nullptr, GL_DYNAMIC_DRAW);
 
@@ -239,7 +251,11 @@ namespace Framework {
         glEnableVertexAttribArray(1); // aUV
         glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, (void*)(sizeof(float) * 2));
 
+        // NEW: Get uniform locations for the new shader uniforms
         g_uTexLoc_Tex = glGetUniformLocation(progTex_, "uTex");
+        uModelLoc_Tex_ = glGetUniformLocation(progTex_, "uModel");
+        uAspectRatioLoc_Tex_ = glGetUniformLocation(progTex_, "uAspectRatio");
+
 
         // Pre-size batch CPU buffer to avoid realloc churn
         g_batchVerts.reserve(6 * 4 * 2048);
@@ -247,6 +263,7 @@ namespace Framework {
         // ----- Text rendering pipeline -----
         progText_ = linkProgram(VS_TEXT, FS_TEXT);
         //progText_ = linkProgramFromFiles("../Shaders/text.vert", "../Shaders/text.frag");
+        UpdateAspectRatio();  // Add this line
 
         glGenVertexArrays(1, &vaoText_);
         glBindVertexArray(vaoText_);
@@ -300,6 +317,11 @@ namespace Framework {
         glClear(GL_COLOR_BUFFER_BIT);
     }
 
+    void Graphics::UpdateAspectRatio() {
+        if (screenHeight > 0) {
+            aspectRatio_ = (float)screenWidth / (float)screenHeight;
+        }
+    }
     void Graphics::drawTriangle(const Vector2D& a, const Vector2D& b, const Vector2D& c,
         const Color& color) {
         const float verts[6] = { a.x, a.y, b.x, b.y, c.x, c.y };
@@ -380,33 +402,37 @@ namespace Framework {
     void Graphics::drawSprite(Texture& tex, const Vector2D& center,
         const Vector2D& halfSize, float rotation,
         const Vector2D& minUV, const Vector2D& maxUV) {
-        const float cx = center.x, cy = center.y;
-        const float hx = halfSize.x, hy = halfSize.y;
 
-        const float c = std::cos(rotation);
-        const float s = std::sin(rotation);
+        // Build 3x3 model matrix (translation * rotation * scale)
+        float c = std::cos(rotation);
+        float s = std::sin(rotation);
 
-        auto rot = [&](float x, float y) -> Vector2D {
-            return { cx + c * x - s * y, cy + s * x + c * y };
-            };
+        // Column-major order for OpenGL
+        float model[9] = {
+            c * halfSize.x,   s * halfSize.x,  0.0f,  // column 0
+           -s * halfSize.y,   c * halfSize.y,  0.0f,  // column 1  
+            center.x,         center.y,        1.0f   // column 2
+        };
 
-        Vector2D p0 = rot(-hx, -hy);
-        Vector2D p1 = rot(hx, -hy);
-        Vector2D p2 = rot(hx, hy);
-        Vector2D p3 = rot(-hx, hy);
-
+        // Standard quad vertices (-1 to +1) that will be transformed by model matrix
         const float verts[] = {
-            p0.x, p0.y,  minUV.x, minUV.y,
-            p1.x, p1.y,  maxUV.x, minUV.y,
-            p2.x, p2.y,  maxUV.x, maxUV.y,
+            -1.0f, -1.0f,  minUV.x, minUV.y,  // bottom-left
+             1.0f, -1.0f,  maxUV.x, minUV.y,  // bottom-right
+             1.0f,  1.0f,  maxUV.x, maxUV.y,  // top-right
 
-            p0.x, p0.y,  minUV.x, minUV.y,
-            p2.x, p2.y,  maxUV.x, maxUV.y,
-            p3.x, p3.y,  minUV.x, maxUV.y,
+            -1.0f, -1.0f,  minUV.x, minUV.y,  // bottom-left
+             1.0f,  1.0f,  maxUV.x, maxUV.y,  // top-right
+            -1.0f,  1.0f,  minUV.x, maxUV.y   // top-left
         };
 
         glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glUseProgram(progTex_);
+
+        // Set uniforms
+        glUniformMatrix3fv(uModelLoc_Tex_, 1, GL_FALSE, model);
+        glUniform1f(uAspectRatioLoc_Tex_, aspectRatio_);
+
         glBindVertexArray(vaoTex_);
         glBindBuffer(GL_ARRAY_BUFFER, vboTex_);
         glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(verts), verts);
@@ -457,9 +483,10 @@ namespace Framework {
     }
 
     void Graphics::drawSpriteBatchChunk(Texture tex, const std::vector<BatchedSprite>& sprites) {
-
         g_batchVerts.clear();
         g_batchVerts.reserve(sprites.size() * 6 * 4);
+
+        UpdateAspectRatio();
 
         for (const auto& s : sprites) {
             const float cx = s.topLeft.x + s.size.x * 0.5f;
@@ -470,8 +497,12 @@ namespace Framework {
             const float c = std::cos(s.rotation);
             const float q = std::sin(s.rotation);
 
+            // Apply aspect ratio correction to X coordinates only
             auto rot = [&](float x, float y) -> Vector2D {
-                return { cx + c * x - q * y, cy + q * x + c * y };
+                float screenX = cx + c * x - q * y;
+                float screenY = cy + q * x + c * y;
+                screenX /= aspectRatio_;  // Apply aspect ratio here
+                return { screenX, screenY };
                 };
 
             Vector2D p0 = rot(-hx, -hy);
@@ -489,8 +520,18 @@ namespace Framework {
                 p3.x, p3.y, s.minUV.x, s.maxUV.y
                 });
         }
-        drawSpriteBatchRaw(tex, g_batchVerts.data(), sprites.size());
 
+        // Use the simple shader (without model matrix) for batch rendering
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glUseProgram(progTex_);
+
+        // Set a simple identity model matrix and aspect ratio
+        float identity[9] = { 1,0,0, 0,1,0, 0,0,1 };
+        glUniformMatrix3fv(uModelLoc_Tex_, 1, GL_FALSE, identity);
+        glUniform1f(uAspectRatioLoc_Tex_, 1.0f); // Already applied manually above
+
+        drawSpriteBatchRaw(tex, g_batchVerts.data(), sprites.size());
     }
 
     void Graphics::drawSpriteBatchRaw(Texture tex, const float* interleavedXYUV, size_t spriteCount) {

@@ -56,7 +56,7 @@ namespace Framework {
             Camera& camera = entityMgr.GetComponent<Camera>(e);
 
             // Keep square coordinates — no aspect ratio scaling
-            camera.size.x = 2.0f * camera.zoom * camera.aspectRatio;
+            camera.size.x = 2.0f * camera.zoom;
             camera.size.y = 2.0f * camera.zoom;
 
             if (camera.targetEntity != 0 && entityMgr.HasComponent(camera.targetEntity, PositionType)) {
@@ -85,7 +85,7 @@ namespace Framework {
         Camera& camera = GetCamera(cameraEntity);
         Vector2D screenPos;
 
-        float halfW = camera.zoom * camera.aspectRatio;
+        float halfW = camera.zoom;
         float halfH = camera.zoom;
 
         screenPos.x = (worldPos.x - camera.position.x) / halfW;
@@ -105,7 +105,7 @@ namespace Framework {
         Camera& camera = GetCamera(cameraEntity);
         Vector2D worldPos;
 
-        float halfW = camera.zoom * camera.aspectRatio;
+        float halfW = camera.zoom;
         float halfH = camera.zoom;
 
         worldPos.x = camera.position.x + screenPos.x * halfW;
