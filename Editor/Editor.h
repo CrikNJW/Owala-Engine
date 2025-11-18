@@ -242,7 +242,7 @@ namespace Editor {
 		void ShowDebugVisualizationPanel();
 		void ShowPrefabEditor();
 		void ShowTilePalette();
-
+		void ShowRestartMenu(); //when player dies
 		// Popup Related
 		std::string popupMsg;
 

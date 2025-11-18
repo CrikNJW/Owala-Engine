@@ -24,6 +24,7 @@
 #include "EntityManager.h"
 #include "MessageBus.h"
 #include "GameMessages.h"
+#include <OwalaTime.h>
 
 namespace Framework {
     void PlayerSystem::Initialize() {
@@ -73,17 +74,21 @@ namespace Framework {
 
                 // Animation State Handling
 				AnimationState animState = AnimationState::IDLE; // Default to IDLE
-
-				if (state.isGrounded) {
+                
+                // player death state
+                if (state.isDead) { 
+                    animState = AnimationState::DEATH;                
+                }
+                else if (state.isGrounded) {
                     if (std::abs(vel.Vel.x) > 0.01f) { animState = AnimationState::RUNNING; } //If player is on ground and moving, set to running
                     else { animState = AnimationState::IDLE; } //If player is on ground and not moving, set to idle
 				}
 				else {
                     if (vel.Vel.y > 0.01f) { animState = AnimationState::JUMPING; } //If player is in air and moving upwards, set to jumping
                     else if (vel.Vel.y <= 0.0f) { animState = AnimationState::FALLING; } //If player is in air, at the point he is beginning to fall down or moving downwards, set to falling
-				}
-
-				animationComponent.currentState = animState;
+                }
+               
+                animationComponent.currentState = animState;
             }
         }
     }

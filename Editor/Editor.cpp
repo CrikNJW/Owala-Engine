@@ -506,7 +506,7 @@ namespace Editor {
 		if (settings.showGameViewport) ShowGameViewport();
 		ShowDebugVisualizationPanel(); 
 		if (isPrefabEditorOpen_) ShowPrefabEditor();
-
+		ShowRestartMenu(); // when player died, show restart menu
 		// Set editor play/edit mode
 		if (isTileEditorActive_ || isDraggingGameObj_ || !isGamePlaying) {
 			engine_->SetMode(EngineMode::Editor);
@@ -3423,5 +3423,87 @@ namespace Editor {
 
 		return bestCandidate;
 	}
+	void Editor::ShowRestartMenu() {
+		using namespace Framework;
+		EntityManager entityMgr(*(gameManager_->GetSystems().ecs_));
+		bool playerDead = false;
+		bool deathAnimationFinished = false;
+		Entity deadPlayerEntity;
 
+		for (const Entity& entity : entityMgr.GetAllEntitiesWithComponent(PlayerTagType)) {
+			if (!entityMgr.HasComponent(entity, ActiveTagType)) continue;
+			if (entityMgr.HasComponent(entity, PlayerStateType)) {
+				PlayerState& state = entityMgr.GetComponent<PlayerState>(entity);
+				if (state.isDead) {
+					playerDead = true;
+					deadPlayerEntity = entity;
+
+					// Check if death animation finished
+					if (entityMgr.HasComponent(entity, AnimationComponentType)) {
+						AnimationComponent& anim = entityMgr.GetComponent<AnimationComponent>(entity);
+						if (anim.currentState == AnimationState::DEATH && !anim.isPlaying) {
+							deathAnimationFinished = true;
+						}
+					}
+					break;
+				}
+			}
+		}
+
+		if (!playerDead || !deathAnimationFinished) return;
+
+		ImGui::SetNextWindowPos(gameViewportPos_);
+		ImGui::SetNextWindowSize(gameViewportSize_);
+
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.7f));
+
+		if (ImGui::Begin("RestartMenuOverlay", nullptr,
+			ImGuiWindowFlags_NoTitleBar |
+			ImGuiWindowFlags_NoResize |
+			ImGuiWindowFlags_NoMove |
+			ImGuiWindowFlags_NoScrollbar |
+			ImGuiWindowFlags_NoSavedSettings |
+			ImGuiWindowFlags_NoDocking |
+			ImGuiWindowFlags_NoInputs)) {
+
+			ImVec2 center = ImVec2(
+				gameViewportPos_.x + gameViewportSize_.x * 0.5f,
+				gameViewportPos_.y + gameViewportSize_.y * 0.5f
+			);
+
+			ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+
+			ImGui::BeginChild("RestartMenu", ImVec2(300, 150), true, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
+
+			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.2f, 0.2f, 1.0f));
+			ImGui::SetCursorPosX((300 - ImGui::CalcTextSize("YOU DIED").x) * 0.5f);
+			ImGui::Text("YOU DIED");
+			ImGui::PopStyleColor();
+
+			ImGui::Spacing();
+			ImGui::Separator();
+			ImGui::Spacing();
+
+			ImGui::SetCursorPosX(75.0f);
+			if (ImGui::Button("Restart Level", ImVec2(150, 40))) {
+				gameManager_->GetSystems().levelResetter_->RunReset();
+			}
+
+			ImGui::Spacing();
+
+			ImGui::SetCursorPosX(75.0f);
+			if (ImGui::Button("Quit to Menu", ImVec2(150, 40))) {
+				std::cout << "Quit to menu pressed" << std::endl;
+			}
+
+			ImGui::EndChild();
+			ImGui::End();
+		}
+
+		ImGui::PopStyleColor();
+		ImGui::PopStyleVar(2);
+
+	}
 }

@@ -30,6 +30,7 @@ namespace Framework {
         // Internal update methods for different platform types
         void UpdateTrapPlatforms();
         void UpdateScalingPlatforms();
+        void CheckPlayerDeathFromTraps();
 
     public:
         PlatformBehaviorSystem(EntityStorage& storage) : ecs_(&storage) {}

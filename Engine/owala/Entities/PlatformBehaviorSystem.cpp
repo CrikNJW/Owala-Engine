@@ -25,6 +25,7 @@
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
+#include <AABB_Collision.h>
 
 namespace Framework {
     /*!
@@ -35,6 +36,7 @@ namespace Framework {
     void PlatformBehaviorSystem::Update() {
         TriggerAllTraps();
         UpdateTrapPlatforms();
+        CheckPlayerDeathFromTraps();
         UpdateScalingPlatforms();
     }
 
@@ -79,6 +81,78 @@ namespace Framework {
                 if (currentVel.y != 0.0f) {
                     Vector2D fallVelocity = Vector2D(0.0f, -trapComp.fallSpeed);
                     entityMgr.GetComponent<Velocity>(entity).Vel = fallVelocity;
+                }
+            }
+        }
+    }
+
+    /*!
+    @brief      Checks if player was hit by a falling trap platform
+    @return     void
+*//*______________________________________________________________*/
+    void PlatformBehaviorSystem::CheckPlayerDeathFromTraps() {
+        EntityManager entityMgr(*ecs_);
+
+        // Get player
+        Entity playerEntity;
+        for (const Entity& entity : entityMgr.GetAllEntitiesWithComponent(PlayerTagType)) {
+            if (entityMgr.HasComponent(entity, ActiveTagType) && entityMgr.HasComponent(entity, PlayerStateType)) {
+                playerEntity = entity;
+                break;
+            }
+        }
+
+        if (playerEntity == 0) return;
+
+        PlayerState& playerState = entityMgr.GetComponent<PlayerState>(playerEntity);
+        if (playerState.isDead) return;
+
+        for (const Entity& trapEntity : entityMgr.GetAllEntitiesWithComponent(TrapPlatformComponentType)) {
+            TrapPlatformComponent& trapComp = entityMgr.GetComponent<TrapPlatformComponent>(trapEntity);
+
+            // Only check platforms that have been triggered (falling or fallen)
+            if (!trapComp.isTriggered) continue;
+
+            const Vector2D& playerPos = entityMgr.GetComponent<Position>(playerEntity).Pos;
+            const Vector2D& playerHalfSize = entityMgr.GetComponent<AABBCollider>(playerEntity).HalfSize;
+            const Vector2D& trapPos = entityMgr.GetComponent<Position>(trapEntity).Pos;
+            const Vector2D& trapHalfSize = entityMgr.GetComponent<AABBCollider>(trapEntity).HalfSize;
+
+            AABB_Bounds playerBounds = {
+                {playerPos.x - playerHalfSize.x, playerPos.y - playerHalfSize.y},
+                {playerPos.x + playerHalfSize.x, playerPos.y + playerHalfSize.y}
+            };
+
+            AABB_Bounds trapBounds = {
+                {trapPos.x - trapHalfSize.x, trapPos.y - trapHalfSize.y},
+                {trapPos.x + trapHalfSize.x, trapPos.y + trapHalfSize.y}
+            };
+
+            if (CollisionIntersection_RectRect_Static(playerBounds, trapBounds)) {
+                //checking to make sure the trap is above the player (falling down onto them)
+                float trapBottom = trapPos.y - trapHalfSize.y;
+                float playerTop = playerPos.y + playerHalfSize.y;
+
+                // Only kill if trap is above player
+                if (trapBottom >= playerTop) {
+                    playerState.isDead = true;
+
+                    if (entityMgr.HasComponent(playerEntity, VelocityType)) {
+                        entityMgr.GetComponent<Velocity>(playerEntity).Vel = Vector2D::Zero();
+                    }
+
+                    if (entityMgr.HasComponent(playerEntity, RigidBodyType)) {
+                        entityMgr.GetComponent<RigidBody>(playerEntity).SetMass(0.0f);
+                    }
+
+                    // Set death animation
+                    if (entityMgr.HasComponent(playerEntity, AnimationComponentType)) {
+                        entityMgr.GetComponent<AnimationComponent>(playerEntity).currentState = AnimationState::DEATH;
+                    }
+
+                    std::cout << "Player killed by falling trap platform!" << std::endl;
+
+                    break;
                 }
             }
         }
