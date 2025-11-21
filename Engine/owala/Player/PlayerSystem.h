@@ -5,7 +5,7 @@
  *      Ng Jing Wen (50%)
  * \secondary_author
  *		Lur Pei Hao Stanley (50%)
- *
+ *		Sitara Anil
  * \brief	Contains declaration and definitions of a Player System that
  *			updates the player entity's components.
  *
@@ -40,5 +40,11 @@ namespace Framework {
 		// Private variables
 		float moveSpeed = 2.0f;
 		float jumpHeight = 0.8f;
+
+		//player death
+		void CheckPlayerDeathFromTraps();
+		void CheckPlayerDeathFromEnemies();
+		void KillPlayer(Entity playerEntity, const std::string& killerType = "Unknown");
+		bool IsPlayerInAttackRange(Entity playerEntity, Entity enemyEntity, float attackRadius);
 	};
 } // namespace Framework

@@ -5,7 +5,7 @@
  *      Ng Jing Wen (50%)
  * \secondary_author
  *		Lur Pei Hao Stanley (50%)
- *
+ *      Sitara Anil
  * \brief	Contains Implementations of a Player System that
  *			updates the player entity's components.
  *
@@ -32,6 +32,8 @@ namespace Framework {
     }
 
 	void PlayerSystem::Update() {
+        CheckPlayerDeathFromTraps();
+        CheckPlayerDeathFromEnemies();
         // calculate jump vel based on height and gravity -  v = sqrt(2 * g * h).
         const float gravity = std::abs(physics_->gravity_.y);
         const float jumpVelocity = std::sqrt(2.0f * gravity * jumpHeight);
@@ -93,6 +95,158 @@ namespace Framework {
         }
     }
 
+
+
+    // ========== PLAYER DEATH LOGIC ==========
+
+    void PlayerSystem::CheckPlayerDeathFromTraps() {
+        EntityManager entityMgr(*entityStorage_);
+
+        // Get player
+        Entity playerEntity = 0;
+        for (const Entity& entity : entityMgr.GetAllEntitiesWithComponent(PlayerTagType)) {
+            if (entityMgr.HasComponent(entity, ActiveTagType) && entityMgr.HasComponent(entity, PlayerStateType)) {
+                playerEntity = entity;
+                break;
+            }
+        }
+
+        if (playerEntity == 0) return;
+
+        PlayerState& playerState = entityMgr.GetComponent<PlayerState>(playerEntity);
+        if (playerState.isDead) return;
+
+        for (const Entity& trapEntity : entityMgr.GetAllEntitiesWithComponent(TrapPlatformComponentType)) {
+            TrapPlatformComponent& trapComp = entityMgr.GetComponent<TrapPlatformComponent>(trapEntity);
+
+            if (!trapComp.isTriggered) continue;
+
+            const Vector2D& playerPos = entityMgr.GetComponent<Position>(playerEntity).Pos;
+            const Vector2D& playerHalfSize = entityMgr.GetComponent<AABBCollider>(playerEntity).HalfSize;
+            const Vector2D& trapPos = entityMgr.GetComponent<Position>(trapEntity).Pos;
+            const Vector2D& trapHalfSize = entityMgr.GetComponent<AABBCollider>(trapEntity).HalfSize;
+
+            AABB_Bounds playerBounds = {
+                {playerPos.x - playerHalfSize.x, playerPos.y - playerHalfSize.y},
+                {playerPos.x + playerHalfSize.x, playerPos.y + playerHalfSize.y}
+            };
+
+            AABB_Bounds trapBounds = {
+                {trapPos.x - trapHalfSize.x, trapPos.y - trapHalfSize.y},
+                {trapPos.x + trapHalfSize.x, trapPos.y + trapHalfSize.y}
+            };
+
+            if (CollisionIntersection_RectRect_Static(playerBounds, trapBounds)) {
+                // Checking to make sure the trap is above the player (falling down onto them)
+                float trapBottom = trapPos.y - trapHalfSize.y;
+                float playerTop = playerPos.y + playerHalfSize.y;
+
+                // Only kill if trap is above player
+                if (trapBottom >= playerTop) {
+                    KillPlayer(playerEntity, "falling trap platform");
+                    break;
+                }
+            }
+        }
+    }
+
+    void PlayerSystem::CheckPlayerDeathFromEnemies() {
+        EntityManager entityMgr(*entityStorage_);
+
+        // Get player
+        Entity playerEntity{};
+        for (const Entity& entity : entityMgr.GetAllEntitiesWithComponent(PlayerTagType)) {
+            if (entityMgr.HasComponent(entity, ActiveTagType) && entityMgr.HasComponent(entity, PlayerStateType)) {
+                playerEntity = entity;
+                break;
+            }
+        }
+
+        if (playerEntity == 0) return;
+
+        PlayerState& playerState = entityMgr.GetComponent<PlayerState>(playerEntity);
+        if (playerState.isDead) return;
+
+        // Check all enemies for collision with player
+        for (const Entity& enemy : entityMgr.GetAllEntitiesWithComponent(EnemyTagType)) {
+            if (!entityMgr.HasComponent(enemy, PositionType) ||
+                !entityMgr.HasComponent(enemy, AABBColliderType) ||
+                !entityMgr.HasComponent(playerEntity, PositionType) ||
+                !entityMgr.HasComponent(playerEntity, AABBColliderType)) {
+                continue;
+            }
+
+            const Vector2D& playerPos = entityMgr.GetComponent<Position>(playerEntity).Pos;
+            const Vector2D& playerHalfSize = entityMgr.GetComponent<AABBCollider>(playerEntity).HalfSize;
+            const Vector2D& enemyPos = entityMgr.GetComponent<Position>(enemy).Pos;
+            const Vector2D& enemyHalfSize = entityMgr.GetComponent<AABBCollider>(enemy).HalfSize;
+
+            AABB_Bounds playerBounds = {
+                {playerPos.x - playerHalfSize.x, playerPos.y - playerHalfSize.y},
+                {playerPos.x + playerHalfSize.x, playerPos.y + playerHalfSize.y}
+            };
+
+            AABB_Bounds enemyBounds = {
+                {enemyPos.x - enemyHalfSize.x, enemyPos.y - enemyHalfSize.y},
+                {enemyPos.x + enemyHalfSize.x, enemyPos.y + enemyHalfSize.y}
+            };
+
+            if (CollisionIntersection_RectRect_Static(playerBounds, enemyBounds)) {
+                std::string enemyType = "enemy";
+                if (entityMgr.HasComponent(enemy, BirdAIComponentType)) {
+                    enemyType = "bird enemy";
+                }
+                else if (entityMgr.HasComponent(enemy, SkeletonAIComponentType)) {
+                    enemyType = "skeleton enemy";
+                }
+
+                KillPlayer(playerEntity, enemyType);
+                break;
+            }
+        }
+    }
+
+    bool PlayerSystem::IsPlayerInAttackRange(Entity playerEntity, Entity enemyEntity, float attackRadius) {
+        EntityManager entityMgr(*entityStorage_);
+
+        if (!entityMgr.HasComponent(playerEntity, PositionType) ||
+            !entityMgr.HasComponent(enemyEntity, PositionType)) {
+            return false;
+        }
+
+        const Vector2D& playerPos = entityMgr.GetComponent<Position>(playerEntity).Pos;
+        const Vector2D& enemyPos = entityMgr.GetComponent<Position>(enemyEntity).Pos;
+
+        float distance = playerPos.Distance(enemyPos);
+        return distance <= attackRadius;
+    }
+
+    void PlayerSystem::KillPlayer(Entity playerEntity, const std::string& killerType) {
+        EntityManager entityMgr(*entityStorage_);
+
+        if (!entityMgr.HasComponent(playerEntity, PlayerStateType)) {
+            return;
+        }
+
+        PlayerState& playerState = entityMgr.GetComponent<PlayerState>(playerEntity);
+        if (playerState.isDead) return; // Already dead
+
+        playerState.isDead = true;
+
+        if (entityMgr.HasComponent(playerEntity, VelocityType)) {
+            entityMgr.GetComponent<Velocity>(playerEntity).Vel = Vector2D::Zero();
+        }
+        if (entityMgr.HasComponent(playerEntity, RigidBodyType)) {
+            entityMgr.GetComponent<RigidBody>(playerEntity).SetMass(0.0f);
+        }
+
+        // Set death animation
+        if (entityMgr.HasComponent(playerEntity, AnimationComponentType)) {
+            entityMgr.GetComponent<AnimationComponent>(playerEntity).currentState = AnimationState::DEATH;
+        }
+
+        Framework::Logger::Get().Info(DebugType::PlayerSystem) << "Player killed by " << killerType << "!" << std::endl;
+    }
 
     void PlayerSystem::Shutdown() {
     }
