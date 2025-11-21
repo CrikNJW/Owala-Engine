@@ -98,7 +98,7 @@ int main() {
     CameraSystem* camera = new CameraSystem(*ecs);
     SpriteRenderSystem* renderer = new SpriteRenderSystem(*ecs, *gfx, *rcm, /*drawColliders*/false);
     LevelResetSystem* levelResetter = new LevelResetSystem(*ecs, *transformation);
-    RestartMenu* restartMenu = new RestartMenu(*ecs, *input, *levelResetter, *gfx, *rcm);
+    RestartMenu* restartMenu = new RestartMenu(*ecs, *input, *levelResetter, *gfx, *rcm,*gui);
     gm->RegisterSystemsToUse(*rcm, *ecs, *gfx, *win, *input, *phx, *audio, *renderer, *camera, *aiSystem, *gui, *levelResetter); // Register all core systems to the GameManager
 
 	// Editor Registration

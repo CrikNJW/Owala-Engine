@@ -1,5 +1,6 @@
 #include "RestartMenu.h"
 #include "EntityManager.h"
+#include "SceneManager.h" 
 #include <iostream>
 
 namespace Framework {
@@ -12,13 +13,147 @@ namespace Framework {
             std::cerr << "Warning: Menu font not loaded." << std::endl;
             menuFont_ = nullptr;
         }
+        // Subscribe to button click events
+        MessageBus::Instance().Subscribe<ButtonClickedEvent>(
+            std::bind(&RestartMenu::HandleButtonClick, this, std::placeholders::_1)
+        );
+    }
+
+    void RestartMenu::HandleButtonClick(const ButtonClickedEvent& event) {
+        if (!IsPlayerDead()) return;
+
+        EntityManager entityMgr(*entityStorage_);
+        std::string entityName = entityMgr.GetProperties(event.button).name;
+
+        std::cout << "Button clicked: " << entityName << std::endl;
+
+        if (entityName == "RestartButton") {
+            std::cout << "Restart pressed..." << std::endl;
+            pendingRestart = true;
+        }
+        else if (entityName == "QuitButton") {
+            std::cout << "Quit to menu pressed" << std::endl;
+            pendingQuit = true;
+        }
     }
 
     void RestartMenu::Update() {
-        // Check if player is dead
+        if (pendingRestart) {
+            RestartLevel();
+            pendingRestart = false;
+            return;
+        }
+
+        if (pendingQuit) {
+            // TODO: Add quit to menu logic here
+            std::cout << "Executing quit to menu..." << std::endl;
+            pendingQuit = false;
+            return;
+        }
+
         if (IsPlayerDead()) {
-            RenderRestartMenu();
-            HandleMenuInput();
+            if (!buttonsCreated) {
+                RenderRestartMenuButtons();
+                buttonsCreated = true;
+            }
+        }
+        else {
+            if (buttonsCreated) {
+                CleanupMenu();
+            }
+        }
+    }
+
+    void RestartMenu::RenderRestartMenuButtons() {
+        EntityManager entityMgr(*entityStorage_);
+        Framework::SceneManager& sceneMgr = Framework::SceneManager::GetInstance();
+
+        menuBackground = entityMgr.CreateEntity();
+        entityMgr.GetProperties(menuBackground).name = "RestartMenuBackground";
+        entityMgr.AddComponent(menuBackground, Position{ {0.0f, 0.0f} });
+        entityMgr.AddComponent(menuBackground, TextureComponent{ /*Background.png*/"", {1.0f, 1.0f} });
+        entityMgr.AddComponent(menuBackground, GUITag{});
+        sceneMgr.AddEntityToScene(sceneMgr.GetActiveScene(), menuBackground);
+
+        deathTitle = entityMgr.CreateEntity();
+        entityMgr.GetProperties(deathTitle).name = "DeathTitle";
+        entityMgr.AddComponent(deathTitle, Position{ {-0.15f, 0.4f} });
+        entityMgr.AddComponent(deathTitle, GUITag{});
+        entityMgr.AddComponent(deathTitle, TextComponent{ "YOU DIED", "Amethysta-Regular.ttf", {1.0f, 0.2f, 0.2f, 1.0f}, 1.2f });
+        sceneMgr.AddEntityToScene(sceneMgr.GetActiveScene(), deathTitle);
+
+        restartButton = entityMgr.CreateEntity();
+        entityMgr.GetProperties(restartButton).name = "RestartButton";
+        entityMgr.AddComponent(restartButton, Position{ {0.0f, 0.1f} });
+        entityMgr.AddComponent(restartButton, TextureComponent{ "Button.png", {0.2f, 0.2f} });
+        entityMgr.AddComponent(restartButton, Button{});
+        entityMgr.AddComponent(restartButton, GUITag{});
+        entityMgr.AddComponent(restartButton, ActiveTag{});
+        sceneMgr.AddEntityToScene(sceneMgr.GetActiveScene(), restartButton);
+        restartButtonText = entityMgr.CreateEntity();
+        entityMgr.GetProperties(restartButtonText).name = "RestartButtonText";
+        entityMgr.AddComponent(restartButtonText, Position{ {-0.13f, 0.1f} });
+        entityMgr.AddComponent(restartButtonText, GUITag{});
+        entityMgr.AddComponent(restartButtonText, TextComponent{ "Restart Level", "Amethysta-Regular.ttf", {1.0f, 1.0f, 1.0f, 1.0f}, 0.8f });
+        sceneMgr.AddEntityToScene(sceneMgr.GetActiveScene(), restartButtonText);
+
+        quitButton = entityMgr.CreateEntity();
+        entityMgr.GetProperties(quitButton).name = "QuitButton";
+        entityMgr.AddComponent(quitButton, Position{ {0.0f, -0.20f} });
+        entityMgr.AddComponent(quitButton, TextureComponent{ "Button.png", {0.2f, 0.2f} });
+        entityMgr.AddComponent(quitButton, Button{});
+        entityMgr.AddComponent(quitButton, GUITag{});
+        entityMgr.AddComponent(quitButton, ActiveTag{});
+        sceneMgr.AddEntityToScene(sceneMgr.GetActiveScene(), quitButton);
+
+        quitButtonText = entityMgr.CreateEntity();
+        entityMgr.GetProperties(quitButtonText).name = "QuitButtonText";
+        entityMgr.AddComponent(quitButtonText, Position{ {-0.13f, -0.20f} });
+        entityMgr.AddComponent(quitButtonText, GUITag{});
+        entityMgr.AddComponent(quitButtonText, TextComponent{ "Quit to Menu", "Amethysta-Regular.ttf", {1.0f, 1.0f, 1.0f, 1.0f}, 0.8f });
+        sceneMgr.AddEntityToScene(sceneMgr.GetActiveScene(), quitButtonText);
+
+    }
+
+    void RestartMenu::CleanupMenu() {
+        EntityManager entityMgr(*entityStorage_);
+
+        if (restartButton != 0) {
+            entityMgr.DestroyEntity(restartButton);
+            restartButton = 0;
+        }
+        if (restartButtonText!= 0) {
+            entityMgr.DestroyEntity(restartButtonText);
+            restartButtonText = 0;
+        }
+        if (quitButton != 0) {
+            entityMgr.DestroyEntity(quitButton);
+            quitButton = 0;
+        }
+        if (quitButtonText != 0) {
+            entityMgr.DestroyEntity(quitButtonText);
+            quitButtonText = 0;
+        }
+        if (menuBackground != 0) {
+            entityMgr.DestroyEntity(menuBackground);
+            menuBackground = 0;
+        }
+        if (deathTitle != 0) {
+            entityMgr.DestroyEntity(deathTitle);
+            deathTitle = 0;
+        }
+
+        buttonsCreated = false;
+    }
+
+    void RestartMenu::RestartLevel() {
+        levelReset_->RunReset();
+        CleanupMenu();
+    }
+
+    void RestartMenu::Shutdown() {
+        if (buttonsCreated) {
+            CleanupMenu();
         }
     }
 
@@ -43,106 +178,6 @@ namespace Framework {
                 }
             }
         }
-
         return false;
-    }
-
-    void RestartMenu::RenderRestartMenu() {
-        graphics_->setAlphaBlend(true);
-
-        graphics_->drawRectangle(
-            { -1.0f, -1.0f },
-            { 1.0f, 1.0f },
-            { 0.0f, 0.0f, 0.0f, 0.7f }
-        );
-
-        Vector2D menuMin = { -0.3f, -0.2f };
-        Vector2D menuMax = { 0.3f, 0.2f };
-        graphics_->drawRectangle(menuMin, menuMax, { 0.1f, 0.1f, 0.1f, 0.9f });
-
-        float borderThickness = 0.005f;
-        Color borderColor = { 0.8f, 0.0f, 0.0f, 1.0f }; // Red border
-
-        // Top border
-        graphics_->drawLine({ menuMin.x, menuMax.y }, { menuMax.x, menuMax.y }, borderColor);
-        // Bottom border
-        graphics_->drawLine({ menuMin.x, menuMin.y }, { menuMax.x, menuMin.y }, borderColor);
-        // Left border
-        graphics_->drawLine({ menuMin.x, menuMin.y }, { menuMin.x, menuMax.y }, borderColor);
-        // Right border
-        graphics_->drawLine({ menuMax.x, menuMin.y }, { menuMax.x, menuMax.y }, borderColor);
-
-        if (menuFont_) {
-            graphics_->drawText(
-                *menuFont_,
-                "YOU DIED",
-                { -0.15f, 0.1f },
-                1.2f,
-                { 1.0f, 0.2f, 0.2f, 1.0f }
-            );
-
-            // "Restart Level" option
-            Color restartColor = (selectedOption_ == 0) ? Color{ 1.0f, 1.0f, 0.0f, 1.0f }  // Yellow if selected
-            : Color{ 0.8f, 0.8f, 0.8f, 1.0f }; // Gray if not selected
-
-            graphics_->drawText(
-                *menuFont_,
-                selectedOption_ == 0 ? "> Restart Level" : "  Restart Level",
-                { -0.2f, -0.05f },
-                0.8f,
-                restartColor
-            );
-
-            // "Quit to Menu" option
-            Color quitColor = (selectedOption_ == 1) ? Color{ 1.0f, 1.0f, 0.0f, 1.0f }  // Yellow if selected
-            : Color{ 0.8f, 0.8f, 0.8f, 1.0f }; // Gray if not selected
-
-            graphics_->drawText(
-                *menuFont_,
-                selectedOption_ == 1 ? "> Quit to Menu" : "  Quit to Menu",
-                { -0.2f, -0.15f },
-                0.8f,
-                quitColor
-            );
-        }
-    }
-
-    void RestartMenu::HandleMenuInput() {
-        // Choose menu options with Up/Down arrows or W/S
-        if (input_->KeyPressed(InputSystem::Key::Up) ||
-            input_->KeyPressed(InputSystem::Key::W)) {
-            selectedOption_ = (selectedOption_ - 1 + 2) % 2; // Cycle up
-        }
-
-        if (input_->KeyPressed(InputSystem::Key::Down) ||
-            input_->KeyPressed(InputSystem::Key::S)) {
-            selectedOption_ = (selectedOption_ + 1) % 2; // Cycle down
-        }
-
-        // Confirm selection with Enter or Space
-        if (input_->KeyPressed(InputSystem::Key::Enter) ||
-            input_->KeyPressed(InputSystem::Key::Space)) {
-            if (selectedOption_ == 0) {
-                RestartLevel();
-            }
-            else {
-                std::cout << "Quit to menu requested" << std::endl;
-                // TODO: Add quit to menu logic here
-            }
-        }
-
-        // ESC directly quits to menu
-        if (input_->KeyPressed(InputSystem::Key::Escape)) {
-            std::cout << "Quit to menu requested" << std::endl;
-        }
-    }
-
-    void RestartMenu::RestartLevel() {
-        levelReset_->RunReset();
-        selectedOption_ = 0; // Reset selection
-    }
-
-    void RestartMenu::Shutdown() {
-        // Cleanup if needed
     }
 }
