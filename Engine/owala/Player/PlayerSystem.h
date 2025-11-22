@@ -18,14 +18,17 @@
 #include "EntityStorage.h"
 #include "InputSystem.h"
 #include "PhysicsSystem.h"
-
+#include <Transformation.h>
+namespace Framework {
+	class TransformationSystem;  // Forward declare
+}
 namespace Framework {
 	class WindowsSystem; // Forward declare to get window handle for input
 	class PlayerSystem : public ISystem {
 	public:
 		
-		PlayerSystem(EntityStorage& entityStorage, InputSystem& input, PhysicsSystem& physics)
-			: entityStorage_(&entityStorage), input_(&input), physics_(&physics) {}
+		PlayerSystem(EntityStorage& entityStorage, InputSystem& input, PhysicsSystem& physics, TransformationSystem& transformation)
+			: entityStorage_(&entityStorage), input_(&input), physics_(&physics), transformationSystem_(&transformation) {}
 		void Initialize() override;
 		void Update() override;
 		void Shutdown() override;
@@ -36,6 +39,7 @@ namespace Framework {
 		WindowsSystem* win_ = nullptr;
 		InputSystem* input_ = nullptr; // use our own input system
 		PhysicsSystem* physics_ = nullptr; // use physics sytems
+		TransformationSystem* transformationSystem_ = nullptr;
 
 		// Private variables
 		float moveSpeed = 2.0f;

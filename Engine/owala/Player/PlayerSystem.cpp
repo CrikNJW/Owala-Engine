@@ -25,6 +25,7 @@
 #include "MessageBus.h"
 #include "GameMessages.h"
 #include <OwalaTime.h>
+#include "TransformationSystem.h"
 
 namespace Framework {
     void PlayerSystem::Initialize() {
@@ -126,23 +127,31 @@ namespace Framework {
             const Vector2D& trapPos = entityMgr.GetComponent<Position>(trapEntity).Pos;
             const Vector2D& trapHalfSize = entityMgr.GetComponent<AABBCollider>(trapEntity).HalfSize;
 
+            // Player bounds (player doesn't rotate)
             AABB_Bounds playerBounds = {
                 {playerPos.x - playerHalfSize.x, playerPos.y - playerHalfSize.y},
                 {playerPos.x + playerHalfSize.x, playerPos.y + playerHalfSize.y}
             };
 
-            AABB_Bounds trapBounds = {
-                {trapPos.x - trapHalfSize.x, trapPos.y - trapHalfSize.y},
-                {trapPos.x + trapHalfSize.x, trapPos.y + trapHalfSize.y}
-            };
+            // Get trap's rotation and compute rotated AABB
+            float trapRotation = 0.0f;
+            if (entityMgr.HasComponent(trapEntity, RotationFlagType)) {
+                trapRotation = entityMgr.GetComponent<RotationFlag>(trapEntity).currentRotation;
+            }
+            AABB_Bounds trapBounds = PhysicsSystem::GetRotatedAABB(trapPos, trapHalfSize, trapRotation);
 
             if (CollisionIntersection_RectRect_Static(playerBounds, trapBounds)) {
-                // Checking to make sure the trap is above the player (falling down onto them)
-                float trapBottom = trapPos.y - trapHalfSize.y;
-                float playerTop = playerPos.y + playerHalfSize.y;
+                // Since player stays upright and gravity always pulls down,
+                // the trap kills when it falls onto player from above.
+                // Check if trap's bottom is near or above player's top (landing on head)
 
-                // Only kill if trap is above player
-                if (trapBottom >= playerTop) {
+                float trapBottom = trapBounds.min.y;  // Use rotated bounds!
+                float playerTop = playerBounds.max.y;
+
+                // Trap kills if its bottom edge is at or above player's top
+                bool shouldKill = (trapBottom >= playerTop);
+
+                if (shouldKill) {
                     KillPlayer(playerEntity, "falling trap platform");
                     break;
                 }
