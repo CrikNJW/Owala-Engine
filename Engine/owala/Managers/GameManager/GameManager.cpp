@@ -13,6 +13,7 @@
 // Scene Scripts
 #include "SplashScreen.h"
 #include "TestScene.h"
+#include "MainMenu.h"
 
 // ImGui headers
 #ifdef BUILD_EDITOR
@@ -166,7 +167,7 @@ namespace Framework {
 		CheckSystems();
 		SceneManager& sceneMgr = SceneManager::GetInstance();
 
-		SceneGUID testScene{};
+		SceneGUID testScene{}, mainMenu{};
 		// Create scene assets from file
 		rapidjson::Document scenesData;
 		if (FileIOSystem::LoadSceneAssets(scenesData)) {
@@ -181,6 +182,11 @@ namespace Framework {
 				if (sceneName == "Test Scene") {
 					RegisterScriptToScene(sceneID, TestScene::Initialize, TestScene::Update, TestScene::Free);
 					testScene = sceneID;
+					continue;
+				}
+				if (sceneName == "Main Menu") {
+					RegisterScriptToScene(sceneID, MainMenu::Initialize, MainMenu::Update, MainMenu::Free);
+					mainMenu = sceneID;
 					continue;
 				}
 				// all other scenes use TestScene.cpp for now
@@ -198,9 +204,9 @@ namespace Framework {
 		//RegisterScriptToScene(splashScreen, SplashScreen::Initialize, SplashScreen::Update, SplashScreen::Free);
 		//RegisterScriptToScene(testScene, TestScene::Initialize, TestScene::Update, TestScene::Free);
 
-		Logger::Get().Info(DebugType::GameManager) << "Default Scene: " << sceneMgr.GetSceneAt(testScene).name << ", GUID: " << testScene << std::endl;
-		sceneMgr.LoadScene(sceneMgr.GetSceneAt(testScene));
-		sceneCallbacks_[testScene].fpInitialize();
+		Logger::Get().Info(DebugType::GameManager) << "Default Scene: " << sceneMgr.GetSceneAt(mainMenu).name << ", GUID: " << mainMenu << std::endl;
+		sceneMgr.LoadScene(sceneMgr.GetSceneAt(mainMenu));
+		sceneCallbacks_[mainMenu].fpInitialize();
 	}
 
 	void GameManager::Update() {
