@@ -27,6 +27,8 @@
 // Pointers to engine systems
 Framework::Font* menuFont_ = nullptr;
 Framework::EntityStorage* entityStorage_ = nullptr;
+// Input system pointer (for ESC key)
+Framework::InputSystem* inputSystem_ = nullptr;
 
 // Main menu entities
 Entity menuBackground, menuFrame, menuTitle;
@@ -51,6 +53,16 @@ Entity settingsCancelButtonText = 0;
 bool settingsOpen = false;
 bool pendingCloseSettings = false;
 
+// Pause menu overlay entities
+Entity pausePanel = 0;
+Entity pauseResumeButton = 0;
+Entity pauseResumeButtonText = 0;
+
+// Pause state
+bool pauseOpen = false;
+bool pendingPauseOpen = false;
+bool pendingPauseClose = false;
+
 namespace MainMenu {
 
 	using namespace Framework;
@@ -66,6 +78,13 @@ namespace MainMenu {
 			return;
 		}
 
+		// 🔒 If pause menu is open, ignore all buttons except the Resume button
+		if (pauseOpen && buttonName != "PauseResumeButton") {
+			std::cout << "[MainMenu] Click on '" << buttonName
+				<< "' ignored because Pause Menu is open.\n";
+			return;
+		}
+
 		std::cout << "[MainMenu] Button clicked: " << buttonName << std::endl;
 
 		if (buttonName == "PlayButton") {
@@ -76,6 +95,9 @@ namespace MainMenu {
 		}
 		else if (buttonName == "SettingsCancelButton") {
 			pendingCloseSettings = true;
+		}
+		else if (buttonName == "PauseResumeButton") {
+			pendingPauseClose = true;    // Resume = close pause menu
 		}
 		else if (buttonName == "QuitGameButton") {
 			pendingQuit = true;
@@ -193,12 +215,96 @@ namespace MainMenu {
 		settingsOpen = false;
 	}
 
+	// Creates the Pause Menu overlay (Basic Pause Menu + Resume button)
+	void CreatePauseOverlay() {
+		if (pauseOpen) return; // already visible
+
+		EntityManager entityMgr(*entityStorage_);
+		SceneManager& sceneMgr = SceneManager::GetInstance();
+
+		// 1) Big Pause PNG in the center
+		pausePanel = entityMgr.CreateEntity();
+		entityMgr.GetProperties(pausePanel).name = "PausePanel";
+
+		// Centered on screen
+		entityMgr.AddComponent(pausePanel, Position{ { 0.0f, 0.0f } });
+
+		// Uses your texture: Assets/Sprites/UI/Main_Menu/Basic Pause Menu.png
+		// ResourceManager only needs the filename as the key
+		entityMgr.AddComponent(pausePanel, TextureComponent{
+			"Basic Pause Menu.png",   // texture key (matches filename)
+			{ 0.8f, 0.8f }            // scale; tweak if too big/small
+			});
+
+		entityMgr.AddComponent(pausePanel, GUITag{});
+		entityMgr.AddComponent(pausePanel, ActiveTag{});
+		sceneMgr.AddEntityToScene(sceneMgr.GetActiveScene(), pausePanel);
+
+		// 2) Resume button at (0, 0) as you requested
+		pauseResumeButton = entityMgr.CreateEntity();
+		entityMgr.GetProperties(pauseResumeButton).name = "PauseResumeButton";
+
+		entityMgr.AddComponent(pauseResumeButton, Position{ { 0.0f, 0.0f } });
+
+		// Reuse your existing Button.png sprite
+		entityMgr.AddComponent(pauseResumeButton, TextureComponent{
+			"Button.png",
+			{ 0.25f, 0.08f }
+			});
+
+		entityMgr.AddComponent(pauseResumeButton, Button{});
+		entityMgr.AddComponent(pauseResumeButton, GUITag{});
+		entityMgr.AddComponent(pauseResumeButton, ActiveTag{});
+		sceneMgr.AddEntityToScene(sceneMgr.GetActiveScene(), pauseResumeButton);
+
+		// 3) Text that says "Resume" on top of the button
+		pauseResumeButtonText = entityMgr.CreateEntity();
+		entityMgr.GetProperties(pauseResumeButtonText).name = "PauseResumeButtonText";
+
+		// Slight X offset so text looks centered on the button
+		entityMgr.AddComponent(pauseResumeButtonText, Position{ { -0.07f, 0.0f } });
+
+		entityMgr.AddComponent(pauseResumeButtonText, GUITag{});
+		entityMgr.AddComponent(pauseResumeButtonText, TextComponent{
+			"Resume",                    // text
+			"Amethysta-Regular.ttf",     // same font as other buttons
+			{ 1.0f, 1.0f, 1.0f, 1.0f },  // white
+			0.9f                         // scale
+			});
+		sceneMgr.AddEntityToScene(sceneMgr.GetActiveScene(), pauseResumeButtonText);
+
+		pauseOpen = true;
+	}
+
+	// Destroys the Pause Menu overlay again
+	void DestroyPauseOverlay() {
+		if (!pauseOpen) return;
+
+		EntityManager entityMgr(*entityStorage_);
+
+		auto destroyIfValid = [&](Entity& e) {
+			if (e != 0) {
+				entityMgr.DestroyEntity(e);
+				e = 0;
+			}
+		};
+
+		destroyIfValid(pausePanel);
+		destroyIfValid(pauseResumeButton);
+		destroyIfValid(pauseResumeButtonText);
+
+		pauseOpen = false;
+	}
+
 	void Initialize() {
 		
 		GameManager& gm = GameManager::GetInstance();
 
 		// store ECS pointer so CreateSettingsOverlay/DestroySettingsOverlay can use it
 		entityStorage_ = gm.GetSystems().ecs_;
+
+		// store InputSystem pointer for ESC key
+		inputSystem_ = gm.GetSystems().input_;
 		
 		ResourceManager& resourceManager_ = *GameManager::GetInstance().GetSystems().resourceManager_;
 
@@ -222,7 +328,21 @@ namespace MainMenu {
 	}
 
 	void Update() {
-		// Handle any queued button actions
+		
+		// 1) Handle ESC key to toggle pause menu
+		if (inputSystem_) {
+			if (inputSystem_->KeyPressed(InputSystem::Key::Escape)) {
+				if (!pauseOpen && !settingsOpen) {
+					// Open pause menu
+					pendingPauseOpen = true;
+				}
+				else if (pauseOpen) {
+					// If already paused, ESC can also resume
+					pendingPauseClose = true;
+				}
+			}
+		}
+		// 2) Handle any queued button actions
 
 		if (pendingPlay) {
 			std::cout << "[MainMenu] PLAY selected. Loading 'Splash Screen'..." << std::endl;
@@ -255,6 +375,24 @@ namespace MainMenu {
 			pendingCloseSettings = false;
 		}
 
+		// Pause open
+		if (pendingPauseOpen) {
+			std::cout << "[MainMenu] PAUSE MENU opened." << std::endl;
+			if (!pauseOpen) {
+				CreatePauseOverlay();
+			}
+			pendingPauseOpen = false;
+		}
+
+		// Pause close (Resume)
+		if (pendingPauseClose) {
+			std::cout << "[MainMenu] RESUME selected." << std::endl;
+			if (pauseOpen) {
+				DestroyPauseOverlay();
+			}
+			pendingPauseClose = false;
+		}
+
 		if (pendingQuit) {
 			std::cout << "[MainMenu] QUIT GAME selected." << std::endl;
 
@@ -272,6 +410,10 @@ namespace MainMenu {
 
 		if (settingsOpen) {
 			DestroySettingsOverlay();
+		}
+
+		if (pauseOpen) {
+			DestroyPauseOverlay();
 		}
 	}
 }
