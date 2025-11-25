@@ -163,6 +163,53 @@ namespace Framework {
 		sceneCallbacks_.erase(sceneIndex);
 	}
 
+	void GameManager::ChangeScene(const std::string& sceneName)
+	{
+		SceneManager& sceneMgr = SceneManager::GetInstance();
+
+		// Get the SceneAsset for the target scene by name
+		const SceneAsset& targetScene = sceneMgr.GetSceneByName(sceneName);
+		if (!targetScene.IsValid()) {
+			Logger::Get().Error(DebugType::GameManager)
+				<< "ChangeScene failed: Scene '" << sceneName << "' does not exist." << std::endl;
+			return;
+		}
+
+		// Call Free() on the current scene script if it exists
+		const SceneAsset& currentScene = sceneMgr.GetActiveScene();
+		SceneGUID currentSceneIndex = currentScene.sceneIndex;
+		if (sceneCallbacks_.count(currentSceneIndex) && sceneCallbacks_[currentSceneIndex].fpFree) {
+			sceneCallbacks_[currentSceneIndex].fpFree();
+		}
+
+		// Ask SceneManager to load the new scene (this handles ActiveTag etc.)
+		sceneMgr.LoadScene(targetScene);
+
+		// Call Initialize() on the new scene script if it exists
+		SceneGUID newSceneIndex = targetScene.sceneIndex;
+		if (sceneCallbacks_.count(newSceneIndex) && sceneCallbacks_[newSceneIndex].fpInitialize) {
+			sceneCallbacks_[newSceneIndex].fpInitialize();
+		}
+
+		Logger::Get().Info(DebugType::GameManager)
+			<< "Changed scene to: " << sceneName << " (GUID: " << newSceneIndex << ")" << std::endl;
+	}
+
+	void GameManager::RequestQuit()
+	{
+		// Make sure the window system is registered
+		if (!systems_.win_) {
+			Logger::Get().Error(DebugType::GameManager)
+				<< "RequestQuit called but WindowsSystem is not registered!" << std::endl;
+			return;
+		}
+
+		GLFWwindow* window = systems_.win_->window();
+		if (window) {
+			glfwSetWindowShouldClose(window, GLFW_TRUE);
+		}
+	}
+
 	void GameManager::Initialize() {
 		CheckSystems();
 		SceneManager& sceneMgr = SceneManager::GetInstance();
@@ -223,6 +270,7 @@ namespace Framework {
 		#ifdef BUILD_ENGINE
 		systems_.spriteRenderer_->Update();
 		#endif
+
 		//glfwSwapInterval(0); //just for testing to turn vsync off
 
 		// --- END GAME UPDATE ---

@@ -140,6 +140,12 @@ namespace Framework {
 		void RegisterScriptToScene(SceneGUID sceneIndex, SceneFunction initFunction, SceneFunction updateFunction, SceneFunction freeFunction);
 		void UnregisterScriptFromScene(SceneGUID sceneIndex);
 
+		// NEW: change the active scene by name
+		void ChangeScene(const std::string& sceneName);
+		
+		// NEW: ask the engine to quit (close the window)
+		void RequestQuit();
+		
 		/* Game Cycle Functions */
 		void Initialize() override;
 		void Update() override;

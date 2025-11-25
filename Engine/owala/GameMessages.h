@@ -6,7 +6,8 @@ namespace Framework {
 	enum class ButtonAction{
 	DEFAULT,
 	PLAYSOUND,
-	RESETPLAYERPOS
+	RESETPLAYERPOS,
+	CHANGESCENE,
 	};
 
 	struct PlayerJumpedEvent{

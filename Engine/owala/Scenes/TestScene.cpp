@@ -57,6 +57,7 @@ namespace TestScene {
 	using namespace Framework;
 
 	void Initialize() {
+        std::cout << "Test Scene Initialize" << std::endl;
         //FileIOSystem fileIO;
 		//SceneManager& sceneMgr = SceneManager::GetInstance();
 		GameManager& gm = GameManager::GetInstance();
