@@ -33,6 +33,7 @@ Framework::InputSystem* inputSystem_ = nullptr;
 // Main menu entities
 Entity menuBackground, menuFrame, menuTitle;
 Entity playButton, playButtonText;
+Entity howToPlayButton, howToPlayButtonText;
 Entity settingsButton, settingsButtonText;
 Entity quitButton, quitButtonText;
 
@@ -41,8 +42,19 @@ bool menuCreated = false;
 
 // Actions queued from button clicks
 bool pendingPlay = false;
+bool pendingHowToPlay = false;  // NEW
 bool pendingSettings = false;
 bool pendingQuit = false;
+
+// --- HOW TO PLAY overlay state ---
+Entity howToPlayPanel = 0;  // big image panel
+Entity howToPlayLeftArrow = 0;  // left arrow button
+Entity howToPlayRightArrow = 0;  // right arrow button;
+
+bool howToPlayOpen = false;
+int  howToPlayPageIndex = 0;
+
+constexpr int kHowToPlayPageCount = 4; // pages 0..3
 
 // Settings overlay entities
 Entity settingsPanel = 0;
@@ -67,6 +79,11 @@ namespace MainMenu {
 
 	using namespace Framework;
 
+	// How To Play overlay helpers
+	void OpenHowToPlayOverlay();
+	void CloseHowToPlayOverlay();
+	void UpdateHowToPlayTexture();
+
 	void HandleButtonClick(const ButtonClickedEvent& event) {
 		EntityManager entityMgr(*GameManager::GetInstance().GetSystems().ecs_);
 		std::string& buttonName = entityMgr.GetProperties(event.button).name;
@@ -87,8 +104,37 @@ namespace MainMenu {
 
 		std::cout << "[MainMenu] Button clicked: " << buttonName << std::endl;
 
+		// If the HOW TO PLAY overlay is open, we only care about its buttons
+		if (howToPlayOpen) {
+			if (buttonName == "HowToPlayLeftArrow") {
+				// Go to previous page if not at first page
+				if (howToPlayPageIndex > 0) {
+					--howToPlayPageIndex;
+					UpdateHowToPlayTexture();
+				}
+				// If already at page 0, do nothing
+			}
+			else if (buttonName == "HowToPlayRightArrow") {
+				// If we are not at the last page, go to next page
+				if (howToPlayPageIndex < kHowToPlayPageCount - 1) {
+					++howToPlayPageIndex;
+					UpdateHowToPlayTexture();
+				}
+				else {
+					// Last page → close overlay and return to main menu
+					CloseHowToPlayOverlay();
+				}
+			}
+
+			// Ignore Play / Settings / Quit while overlay is open
+			return;
+		}
+		
 		if (buttonName == "PlayButton") {
 			pendingPlay = true;
+		}
+		else if (buttonName == "HowToPlayButton") {      // NEW
+			pendingHowToPlay = true;
 		}
 		else if (buttonName == "SettingsButton") {
 			pendingSettings = true;
@@ -104,9 +150,50 @@ namespace MainMenu {
 		}
 	}
 
+	void CreateHowToPlayButtonInCode() {
+		EntityManager entityMgr(*GameManager::GetInstance().GetSystems().ecs_);
+		SceneManager& sceneMgr = SceneManager::GetInstance();
+
+		// 1) The button image (Button.png)
+		Entity howToPlayButton = entityMgr.CreateEntity();
+		entityMgr.GetProperties(howToPlayButton).name = "HowToPlayButton";
+
+		// Position it between Play (0.2f) and Settings (0.0f)
+		entityMgr.AddComponent(howToPlayButton, Position{ { 0.0f, 0.04f } });
+
+		entityMgr.AddComponent(howToPlayButton, TextureComponent{
+			"Button.png",          // use your generic button sprite
+			{ 0.25f, 0.08f }       // same size as Play / Settings / Quit
+			});
+
+		entityMgr.AddComponent(howToPlayButton, Button{});   // makes it clickable
+		entityMgr.AddComponent(howToPlayButton, GUITag{});   // this is UI
+		entityMgr.AddComponent(howToPlayButton, ActiveTag{});// enabled
+		sceneMgr.AddEntityToScene(sceneMgr.GetActiveScene(), howToPlayButton);
+
+		// 2) The text on top: "How To Play"
+		Entity howToPlayButtonText = entityMgr.CreateEntity();
+		entityMgr.GetProperties(howToPlayButtonText).name = "HowToPlayButtonText";
+
+		// Same Y, slight X offset to visually center the text
+		entityMgr.AddComponent(howToPlayButtonText, Position{ { -0.12f, 0.02f } });
+
+		entityMgr.AddComponent(howToPlayButtonText, GUITag{});
+		entityMgr.AddComponent(howToPlayButtonText, TextComponent{
+			"How To Play",             // text
+			"Amethysta-Regular.ttf",   // same font as others
+			{ 1.0f, 1.0f, 1.0f, 1.0f },// white
+			0.9f                       // font size
+			});
+
+		sceneMgr.AddEntityToScene(sceneMgr.GetActiveScene(), howToPlayButtonText);
+	}
+
 	void CreateMainMenu() {
 		EntityManager entityMgr(*GameManager::GetInstance().GetSystems().ecs_);
 		SceneManager& sceneMgr = SceneManager::GetInstance();
+
+		CreateHowToPlayButtonInCode();   // <--- here
 	}
 
 	void CleanupMenu() {
@@ -132,6 +219,96 @@ namespace MainMenu {
 
 		menuCreated = false;
 	}
+
+	// Create HOW TO PLAY overlay: page 0 + left/right arrows
+	void OpenHowToPlayOverlay() {
+		if (howToPlayOpen) return;
+
+		EntityManager entityMgr(*entityStorage_);
+		SceneManager& sceneMgr = SceneManager::GetInstance();
+
+		howToPlayPageIndex = 0;
+
+		// --- Big panel with the current page image ---
+		howToPlayPanel = entityMgr.CreateEntity();
+		entityMgr.GetProperties(howToPlayPanel).name = "HowToPlayPanel";
+		entityMgr.AddComponent(howToPlayPanel, Position{ { 0.0f, 0.0f } });
+		entityMgr.AddComponent(howToPlayPanel, TextureComponent{
+			"How To Play Image_0.png",    // first page
+			{ 1.0f, 1.0f }                // full-screen-ish
+			});
+		entityMgr.AddComponent(howToPlayPanel, GUITag{});
+		entityMgr.AddComponent(howToPlayPanel, ActiveTag{});
+		sceneMgr.AddEntityToScene(sceneMgr.GetActiveScene(), howToPlayPanel);
+
+		// --- Left arrow button ---
+		howToPlayLeftArrow = entityMgr.CreateEntity();
+		entityMgr.GetProperties(howToPlayLeftArrow).name = "HowToPlayLeftArrow";
+		entityMgr.AddComponent(howToPlayLeftArrow, Position{ { -0.8f, 0.0f } });
+		entityMgr.AddComponent(howToPlayLeftArrow, TextureComponent{
+			"Arrow Button Left.png",
+			{ 0.07f, 0.07f }
+			});
+		entityMgr.AddComponent(howToPlayLeftArrow, Button{});
+		entityMgr.AddComponent(howToPlayLeftArrow, GUITag{});
+		entityMgr.AddComponent(howToPlayLeftArrow, ActiveTag{});
+		sceneMgr.AddEntityToScene(sceneMgr.GetActiveScene(), howToPlayLeftArrow);
+
+		// --- Right arrow button ---
+		howToPlayRightArrow = entityMgr.CreateEntity();
+		entityMgr.GetProperties(howToPlayRightArrow).name = "HowToPlayRightArrow";
+		entityMgr.AddComponent(howToPlayRightArrow, Position{ { 0.8f, 0.0f } });
+		entityMgr.AddComponent(howToPlayRightArrow, TextureComponent{
+			"Arrow Button Right.png",
+			{ 0.07f, 0.07f }
+			});
+		entityMgr.AddComponent(howToPlayRightArrow, Button{});
+		entityMgr.AddComponent(howToPlayRightArrow, GUITag{});
+		entityMgr.AddComponent(howToPlayRightArrow, ActiveTag{});
+		sceneMgr.AddEntityToScene(sceneMgr.GetActiveScene(), howToPlayRightArrow);
+
+		howToPlayOpen = true;
+	}
+
+	// Helper to safely destroy an entity
+	static void DestroyEntityIfValid(EntityManager& entityMgr, SceneManager& sceneMgr, Entity& e) {
+		if (e != 0 && entityMgr.ValidateEntity(e)) {   // ✅ check that it exists
+			entityMgr.DestroyEntity(e);                // ✅ actually destroy it
+		} 
+		e = 0;                                         // mark handle as invalid
+	}
+
+	// Close HOW TO PLAY overlay
+	void CloseHowToPlayOverlay() {
+		if (!howToPlayOpen) return;
+
+		EntityManager entityMgr(*entityStorage_);
+		SceneManager& sceneMgr = SceneManager::GetInstance();
+
+		DestroyEntityIfValid(entityMgr, sceneMgr, howToPlayPanel);
+		DestroyEntityIfValid(entityMgr, sceneMgr, howToPlayLeftArrow);
+		DestroyEntityIfValid(entityMgr, sceneMgr, howToPlayRightArrow);
+
+		howToPlayOpen = false;
+		howToPlayPageIndex = 0;
+	}
+
+	// Change the panel texture based on howToPlayPageIndex
+	void UpdateHowToPlayTexture() {
+		if (!howToPlayOpen || howToPlayPanel == 0) return;
+
+		EntityManager entityMgr(*entityStorage_);
+		TextureComponent& tex = entityMgr.GetComponent<TextureComponent>(howToPlayPanel);
+
+		switch (howToPlayPageIndex) {
+		case 0: tex.textureKey = "How To Play Image_0.png"; break;
+		case 1: tex.textureKey = "How To Play Image_1.png"; break;
+		case 2: tex.textureKey = "How To Play Image_2.png"; break;
+		case 3: tex.textureKey = "How To Play Image_3.png"; break;
+		default: tex.textureKey = "How To Play Image_0.png"; break;
+		}
+	}
+
 
 	// Creates the Settings overlay (panel + Cancel button)
 	void CreateSettingsOverlay() {
@@ -296,6 +473,9 @@ namespace MainMenu {
 		pauseOpen = false;
 	}
 
+
+
+
 	void Initialize() {
 		
 		GameManager& gm = GameManager::GetInstance();
@@ -351,6 +531,13 @@ namespace MainMenu {
 			GameManager::GetInstance().ChangeScene("Splash Screen");
 
 			pendingPlay = false;
+		}
+
+		// NEW: How To Play button
+		if (pendingHowToPlay) {
+			std::cout << "[MainMenu] HOW TO PLAY selected." << std::endl;
+			OpenHowToPlayOverlay();   // <--- use the helper you implemented
+			pendingHowToPlay = false;
 		}
 
 		// When Settings button is pressed → show overlay
