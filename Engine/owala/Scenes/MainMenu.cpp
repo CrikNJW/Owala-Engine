@@ -54,7 +54,7 @@ Entity howToPlayRightArrow = 0;  // right arrow button;
 bool howToPlayOpen = false;
 int  howToPlayPageIndex = 0;
 
-constexpr int kHowToPlayPageCount = 4; // pages 0..3
+constexpr int kHowToPlayPageCount = 3; // pages 0..3
 
 // Settings overlay entities
 Entity settingsPanel = 0;
@@ -304,7 +304,6 @@ namespace MainMenu {
 		case 0: tex.textureKey = "How To Play Image_0.png"; break;
 		case 1: tex.textureKey = "How To Play Image_1.png"; break;
 		case 2: tex.textureKey = "How To Play Image_2.png"; break;
-		case 3: tex.textureKey = "How To Play Image_3.png"; break;
 		default: tex.textureKey = "How To Play Image_0.png"; break;
 		}
 	}
