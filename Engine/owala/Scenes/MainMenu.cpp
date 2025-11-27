@@ -85,6 +85,46 @@ namespace MainMenu {
 	void CloseHowToPlayOverlay();
 	void UpdateHowToPlayTexture();
 
+	// -----------------------------------------------------------------------------
+    // Small helpers to play UI SFX
+    // -----------------------------------------------------------------------------
+	namespace
+	{
+		// Plays generic UI click SFX using a pre-loaded sound in ResourceManager
+		void PlayClickSFX()
+		{
+			GameManager& gm = GameManager::GetInstance();
+			auto* audioSystem = gm.GetSystems().audio_;
+			auto* resourceMgr = gm.GetSystems().resourceManager_;
+			if (!audioSystem || !resourceMgr) return;
+
+			try {
+				FMOD::Sound& sfx = resourceMgr->get<FMOD::Sound>("UI_Button_Clicked_02");
+				audioSystem->play(sfx, 0.9f, false);
+			}
+			catch (...) {
+				std::cerr << "[MainMenu] Missing SFX: UI_Button_Clicked_02\n";
+			}
+		}
+
+		// Plays cancel / back SFX
+		void PlayCancelSFX()
+		{
+			GameManager& gm = GameManager::GetInstance();
+			auto* audioSystem = gm.GetSystems().audio_;
+			auto* resourceMgr = gm.GetSystems().resourceManager_;
+			if (!audioSystem || !resourceMgr) return;
+
+			try {
+				FMOD::Sound& sfx = resourceMgr->get<FMOD::Sound>("UI_Button_Cancel_01");
+				audioSystem->play(sfx, 0.9f, false);
+			}
+			catch (...) {
+				std::cerr << "[MainMenu] Missing SFX: UI_Button_Cancel_01\n";
+			}
+		}
+	}
+
 	void HandleButtonClick(const ButtonClickedEvent& event) {
 		EntityManager entityMgr(*GameManager::GetInstance().GetSystems().ecs_);
 		std::string& buttonName = entityMgr.GetProperties(event.button).name;
@@ -108,15 +148,14 @@ namespace MainMenu {
 		// If the HOW TO PLAY overlay is open, we only care about its buttons
 		if (howToPlayOpen) {
 			if (buttonName == "HowToPlayLeftArrow") {
-				// Go to previous page if not at first page
+				PlayClickSFX();
 				if (howToPlayPageIndex > 0) {
 					--howToPlayPageIndex;
 					UpdateHowToPlayTexture();
 				}
-				// If already at page 0, do nothing
 			}
 			else if (buttonName == "HowToPlayRightArrow") {
-				// If we are not at the last page, go to next page
+				PlayClickSFX();
 				if (howToPlayPageIndex < kHowToPlayPageCount - 1) {
 					++howToPlayPageIndex;
 					UpdateHowToPlayTexture();
@@ -131,22 +170,35 @@ namespace MainMenu {
 			return;
 		}
 		
+		// -------------------
+	    // Normal CLICK SFX
+	    // -------------------
 		if (buttonName == "PlayButton") {
+			PlayClickSFX();
 			pendingPlay = true;
 		}
-		else if (buttonName == "HowToPlayButton") {      // NEW
+		else if (buttonName == "HowToPlayButton") {
+			PlayClickSFX();
 			pendingHowToPlay = true;
 		}
 		else if (buttonName == "SettingsButton") {
+			PlayClickSFX();
 			pendingSettings = true;
 		}
+
+		// -------------------
+	    // CANCEL SFX
+	    // -------------------
 		else if (buttonName == "SettingsCancelButton") {
+			PlayCancelSFX();
 			pendingCloseSettings = true;
 		}
 		else if (buttonName == "PauseResumeButton") {
+			PlayClickSFX();
 			pendingPauseClose = true;    // Resume = close pause menu
 		}
 		else if (buttonName == "QuitGameButton") {
+			PlayCancelSFX();
 			pendingQuit = true;
 		}
 	}
@@ -472,9 +524,6 @@ namespace MainMenu {
 		pauseOpen = false;
 	}
 
-
-
-
 	void Initialize() {
 		
 		GameManager& gm = GameManager::GetInstance();
@@ -524,6 +573,29 @@ namespace MainMenu {
 			}
 		}
 		// ─────────────────────────────────────────────
+
+		// Pre-load UI button SFX so helpers can play them quickly
+		{
+			GameManager& gm = GameManager::GetInstance();
+			auto* audioSystem = gm.GetSystems().audio_;
+			auto* resourceMgr = gm.GetSystems().resourceManager_;
+			if (audioSystem && resourceMgr) {
+				// normal click
+				resourceMgr->loadSound(
+					"UI_Button_Clicked_02",
+					"Assets/Audio/Button UI/Button_Clicked_02.wav",
+					false,   // no loop
+					false    // no stream
+				);
+				// cancel / back
+				resourceMgr->loadSound(
+					"UI_Button_Cancel_01",
+					"Assets/Audio/Button UI/Button_Cancel_01.wav",
+					false,
+					false
+				);
+			}
+		}
 
 		// 🔹 Subscribe to button click events
 		MessageBus::Instance().Subscribe<ButtonClickedEvent>(
