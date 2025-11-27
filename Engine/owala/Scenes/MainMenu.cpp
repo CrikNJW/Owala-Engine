@@ -273,6 +273,7 @@ namespace MainMenu {
 		menuCreated = false;
 	}
 
+
 	// Create HOW TO PLAY overlay: page 0 + left/right arrows
 	void OpenHowToPlayOverlay() {
 		if (howToPlayOpen) return;
@@ -330,6 +331,47 @@ namespace MainMenu {
 		} 
 		e = 0;                                         // mark handle as invalid
 	}
+	
+	// Ensure left/right arrow entities exist and are in the active scene
+	void EnsureHowToPlayArrows()
+	{
+		EntityManager entityMgr(*entityStorage_);
+		SceneManager& sceneMgr = SceneManager::GetInstance();
+
+		// --- Left arrow ---
+		if (howToPlayLeftArrow == 0 || !entityMgr.ValidateEntity(howToPlayLeftArrow)) {
+			howToPlayLeftArrow = entityMgr.CreateEntity();
+			entityMgr.GetProperties(howToPlayLeftArrow).name = "HowToPlayLeftArrow";
+
+			entityMgr.AddComponent(howToPlayLeftArrow, Position{ { -0.8f, 0.0f } });
+			entityMgr.AddComponent(howToPlayLeftArrow, TextureComponent{
+				"Arrow Button Left.png",
+				{ 0.07f, 0.07f }
+				});
+			entityMgr.AddComponent(howToPlayLeftArrow, Button{});
+			entityMgr.AddComponent(howToPlayLeftArrow, GUITag{});
+			entityMgr.AddComponent(howToPlayLeftArrow, ActiveTag{});
+
+			sceneMgr.AddEntityToScene(sceneMgr.GetActiveScene(), howToPlayLeftArrow);
+		}
+
+		// --- Right arrow ---
+		if (howToPlayRightArrow == 0 || !entityMgr.ValidateEntity(howToPlayRightArrow)) {
+			howToPlayRightArrow = entityMgr.CreateEntity();
+			entityMgr.GetProperties(howToPlayRightArrow).name = "HowToPlayRightArrow";
+
+			entityMgr.AddComponent(howToPlayRightArrow, Position{ { 0.8f, 0.0f } });
+			entityMgr.AddComponent(howToPlayRightArrow, TextureComponent{
+				"Arrow Button Right.png",
+				{ 0.07f, 0.07f }
+				});
+			entityMgr.AddComponent(howToPlayRightArrow, Button{});
+			entityMgr.AddComponent(howToPlayRightArrow, GUITag{});
+			entityMgr.AddComponent(howToPlayRightArrow, ActiveTag{});
+
+			sceneMgr.AddEntityToScene(sceneMgr.GetActiveScene(), howToPlayRightArrow);
+		}
+	}
 
 	// Close HOW TO PLAY overlay
 	void CloseHowToPlayOverlay() {
@@ -359,6 +401,8 @@ namespace MainMenu {
 		case 2: tex.textureKey = "How To Play Image_2.png"; break;
 		default: tex.textureKey = "How To Play Image_0.png"; break;
 		}
+		// 🔁 Make sure arrows still exist after page change
+		EnsureHowToPlayArrows();
 	}
 
 	// Creates the Settings overlay (panel + Cancel button)
