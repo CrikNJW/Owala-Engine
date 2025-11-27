@@ -19,6 +19,7 @@
 #include "MessageBus.h"
 #include "GameMessages.h"
 #include "GameManager.h"
+#include "AudioSystem.h"   // 👈 ADD THIS
 
 // Standard Library
 #include <iostream>
@@ -308,7 +309,6 @@ namespace MainMenu {
 		}
 	}
 
-
 	// Creates the Settings overlay (panel + Cancel button)
 	void CreateSettingsOverlay() {
 		if (settingsOpen) return; // already visible
@@ -495,6 +495,35 @@ namespace MainMenu {
 			std::cerr << "Warning: MainMenu font not loaded." << std::endl;
 			menuFont_ = nullptr;
 		}
+		
+		// ─────────────────────────────────────────────
+        // Main Menu BGM (looping)
+        // ─────────────────────────────────────────────
+		{
+			GameManager& gm = GameManager::GetInstance();
+
+			auto* audioSystem = gm.GetSystems().audio_;
+			auto* resourceMgr = gm.GetSystems().resourceManager_;
+
+			if (audioSystem && resourceMgr) {
+				// 1) Load the sound. Use the actual extension you have (.wav / .ogg / .mp3).
+				resourceMgr->loadSound(
+					"MainMenu_BGM_1",                                      // sound key
+					"Assets/Audio/MainMenu_BGM/MainMenu_BGM_1.wav",        // file path (relative)
+					true,                                  // loop
+					true                                   // stream
+				);
+
+				// 2) Play it (same signature as in TestScene.cpp)
+				FMOD::Sound& bgm = resourceMgr->get<FMOD::Sound>("MainMenu_BGM_1");
+				audioSystem->play(bgm, 0.6f, false);   // volume 0.6, not paused
+			}
+			else {
+				std::cerr << "[MainMenu] AudioSystem or ResourceManager is null, "
+					"cannot play MainMenu_BGM.\n";
+			}
+		}
+		// ─────────────────────────────────────────────
 
 		// 🔹 Subscribe to button click events
 		MessageBus::Instance().Subscribe<ButtonClickedEvent>(
