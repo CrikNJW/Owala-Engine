@@ -82,6 +82,37 @@ namespace Framework {
 			// Update Button Hovering State
 			buttonComponent.isHovered = isHovering;
 
+			// Start with idle texture
+			std::string targetTexture = buttonComponent.idleTextureKey;
+
+			// Update texture based on hover and pressed states
+			if (mouseDown && isHovering && !buttonComponent.pressedTextureKey.empty()) {
+				targetTexture = buttonComponent.pressedTextureKey;
+			}
+			else if (isHovering && !buttonComponent.hoverTextureKey.empty()) {
+				targetTexture = buttonComponent.hoverTextureKey;
+			}
+
+			// Update texture if it has changed
+			if (!targetTexture.empty() && tex.textureKey != targetTexture) {
+				tex.textureKey = targetTexture;
+
+				// Reset Animation Component triggers
+				if (entityMgr.HasComponent(button, AnimationComponentType)) {
+					AnimationComponent& anim = entityMgr.GetComponent<AnimationComponent>(button);
+					anim.currentFrame = 0;
+					anim.elapsedTime = 0.0f;
+
+					// Start animation if hover texture is animated
+					if (targetTexture == buttonComponent.hoverTextureKey && buttonComponent.isHoverAnimated) {
+						anim.isPlaying = true;
+					}
+					else {
+						anim.isPlaying = false; // Stop animation for non-animated textures
+					}
+				}
+			}
+
 			// Play hover sound on hover state change
 			if (isHovering && !buttonComponent.wasHoveredLastFrame) {
 				// Just started hovering

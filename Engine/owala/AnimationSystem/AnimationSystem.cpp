@@ -89,10 +89,48 @@ namespace Framework {
 				}
 			}
 
+			// Handle button hover animations
+			else if (entityMgr.HasComponent(entity, ButtonType)) {
+				Button& buttonComp = entityMgr.GetComponent<Button>(entity);
+
+				// Only use animation if hovering and the hover texture is marked as animated
+				if (buttonComp.isHovered && buttonComp.isHoverAnimated &&
+					textureComponent.textureKey == buttonComp.hoverTextureKey) {
+					baseTextureKey = buttonComp.hoverTextureKey;
+				}
+				else {
+					// Don't animate non-hover states
+					animationComponent.isPlaying = false;
+					continue;
+				}
+			}
+
 			// Load animation info using base texture key
 			if (!resourceManager_->has<AnimationInfo>(baseTextureKey)) {
-				resourceManager_->loadAnimationInfo(baseTextureKey);
+				// Try to load animation info if not already loaded
+				try {
+					resourceManager_->loadAnimationInfo(baseTextureKey);
+				}
+				catch (...) {
+					Logger::Get().Error(DebugType::ResourceManager)
+						<< "Error loading AnimationInfo for texture key: " << baseTextureKey << std::endl;
+				}
 			}
+
+			if (!resourceManager_->has<AnimationInfo>(baseTextureKey)) {
+				// Fallback and treat as static image without animation
+				// Reset UVs here to show full image
+				animationComponent.isPlaying = false;
+				animationComponent.frameCount = 1;
+				animationComponent.currentFrame = 0;
+
+				// Force full image display
+				animationComponent.minUV = { 0.0f, 0.0f };
+				animationComponent.maxUV = { 1.0f, 1.0f };
+
+				continue;
+			}
+
 			AnimationInfo& animationInfo = resourceManager_->get<AnimationInfo>(baseTextureKey);
 
 			// Check if the texture key has changed
@@ -130,27 +168,24 @@ namespace Framework {
 				animationComponent.elapsedTime = 0.0f;
 			}
 
-			//	Check if animation is playing
-			if (!animationComponent.isPlaying) continue;
+			// Update animation frame based on elapsed time if animation playing
+			if (animationComponent.isPlaying) {
+				animationComponent.elapsedTime += Framework::Time::DeltaTime();
 
-			// Update elapsed time
-			animationComponent.elapsedTime += Framework::Time::DeltaTime();
+				// Advance frame if enough time has elapsed
+				if (animationComponent.elapsedTime >= animationComponent.frameDuration) {
+					animationComponent.elapsedTime -= animationComponent.frameDuration;
+					animationComponent.currentFrame++;
 
-			//	Check if it's time to switch to the next frame
-			if (animationComponent.elapsedTime >= animationComponent.frameDuration) {
-				animationComponent.elapsedTime -= animationComponent.frameDuration;; // Subtract frame duration(to handle any dt overflow). Eg. elapsedTime = 0.12, 0.12 - 0.1 = 0.02, animation will have 0.08 seconds before next frame change.
-
-				animationComponent.currentFrame++; // Move to the next frame
-
-				//Handle looping at the last frame
-				if (animationComponent.currentFrame >= animationComponent.frameCount) {
-					if (animationComponent.isLooping) {
-						animationComponent.currentFrame = 0; // Loop back to the first frame
-					}
-
-					else {
-						animationComponent.currentFrame = animationComponent.frameCount - 1; // Stay on the last frame
-						animationComponent.isPlaying = false; // Stop the animation
+					// Handle looping or stopping at the last frame
+					if (animationComponent.currentFrame >= animationComponent.frameCount) {
+						if (animationComponent.isLooping) {
+							animationComponent.currentFrame = 0;
+						}
+						else {
+							animationComponent.currentFrame = animationComponent.frameCount - 1;
+							animationComponent.isPlaying = false;
+						}
 					}
 				}
 			}

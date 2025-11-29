@@ -2856,6 +2856,78 @@ namespace Editor {
 				}
 			}
 
+			// Separator for visual states
+			ImGui::Separator();
+			ImGui::SeparatorText("Visual States");
+
+			// Helper Lambda for Texture Input Fields
+			auto TextureInput = [&](const char* label, std::string& textureField) {
+				ImGui::Text("%s", label);
+				ImGui::InputText((std::string("##") + label).c_str(), &textureField);
+
+				// Drag & Drop
+				if (ImGui::BeginDragDropTarget()) {
+					const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_PATH");
+					if (payload) {
+						// 1. Get string from payload
+						std::string dropped_path_str(static_cast<const char*>(payload->Data), payload->DataSize - 1);
+
+						// 2. Convert to filesystem path
+						fs::path dropped_file(dropped_path_str);
+
+						std::string ext = dropped_file.extension().string();
+						std::transform(ext.begin(), ext.end(), ext.begin(), [](unsigned char c) { return static_cast<char>(::tolower(c)); });
+
+						if (ext == ".png" || ext == ".jpg" || ext == ".jpeg") {
+							std::string newKey = dropped_file.filename().string();
+
+							// Save history
+							std::string beforeJSON = EntitySerializer::SerializeComponentToString(selectedEntity, selectedComponent, *ecs);
+							textureField = newKey; // Update field
+							std::string afterJSON = EntitySerializer::SerializeComponentToString(selectedEntity, selectedComponent, *ecs);
+
+							if (beforeJSON != afterJSON) {
+								historyManager_.RecordModifyComponent(selectedEntity, "Updated Button Texture", beforeJSON, afterJSON, selectedComponent);
+							}
+
+							// Ensure texture is loaded
+							if (resourceManager_) {
+								resourceManager_->unload<Texture>(newKey);
+
+								// FIX: Use 'dropped_file.string()' (the path object) OR 'dropped_path_str' (the string)
+								resourceManager_->loadTexture(newKey, dropped_file.string());
+							}
+						}
+					}
+					ImGui::EndDragDropTarget();
+				}
+			};
+
+			TextureInput("Idle Texture", buttonComp.idleTextureKey);
+			TextureInput("Hover Texture (Supports Animation)", buttonComp.hoverTextureKey);
+			TextureInput("Pressed Texture", buttonComp.pressedTextureKey);
+
+			ImGui::Separator();
+			ImGui::SeparatorText("Animation Settings");
+
+			bool isHoverAnimatedLocal = buttonComp.isHoverAnimated;
+			if (ImGui::Checkbox("Animate Hover Texture", &isHoverAnimatedLocal)) {
+				std::string beforeJSON = EntitySerializer::SerializeComponentToString(selectedEntity, selectedComponent, *ecs);
+				buttonComp.isHoverAnimated = isHoverAnimatedLocal;
+				std::string afterJSON = EntitySerializer::SerializeComponentToString(selectedEntity, selectedComponent, *ecs);
+
+				if (beforeJSON != afterJSON) {
+					std::stringstream ss;
+					ss << "Modified " << ComponentToString(selectedComponent) << " in "
+						<< entityMgr.GetProperties(selectedEntity).name << std::endl;
+					historyManager_.RecordModifyComponent(selectedEntity, ss.str(), beforeJSON, afterJSON, selectedComponent);
+				}
+			}
+
+			if (ImGui::IsItemHovered()) {
+				ImGui::SetTooltip("Enable this if the hover texture is a spritesheet animation");
+			}
+
 			// Save History if data changed
 			if (dataChanged) {
 				std::string afterJSON = EntitySerializer::SerializeComponentToString(selectedEntity, selectedComponent, *ecs);

@@ -1060,6 +1060,22 @@ namespace Framework {
 		clickSoundVal.SetString(button.clickSoundKey.c_str(), static_cast<rapidjson::SizeType>(button.clickSoundKey.length()), alloc);
 		outData.AddMember(rapidjson::StringRef(Serialization::CLICK_SOUND_KEY), clickSoundVal, alloc);
 		outData.AddMember(rapidjson::StringRef(Serialization::CLICK_SOUND_VOLUME), button.clickSoundVolume, alloc);
+
+		if (!button.idleTextureKey.empty()) {
+			rapidjson::Value val;
+			val.SetString(button.idleTextureKey.c_str(), static_cast<rapidjson::SizeType>(button.idleTextureKey.length()), alloc);
+			outData.AddMember(rapidjson::StringRef(Serialization::IDLE_TEXTURE_KEY), val, alloc);
+		}
+		if (!button.hoverTextureKey.empty()) {
+			rapidjson::Value val;
+			val.SetString(button.hoverTextureKey.c_str(), static_cast<rapidjson::SizeType>(button.hoverTextureKey.length()), alloc);
+			outData.AddMember(rapidjson::StringRef(Serialization::HOVER_TEXTURE_KEY), val, alloc);
+		}
+		if (!button.pressedTextureKey.empty()) {
+			rapidjson::Value val;
+			val.SetString(button.pressedTextureKey.c_str(), static_cast<rapidjson::SizeType>(button.pressedTextureKey.length()), alloc);
+			outData.AddMember(rapidjson::StringRef(Serialization::PRESSED_TEXTURE_KEY), val, alloc);
+		}
 	}
 
 	// SceneOwned Component
@@ -1655,6 +1671,16 @@ namespace Framework {
 		}
 		else {
 			out.clickSoundVolume = 0.5f; // Default for old save files
+		}
+
+		if (componentData.HasMember(Serialization::IDLE_TEXTURE_KEY) && componentData[Serialization::IDLE_TEXTURE_KEY].IsString()) {
+			out.idleTextureKey = componentData[Serialization::IDLE_TEXTURE_KEY].GetString();
+		}
+		if (componentData.HasMember(Serialization::HOVER_TEXTURE_KEY) && componentData[Serialization::HOVER_TEXTURE_KEY].IsString()) {
+			out.hoverTextureKey = componentData[Serialization::HOVER_TEXTURE_KEY].GetString();
+		}
+		if (componentData.HasMember(Serialization::PRESSED_TEXTURE_KEY) && componentData[Serialization::PRESSED_TEXTURE_KEY].IsString()) {
+			out.pressedTextureKey = componentData[Serialization::PRESSED_TEXTURE_KEY].GetString();
 		}
 
 		return true;

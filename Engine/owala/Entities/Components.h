@@ -239,6 +239,13 @@ namespace Framework{
 		std::string clickSoundKey = "";   // Sound to play when clicked
 		float clickSoundVolume = 0.5f;    // Volume for click sound
 
+		// Texture states
+		std::string idleTextureKey = "";     // Texture when doing nothing
+		std::string hoverTextureKey = "";    // Texture (or spritesheet) when hovered
+		std::string pressedTextureKey = "";  // Texture when clicked
+
+		bool isHoverAnimated = false;
+
 		bool wasHoveredLastFrame = false; // Track hover state changes
 	};
 
