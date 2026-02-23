@@ -32,6 +32,7 @@
 #include "FileUtility.h"
 #include "AnimationSystem.h"
 #include "LayerManager.h"
+#include "SpotlightSystem.h"
 
 #ifdef BUILD_EDITOR
 #include "Editor.h"
@@ -94,7 +95,7 @@ namespace Framework {
 			LevelResetSystem* levelResetter_ = nullptr;
 			TransformationSystem* transformation_ = nullptr;
 			AnimationSystem* animationSystem_ = nullptr;
-			  
+			SpotlightSystem* spotlight_ = nullptr;
 		};
 
 		RegisteredSystems systems_;

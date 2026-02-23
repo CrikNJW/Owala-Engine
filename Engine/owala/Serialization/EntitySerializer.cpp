@@ -9,7 +9,7 @@
  *      Ng Jordain Ying Zhe (10%)
  *      Ng Jing Wen (10%)
  *      Yar Xuan (10%)
-*		
+*
 *
 * \brief    This file defines the EntitySerializer class, which provides a static interface for
 			serializing (saving) and deserializing (loading) game entities, their components,
@@ -252,6 +252,14 @@ namespace Framework {
 			rapidjson::Value value(rapidjson::kObjectType);
 			SerializeComponent(health, value, alloc);
 			componentList.AddMember(rapidjson::StringRef(Serialization::PLAYER_HEALTH_COMPONENT), value, alloc);
+		}
+
+		// Serialize SpotlightComponent
+		if (entityMgr.HasComponent(entity, ComponentType::SpotlightComponentType)) {
+			SpotlightComponent& spotlight = entityMgr.GetComponent<SpotlightComponent>(entity);
+			rapidjson::Value value(rapidjson::kObjectType);
+			SerializeComponent(spotlight, value, alloc);
+			componentList.AddMember(rapidjson::StringRef(Serialization::SPOTLIGHT_COMPONENT), value, alloc);
 		}
 
 		outData.AddMember(rapidjson::StringRef(Serialization::COMPONENTS), componentList, alloc);
@@ -614,7 +622,7 @@ namespace Framework {
 				entityMgr.AddComponent<NativeScriptsComponent>(loadedEntity, std::move(nativeScripts));
 			}
 		}
-		
+
 		// Deserialize FSM Component
 		if (componentLists.HasMember(Serialization::FSM_COMPONENT)) {
 			FSMComponent fsm;
@@ -667,6 +675,15 @@ namespace Framework {
 			PlayerHealthComponent healthComp;
 			if (DeserializeComponent(playerHealthData, healthComp)) {
 				entityMgr.AddComponent<PlayerHealthComponent>(loadedEntity, healthComp);
+			}
+		}
+
+		// Deserialize SpotlightComponent
+		if (componentLists.HasMember(Serialization::SPOTLIGHT_COMPONENT)) {
+			const rapidjson::Value& spotlightData = componentLists[Serialization::SPOTLIGHT_COMPONENT];
+			SpotlightComponent spotlightComp;
+			if (DeserializeComponent(spotlightData, spotlightComp)) {
+				entityMgr.AddComponent<SpotlightComponent>(loadedEntity, spotlightComp);
 			}
 		}
 	}
@@ -812,7 +829,7 @@ namespace Framework {
 			// Deserialize scene name and entities
 			sceneName = sceneData[Serialization::SCENE_NAME].GetString();
 			const rapidjson::Value& entitiesData = sceneData[Serialization::ENTITIES];
-			
+
 			EntityManager entityMgr(ecs);
 
 			// Map currently persistent entities by UUID
@@ -1118,7 +1135,7 @@ namespace Framework {
 		clickSoundVal.SetString(button.clickSoundKey.c_str(), static_cast<rapidjson::SizeType>(button.clickSoundKey.length()), alloc);
 		outData.AddMember(rapidjson::StringRef(Serialization::CLICK_SOUND_KEY), clickSoundVal, alloc);
 		outData.AddMember(rapidjson::StringRef(Serialization::CLICK_SOUND_VOLUME), button.clickSoundVolume, alloc);
-	
+
 		rapidjson::Value defaultTexVal;
 		defaultTexVal.SetString(button.defaultTextureKey.c_str(), static_cast<rapidjson::SizeType>(button.defaultTextureKey.length()), alloc);
 		outData.AddMember(rapidjson::StringRef(Serialization::BUTTON_DEFAULT_TEXTURE), defaultTexVal, alloc);
@@ -1162,7 +1179,7 @@ namespace Framework {
 		outData.AddMember(rapidjson::StringRef(Serialization::PARTICLE_SIZE), halfSize, alloc);
 
 		outData.AddMember(rapidjson::StringRef(Serialization::IS_AFFECTED_BY_GRAVITY), particleEmitter.isAffectedByGravity, alloc);
-		
+
 		rapidjson::Value startVel(rapidjson::kObjectType);
 		startVel.AddMember(rapidjson::StringRef(Serialization::VEC2_X), particleEmitter.particleStartVelocity.x, alloc);
 		startVel.AddMember(rapidjson::StringRef(Serialization::VEC2_Y), particleEmitter.particleStartVelocity.y, alloc);
@@ -1206,7 +1223,7 @@ namespace Framework {
 		emitOffset.AddMember(rapidjson::StringRef(Serialization::VEC2_X), particleEmitter.emissionOffset.x, alloc);
 		emitOffset.AddMember(rapidjson::StringRef(Serialization::VEC2_Y), particleEmitter.emissionOffset.y, alloc);
 		outData.AddMember(rapidjson::StringRef(Serialization::EMISSION_OFFSET), emitOffset, alloc);
-		
+
 		outData.AddMember(rapidjson::StringRef(Serialization::EMISSION_MODE), static_cast<int>(particleEmitter.emissionMode), alloc);
 		rapidjson::Value triggerNameVal;
 		const char* tName = particleEmitter.triggerEventName.empty() ? "" : particleEmitter.triggerEventName.c_str();
@@ -1588,7 +1605,7 @@ namespace Framework {
 	// Camera Component
 	bool EntitySerializer::DeserializeComponent(const rapidjson::Value& componentData, Camera& out) {
 		if (!componentData.IsObject()) return false;
-		
+
 		if (componentData.HasMember(Serialization::POSITION) && componentData[Serialization::POSITION].IsObject()) {
 			const rapidjson::Value& positionData = componentData[Serialization::POSITION];
 			if (positionData.HasMember(Serialization::VEC2_X) && positionData[Serialization::VEC2_X].IsFloat()) {
@@ -1947,7 +1964,7 @@ namespace Framework {
 
 		if (componentData.HasMember(Serialization::SLIDER_IS_DRAGGING))
 			out.isDragging = componentData[Serialization::SLIDER_IS_DRAGGING].GetBool();
-		
+
 		if (componentData.HasMember(Serialization::SLIDER_TYPE) && componentData[Serialization::SLIDER_TYPE].IsInt()) {
 			out.sliderType = static_cast<SliderSoundType>(componentData[Serialization::SLIDER_TYPE].GetInt());
 		}
@@ -1965,6 +1982,95 @@ namespace Framework {
 		if (componentData.HasMember(Serialization::PLAYER_HEALTH_NUM) && componentData[Serialization::PLAYER_HEALTH_NUM].IsInt()) {
 			out.lifeNum = componentData[Serialization::PLAYER_HEALTH_NUM].GetInt();
 		}
+		return true;
+	}
+
+	// -----------------------------------------------------------------------
+	// SpotlightComponent Serialization
+	// -----------------------------------------------------------------------
+	void EntitySerializer::SerializeComponent(const SpotlightComponent& sl, rapidjson::Value& outData, rapidjson::Document::AllocatorType& alloc) {
+		outData.AddMember(rapidjson::StringRef(Serialization::SPOTLIGHT_RADIUS), sl.radius, alloc);
+		outData.AddMember(rapidjson::StringRef(Serialization::SPOTLIGHT_CONE_ANGLE), sl.coneAngle, alloc);
+		outData.AddMember(rapidjson::StringRef(Serialization::SPOTLIGHT_DIRECTION_ANGLE), sl.directionAngle, alloc);
+		outData.AddMember(rapidjson::StringRef(Serialization::SPOTLIGHT_FOLLOW_FACING), sl.followEntityFacing, alloc);
+		outData.AddMember(rapidjson::StringRef(Serialization::SPOTLIGHT_INTENSITY), sl.intensity, alloc);
+		outData.AddMember(rapidjson::StringRef(Serialization::SPOTLIGHT_FALLOFF), sl.falloff, alloc);
+		outData.AddMember(rapidjson::StringRef(Serialization::SPOTLIGHT_CAST_SHADOWS), sl.castShadows, alloc);
+		outData.AddMember(rapidjson::StringRef(Serialization::SPOTLIGHT_SHADOW_RAYS), sl.shadowRays, alloc);
+		outData.AddMember(rapidjson::StringRef(Serialization::SPOTLIGHT_IS_ACTIVE), sl.isActive, alloc);
+
+		// Light color as RGBA array
+		rapidjson::Value colorArr(rapidjson::kArrayType);
+		colorArr.PushBack(sl.color.r, alloc);
+		colorArr.PushBack(sl.color.g, alloc);
+		colorArr.PushBack(sl.color.b, alloc);
+		colorArr.PushBack(sl.color.a, alloc);
+		outData.AddMember(rapidjson::StringRef(Serialization::SPOTLIGHT_COLOR), colorArr, alloc);
+
+		// Ambient color as RGBA array
+		rapidjson::Value ambArr(rapidjson::kArrayType);
+		ambArr.PushBack(sl.ambientColor.r, alloc);
+		ambArr.PushBack(sl.ambientColor.g, alloc);
+		ambArr.PushBack(sl.ambientColor.b, alloc);
+		ambArr.PushBack(sl.ambientColor.a, alloc);
+		outData.AddMember(rapidjson::StringRef(Serialization::SPOTLIGHT_AMBIENT_COLOR), ambArr, alloc);
+	}
+
+	// -----------------------------------------------------------------------
+	// SpotlightComponent Deserialization
+	// -----------------------------------------------------------------------
+	bool EntitySerializer::DeserializeComponent(const rapidjson::Value& componentData, SpotlightComponent& out) {
+		if (!componentData.IsObject()) return false;
+
+		if (componentData.HasMember(Serialization::SPOTLIGHT_RADIUS) && componentData[Serialization::SPOTLIGHT_RADIUS].IsFloat())
+			out.radius = componentData[Serialization::SPOTLIGHT_RADIUS].GetFloat();
+
+		if (componentData.HasMember(Serialization::SPOTLIGHT_CONE_ANGLE) && componentData[Serialization::SPOTLIGHT_CONE_ANGLE].IsFloat())
+			out.coneAngle = componentData[Serialization::SPOTLIGHT_CONE_ANGLE].GetFloat();
+
+		if (componentData.HasMember(Serialization::SPOTLIGHT_DIRECTION_ANGLE) && componentData[Serialization::SPOTLIGHT_DIRECTION_ANGLE].IsFloat())
+			out.directionAngle = componentData[Serialization::SPOTLIGHT_DIRECTION_ANGLE].GetFloat();
+
+		if (componentData.HasMember(Serialization::SPOTLIGHT_FOLLOW_FACING) && componentData[Serialization::SPOTLIGHT_FOLLOW_FACING].IsBool())
+			out.followEntityFacing = componentData[Serialization::SPOTLIGHT_FOLLOW_FACING].GetBool();
+
+		if (componentData.HasMember(Serialization::SPOTLIGHT_INTENSITY) && componentData[Serialization::SPOTLIGHT_INTENSITY].IsFloat())
+			out.intensity = componentData[Serialization::SPOTLIGHT_INTENSITY].GetFloat();
+
+		if (componentData.HasMember(Serialization::SPOTLIGHT_FALLOFF) && componentData[Serialization::SPOTLIGHT_FALLOFF].IsFloat())
+			out.falloff = componentData[Serialization::SPOTLIGHT_FALLOFF].GetFloat();
+
+		if (componentData.HasMember(Serialization::SPOTLIGHT_CAST_SHADOWS) && componentData[Serialization::SPOTLIGHT_CAST_SHADOWS].IsBool())
+			out.castShadows = componentData[Serialization::SPOTLIGHT_CAST_SHADOWS].GetBool();
+
+		if (componentData.HasMember(Serialization::SPOTLIGHT_SHADOW_RAYS) && componentData[Serialization::SPOTLIGHT_SHADOW_RAYS].IsInt())
+			out.shadowRays = componentData[Serialization::SPOTLIGHT_SHADOW_RAYS].GetInt();
+
+		if (componentData.HasMember(Serialization::SPOTLIGHT_IS_ACTIVE) && componentData[Serialization::SPOTLIGHT_IS_ACTIVE].IsBool())
+			out.isActive = componentData[Serialization::SPOTLIGHT_IS_ACTIVE].GetBool();
+
+		// Light color (RGBA array)
+		if (componentData.HasMember(Serialization::SPOTLIGHT_COLOR) && componentData[Serialization::SPOTLIGHT_COLOR].IsArray()) {
+			const auto& arr = componentData[Serialization::SPOTLIGHT_COLOR];
+			if (arr.Size() >= 4) {
+				out.color.r = arr[0].GetFloat();
+				out.color.g = arr[1].GetFloat();
+				out.color.b = arr[2].GetFloat();
+				out.color.a = arr[3].GetFloat();
+			}
+		}
+
+		// Ambient color (RGBA array)
+		if (componentData.HasMember(Serialization::SPOTLIGHT_AMBIENT_COLOR) && componentData[Serialization::SPOTLIGHT_AMBIENT_COLOR].IsArray()) {
+			const auto& arr = componentData[Serialization::SPOTLIGHT_AMBIENT_COLOR];
+			if (arr.Size() >= 4) {
+				out.ambientColor.r = arr[0].GetFloat();
+				out.ambientColor.g = arr[1].GetFloat();
+				out.ambientColor.b = arr[2].GetFloat();
+				out.ambientColor.a = arr[3].GetFloat();
+			}
+		}
+
 		return true;
 	}
 

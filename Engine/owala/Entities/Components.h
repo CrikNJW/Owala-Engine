@@ -519,4 +519,25 @@ namespace Framework{
 		int lifeNum{};
 	};
 
+
+	struct SpotlightComponent {
+		// Light shape
+		float radius = 5.0f;   // World-space radius of the spotlight cone
+		float coneAngle = 60.0f;  // Half-angle of the cone in degrees (60 = 120° total)
+		float directionAngle = 0.0f;  // Angle the spotlight points (degrees, 0 = right)
+		bool  followEntityFacing = true; // Auto-flip direction based on PlayerState
+
+		// Light appearance
+		Color  color = { 1.0f, 0.95f, 0.8f, 1.0f }; // Warm white
+		float  intensity = 1.0f;   // Multiplier for brightness
+		float  falloff = 2.0f;   // Falloff exponent (higher = sharper edge)
+		Color  ambientColor = { 0.05f, 0.05f, 0.1f, 1.0f }; // Darkness outside the cone
+
+		// Shadow settings
+		bool  castShadows = true;
+		int   shadowRays = 128;    // More rays = smoother shadow edges (perf tradeoff)
+		float shadowBias = 0.01f;
+
+		bool  isActive = true;
+	};
 }

@@ -96,8 +96,81 @@ namespace Framework {
         FragColor = vec4(uColor.rgb, uColor.a * alpha);
     }
     )";
-     
-     
+
+    // Occluder shader — renders shadow-casting geometry as solid white into the occluder FBO
+    static const char* VS_OCCLUDER = R"(#version 330 core
+    layout(location=0) in vec2 aPos;
+    void main(){ gl_Position = vec4(aPos, 0.0, 1.0); }
+    )";
+
+    static const char* FS_OCCLUDER = R"(#version 330 core
+    out vec4 FragColor;
+    void main(){ FragColor = vec4(1.0); }
+    )";
+
+    // Spotlight composite shader — reads the occluder mask and outputs the lighting overlay
+    static const char* VS_SPOTLIGHT = R"(#version 330 core
+    layout(location=0) in vec2 aPos;
+    layout(location=1) in vec2 aUV;
+    out vec2 vUV;
+    void main(){
+        gl_Position = vec4(aPos, 0.0, 1.0);
+        vUV = aUV;
+    }
+    )";
+
+    static const char* FS_SPOTLIGHT = R"(#version 330 core
+    in vec2 vUV;
+    uniform sampler2D uOccluderMask;
+    uniform vec2  uLightNDC;
+    uniform float uRadius;
+    uniform float uConeAngleRad;
+    uniform float uDirectionRad;
+    uniform vec4  uLightColor;
+    uniform float uIntensity;
+    uniform float uFalloff;
+    uniform vec4  uAmbientColor;
+    uniform int   uShadowRays;
+    uniform int   uCastShadows;
+    out vec4 FragColor;
+
+    void main() {
+        vec2 fragNDC = vUV * 2.0 - 1.0;
+        vec2 toFrag  = fragNDC - uLightNDC;
+        float dist   = length(toFrag);
+
+        if (dist > uRadius) {
+            FragColor = uAmbientColor;
+            return;
+        }
+
+        float angle = atan(toFrag.y, toFrag.x);
+        float angleDiff = abs(mod(angle - uDirectionRad + 3.14159265, 6.28318530) - 3.14159265);
+        if (angleDiff > uConeAngleRad) {
+            FragColor = uAmbientColor;
+            return;
+        }
+
+        float lit = 1.0;
+        if (uCastShadows != 0 && dist > 0.001) {
+            vec2 dir = normalize(toFrag);
+            float stepSize = dist / float(uShadowRays);
+            for (int i = 1; i <= uShadowRays; i++) {
+                vec2 sampleNDC = uLightNDC + dir * (stepSize * float(i));
+                vec2 uv = sampleNDC * 0.5 + 0.5;
+                if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) break;
+                float occ = texture(uOccluderMask, uv).r;
+                if (occ > 0.5) { lit = 0.0; break; }
+            }
+        }
+
+        float attenuation  = pow(max(0.0, 1.0 - dist / uRadius), uFalloff);
+        float coneEdge     = 1.0 - smoothstep(uConeAngleRad * 0.85, uConeAngleRad, angleDiff);
+        float brightness   = lit * attenuation * coneEdge * uIntensity;
+        FragColor = mix(uAmbientColor, uLightColor * brightness, brightness);
+    }
+    )";
+
     // Shader File Loading Helpers
     // =========================
 
@@ -162,6 +235,19 @@ namespace Framework {
     static GLint g_uTexLoc_Tex = -1;
     static GLint g_uColorLoc_Text = -1;
     static GLint g_uTexLoc_Text = -1;
+
+    // Spotlight uniform location cache
+    static GLint g_sl_OccluderMask = -1;
+    static GLint g_sl_LightNDC = -1;
+    static GLint g_sl_Radius = -1;
+    static GLint g_sl_ConeAngleRad = -1;
+    static GLint g_sl_DirectionRad = -1;
+    static GLint g_sl_LightColor = -1;
+    static GLint g_sl_Intensity = -1;
+    static GLint g_sl_Falloff = -1;
+    static GLint g_sl_AmbientColor = -1;
+    static GLint g_sl_ShadowRays = -1;
+    static GLint g_sl_CastShadows = -1;
 
     // Batch buffer � reused each call (to avoid reallocations)
     static std::vector<float> g_batchVerts; // interleaved x,y,u,v for 6 verts per sprite
@@ -259,7 +345,48 @@ namespace Framework {
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 
         // Create game framebuffer
-		CreateGameFramebuffer(800, 600);
+        CreateGameFramebuffer(800, 600);
+
+        // ----- Spotlight / shadow pipeline -----
+        progOccluder_ = linkProgram(VS_OCCLUDER, FS_OCCLUDER);
+        progSpotlight_ = linkProgram(VS_SPOTLIGHT, FS_SPOTLIGHT);
+
+        // Cache spotlight uniform locations
+        g_sl_OccluderMask = glGetUniformLocation(progSpotlight_, "uOccluderMask");
+        g_sl_LightNDC = glGetUniformLocation(progSpotlight_, "uLightNDC");
+        g_sl_Radius = glGetUniformLocation(progSpotlight_, "uRadius");
+        g_sl_ConeAngleRad = glGetUniformLocation(progSpotlight_, "uConeAngleRad");
+        g_sl_DirectionRad = glGetUniformLocation(progSpotlight_, "uDirectionRad");
+        g_sl_LightColor = glGetUniformLocation(progSpotlight_, "uLightColor");
+        g_sl_Intensity = glGetUniformLocation(progSpotlight_, "uIntensity");
+        g_sl_Falloff = glGetUniformLocation(progSpotlight_, "uFalloff");
+        g_sl_AmbientColor = glGetUniformLocation(progSpotlight_, "uAmbientColor");
+        g_sl_ShadowRays = glGetUniformLocation(progSpotlight_, "uShadowRays");
+        g_sl_CastShadows = glGetUniformLocation(progSpotlight_, "uCastShadows");
+
+        // Fullscreen quad VAO/VBO for spotlight composite pass (NDC -1..1, UV 0..1)
+        const float fsQuad[] = {
+            -1.f,-1.f, 0.f,0.f,
+             1.f,-1.f, 1.f,0.f,
+             1.f, 1.f, 1.f,1.f,
+            -1.f,-1.f, 0.f,0.f,
+             1.f, 1.f, 1.f,1.f,
+            -1.f, 1.f, 0.f,1.f
+        };
+        glGenVertexArrays(1, &vaoFullscreen_);
+        glBindVertexArray(vaoFullscreen_);
+        glGenBuffers(1, &vboFullscreen_);
+        glBindBuffer(GL_ARRAY_BUFFER, vboFullscreen_);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(fsQuad), fsQuad, GL_STATIC_DRAW);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+        glBindVertexArray(0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        // Create occluder FBO at screen resolution (can use half-res for performance)
+        InitSpotlightFBO(fbw, fbh);
     }
 
     void Graphics::Update() {
@@ -280,6 +407,14 @@ namespace Framework {
         if (vboText_) { glDeleteBuffers(1, &vboText_);  vboText_ = 0; }
         if (vaoText_) { glDeleteVertexArrays(1, &vaoText_); vaoText_ = 0; }
         if (progText_) { glDeleteProgram(progText_); progText_ = 0; }
+
+        // Spotlight / shadow resources
+        if (vboFullscreen_) { glDeleteBuffers(1, &vboFullscreen_); vboFullscreen_ = 0; }
+        if (vaoFullscreen_) { glDeleteVertexArrays(1, &vaoFullscreen_); vaoFullscreen_ = 0; }
+        if (progOccluder_) { glDeleteProgram(progOccluder_);  progOccluder_ = 0; }
+        if (progSpotlight_) { glDeleteProgram(progSpotlight_); progSpotlight_ = 0; }
+        if (texOccluder_) { glDeleteTextures(1, &texOccluder_);      texOccluder_ = 0; }
+        if (fboOccluder_) { glDeleteFramebuffers(1, &fboOccluder_);  fboOccluder_ = 0; }
     }
 
     // =========================
@@ -710,9 +845,113 @@ namespace Framework {
     }
 
     // =========================
+    // Spotlight / Shadow methods
+    // =========================
+
+    void Graphics::InitSpotlightFBO(int width, int height) {
+        // Clean up any existing FBO first (handles resize calls)
+        if (texOccluder_) { glDeleteTextures(1, &texOccluder_);     texOccluder_ = 0; }
+        if (fboOccluder_) { glDeleteFramebuffers(1, &fboOccluder_); fboOccluder_ = 0; }
+
+        fboWidth_ = width;
+        fboHeight_ = height;
+
+        glGenFramebuffers(1, &fboOccluder_);
+        glBindFramebuffer(GL_FRAMEBUFFER, fboOccluder_);
+
+        glGenTextures(1, &texOccluder_);
+        glBindTexture(GL_TEXTURE_2D, texOccluder_);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texOccluder_, 0);
+
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+            std::fprintf(stderr, "Spotlight occluder FBO incomplete!\n");
+        }
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
+
+    void Graphics::RenderOccluderRect(float ndcX, float ndcY, float halfW, float halfH) {
+        // Draws a solid white axis-aligned quad into the currently-bound FBO
+        // ndcX/Y is the centre; halfW/halfH are in NDC units
+        const float verts[12] = {
+            ndcX - halfW, ndcY - halfH,
+            ndcX + halfW, ndcY - halfH,
+            ndcX + halfW, ndcY + halfH,
+            ndcX - halfW, ndcY - halfH,
+            ndcX + halfW, ndcY + halfH,
+            ndcX - halfW, ndcY + halfH
+        };
+
+        glUseProgram(progOccluder_);
+        glBindVertexArray(vaoCol_);          // reuse pos-only VAO layout
+        glBindBuffer(GL_ARRAY_BUFFER, vboCol_);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(verts), verts);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+    }
+
+    void Graphics::CompositeSpotlight(
+        const Vector2D& lightNDC,
+        float radiusNDC,
+        float coneAngleRad,
+        float directionRad,
+        const Color& lightColor,
+        float intensity,
+        float falloff,
+        const Color& ambientColor,
+        int   shadowRays,
+        bool  castShadows)
+    {
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        glUseProgram(progSpotlight_);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texOccluder_);
+        glUniform1i(g_sl_OccluderMask, 0);
+        glUniform2f(g_sl_LightNDC, lightNDC.x, lightNDC.y);
+        glUniform1f(g_sl_Radius, radiusNDC);
+        glUniform1f(g_sl_ConeAngleRad, coneAngleRad);
+        glUniform1f(g_sl_DirectionRad, directionRad);
+        glUniform4f(g_sl_LightColor, lightColor.r, lightColor.g, lightColor.b, lightColor.a);
+        glUniform1f(g_sl_Intensity, intensity);
+        glUniform1f(g_sl_Falloff, falloff);
+        glUniform4f(g_sl_AmbientColor, ambientColor.r, ambientColor.g, ambientColor.b, ambientColor.a);
+        glUniform1i(g_sl_ShadowRays, shadowRays);
+        glUniform1i(g_sl_CastShadows, castShadows ? 1 : 0);
+
+        glBindVertexArray(vaoFullscreen_);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        glBindVertexArray(0);
+
+        glBindTexture(GL_TEXTURE_2D, 0);
+        glDisable(GL_BLEND);
+    }
+
+    void Graphics::BindOccluderFBO() {
+        glBindFramebuffer(GL_FRAMEBUFFER, fboOccluder_);
+        glViewport(0, 0, fboWidth_, fboHeight_);
+        glClearColor(0.f, 0.f, 0.f, 0.f);
+        glClear(GL_COLOR_BUFFER_BIT);
+        glDisable(GL_BLEND);
+    }
+
+    void Graphics::UnbindOccluderFBO() {
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glViewport(0, 0, screenWidth, screenHeight);
+    }
+
+    // =========================
     // Framebuffers
     // =========================
-    #pragma region FRAMEBUFFERS
+#pragma region FRAMEBUFFERS
 
     Graphics::Framebuffer::Framebuffer(const FramebufferSpecs& specifications) : specs(specifications) {
         glGenFramebuffers(1, &rendererID);
@@ -734,10 +973,10 @@ namespace Framework {
 
         // Sanity check
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-			Logger::Error(DebugType::GraphicsSystem) << "Framebuffer is incomplete!" << std::endl;
+            Logger::Error(DebugType::GraphicsSystem) << "Framebuffer is incomplete!" << std::endl;
         }
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	}
+    }
 
 
 
@@ -756,7 +995,7 @@ namespace Framework {
     void Graphics::Framebuffer::Bind() const {
         glBindFramebuffer(GL_FRAMEBUFFER, rendererID);
         glViewport(0, 0, specs.width, specs.height);
-	}
+    }
 
     void Graphics::Framebuffer::Unbind() const {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -765,7 +1004,7 @@ namespace Framework {
     void Graphics::Framebuffer::Resize(FramebufferSpecs specifications) {
         specs = specifications;
 
-		// Delete old attachments
+        // Delete old attachments
         if (depthAttachment) glDeleteRenderbuffers(1, &depthAttachment);
         if (colorAttachment) glDeleteTextures(1, &colorAttachment);
 
@@ -789,7 +1028,7 @@ namespace Framework {
             Logger::Error(DebugType::GraphicsSystem) << "Framebuffer is incomplete!" << std::endl;
         }
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	}
+    }
 
     void Graphics::Framebuffer::Resize(unsigned width, unsigned height) {
         Resize(FramebufferSpecs{ width, height });
@@ -820,7 +1059,7 @@ namespace Framework {
         }
     }
 
-	// CPU Image Loading for background thread
+    // CPU Image Loading for background thread
     Graphics::ImageRawData Graphics::LoadImageToCPU(const char* path, bool flipY) {
         if (flipY) stbi_set_flip_vertically_on_load(1);
         else stbi_set_flip_vertically_on_load(0);
@@ -835,7 +1074,7 @@ namespace Framework {
         return data;
     }
 
-	// Upload CPU image data to GPU as texture on main thread
+    // Upload CPU image data to GPU as texture on main thread
     Texture Graphics::CreateTextureFromRawData(const ImageRawData& data, bool srgb) {
         if (!data.pixels) return 0;
 
@@ -858,7 +1097,7 @@ namespace Framework {
         return tex;
     }
 
-	// Free CPU image data
+    // Free CPU image data
     void Graphics::FreeImageRawData(ImageRawData& data) {
         if (data.pixels) {
             stbi_image_free(data.pixels);
@@ -866,7 +1105,7 @@ namespace Framework {
         }
     }
 
-    #pragma endregion
+#pragma endregion
 
 
 } // namespace Framework

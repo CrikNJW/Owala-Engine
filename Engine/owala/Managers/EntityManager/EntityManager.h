@@ -142,9 +142,9 @@ namespace Framework {
 			else if constexpr (std::is_same_v<T, ParticleEmitterComponent>) return ecs.particleEmitterComponent.at(entity);
 			else if constexpr (std::is_same_v<T, Slider>) return ecs.sliders.at(entity);
 			else if constexpr (std::is_same_v<T, PlayerHealthComponent>) return ecs.playerHealth.at(entity);
-			else {
-				static_assert(!std::is_same_v<T, T>, "Unsupported component type");
-			}
+			//else {
+			//	static_assert(!std::is_same_v<T, T>, "Unsupported component type");
+			//}
 		}
 		// Checks if given component is a Tag Component. Returns false if it is a regular component.
 		bool IsTagComponent(ComponentType componentType);

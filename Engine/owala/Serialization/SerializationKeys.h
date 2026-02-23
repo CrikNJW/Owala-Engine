@@ -235,4 +235,18 @@ namespace Framework::Serialization {
 	static constexpr const char* PERSISTENT_TAG = "PersistentTag";
 	static constexpr const char* ACTIVE_TAG = "ActiveTag";
 	static constexpr const char* SPAWN_PT_TAG = "SpawnPointTag";
+
+	// Light components
+	static constexpr const char* SPOTLIGHT_COMPONENT = "SpotlightComponent";
+	static constexpr const char* SPOTLIGHT_RADIUS = "radius";
+	static constexpr const char* SPOTLIGHT_CONE_ANGLE = "cone_angle";
+	static constexpr const char* SPOTLIGHT_DIRECTION_ANGLE = "direction_angle";
+	static constexpr const char* SPOTLIGHT_FOLLOW_FACING = "follow_entity_facing";
+	static constexpr const char* SPOTLIGHT_COLOR = "color";
+	static constexpr const char* SPOTLIGHT_INTENSITY = "intensity";
+	static constexpr const char* SPOTLIGHT_FALLOFF = "falloff";
+	static constexpr const char* SPOTLIGHT_AMBIENT_COLOR = "ambient_color";
+	static constexpr const char* SPOTLIGHT_CAST_SHADOWS = "cast_shadows";
+	static constexpr const char* SPOTLIGHT_SHADOW_RAYS = "shadow_rays";
+	static constexpr const char* SPOTLIGHT_IS_ACTIVE = "is_active";
 }

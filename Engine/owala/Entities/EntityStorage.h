@@ -73,6 +73,7 @@ namespace Framework {
 		ParticleEmitterComponentType,
 		SliderType,
 		PlayerHealthComponentType,
+		SpotlightComponentType,
 		MAX_COMPONENTS
 	};
 
@@ -119,6 +120,7 @@ namespace Framework {
 	template <> struct ComponentTypeTrait<PlayerHealthComponent> { static constexpr ComponentType value = PlayerHealthComponentType; };
 	template <> struct ComponentTypeTrait<GUITag> { static constexpr ComponentType value = GUITagType; };
 	template <> struct ComponentTypeTrait<SpawnPointTag> { static constexpr ComponentType value = SpawnPointTagType; };
+	template <> struct ComponentTypeTrait<SpotlightComponent> { static constexpr ComponentType value = SpotlightComponentType; }; 
 
 #pragma endregion
 
@@ -156,6 +158,7 @@ namespace Framework {
 
 		std::unordered_map<Entity, NativeScriptsComponent> nativeScripts; // Native Scripts
 		std::unordered_map<Entity, PlayerHealthComponent> playerHealth;
+		std::unordered_map<Entity, SpotlightComponent> spotlights; 
 
 		/* Scene Components */
 		std::unordered_map<Entity, SceneOwned>		sceneOwned; // Tag to indicate which scene this entity belongs to

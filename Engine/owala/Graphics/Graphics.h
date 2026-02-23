@@ -175,6 +175,26 @@ namespace Framework {
 		void UnbindGameFramebuffer() const;
         unsigned GetGameTexture() const { return gameFramebuffer_ ? gameFramebuffer_->GetColorAttachment() : 0; };
 
+        void RenderOccluderRect(float ndcX, float ndcY, float halfW, float halfH);
+
+        void InitSpotlightFBO(int width, int height);
+        void BindOccluderFBO();
+        void UnbindOccluderFBO();
+        //void DrawOccluderRect(float x, float y, float halfW, float halfH); // NDC rect
+        void CompositeSpotlight(
+            const Vector2D& lightNDC,
+            float radiusNDC,
+            float coneAngleRad,
+            float directionRad,
+            const Color& lightColor,
+            float intensity,
+            float falloff,
+            const Color& ambientColor,
+            int shadowRays,
+            bool castShadows
+        );
+        void ResizeSpotlightFBO(int width, int height);
+
     private:
         int screenWidth = 1920;
         int screenHeight = 1080;
@@ -198,6 +218,16 @@ namespace Framework {
 
         // Game Frame
 		std::unique_ptr<Framebuffer> gameFramebuffer_;
+
+        GLuint fboOccluder_ = 0;
+        GLuint texOccluder_ = 0;
+        GLuint rboOccluder_ = 0;  // depth/stencil if needed
+        GLuint progOccluder_ = 0;
+        GLuint progSpotlight_ = 0;
+        GLuint vaoFullscreen_ = 0;
+        GLuint vboFullscreen_ = 0;
+        int    fboWidth_ = 0;
+        int    fboHeight_ = 0;
     };
 
 } // namespace Framework

@@ -3,7 +3,7 @@
  *
  * \primary_author
  *      Ng Jordain Ying Zhe (80%)
- * \secondary_author 
+ * \secondary_author
  *      Ng Jing Wen (10%)
  *      Yar Xuan (10%)
  *
@@ -32,6 +32,7 @@
  *********************************************************************/
 #include "pch.h"
 #include "SpriteRenderSystem.h"
+#include "SpotlightSystem.h"
 #include "GameManager.h"
 #include "EntityManager.h"
 #include "SceneManager.h"
@@ -53,6 +54,12 @@ namespace Framework {
         RenderSprites();
         if (drawColliders_) {
             RenderColliderOutlines();
+        }
+
+        // --- Spotlight pass (after opaque geometry, before UI text) ---
+        SpotlightSystem* spotlightSys = GameManager::GetInstance().GetSystems().spotlight_;
+        if (spotlightSys) {
+            spotlightSys->Update();
         }
     }
 
@@ -412,11 +419,11 @@ namespace Framework {
             const Transform& transform = entityMgr.GetComponent<Transform>(e);
             const Vector2D& worldPos = transform.position;
             const Vector2D& halfSize = collider.HalfSize;
-            
+
             // Get rotation if entity has it
             float deg = 0.0f;
             if (entityMgr.HasComponent(e, RotationFlagType)) {
-               deg = entityMgr.GetComponent<RotationFlag>(e).currentRotation;
+                deg = entityMgr.GetComponent<RotationFlag>(e).currentRotation;
             }
 
             deg += transform.rotation.colliderAngle * (180.0f / 3.14159265359f);
@@ -453,7 +460,7 @@ namespace Framework {
             const Vector2D& scale = transform.scale;
             scaledHalfSize.x *= scale.x;
             scaledHalfSize.y *= scale.y;
-           
+
             // Use the rotated AABB calculation
             AABB_Bounds rotatedBounds = PhysicsSystem::GetRotatedAABB(colliderWorldPos, halfSize, deg);
 
