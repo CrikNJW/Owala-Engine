@@ -1,4 +1,4 @@
-/*****************************************************************//**
+/*********************************************************************//**
  * \file   LevelResetSystem.cpp
  *
  * \primary_author
@@ -17,6 +17,8 @@
 #include "LevelResetSystem.h"
 #include "MessageBus.h"
 #include "GameManager.h"
+#include "TimerSystem.h"
+#include "TimerStartTrigger.h"
 
 namespace Framework {
 
@@ -42,7 +44,7 @@ namespace Framework {
         //trapPlatformSig.set(TransformType);
         //trapPlatformSig.set(RotationFlagType);
         //trapPlatformSig.set(SceneOwnedType);
-    
+
         //basicPlatformSig.set(ActiveTagType);
         //basicPlatformSig.set(PlatformTagType);
         //basicPlatformSig.set(TransformType);
@@ -74,7 +76,7 @@ namespace Framework {
                     }
                 }
             }
-        });
+            });
     }
 
     void LevelResetSystem::RunReset() {
@@ -86,12 +88,12 @@ namespace Framework {
         transformationSys_.ResetGlobalRotation();
 
         EntityManager entityMgr(gm.GetECS());
-        
+
         // Delete all particles
-		for (const Entity& entity : entityMgr.GetAllEntitiesWithComponent(true, ParticleComponentType)) {
-			entityMgr.DestroyEntity(entity);
-		}
-        
+        for (const Entity& entity : entityMgr.GetAllEntitiesWithComponent(true, ParticleComponentType)) {
+            entityMgr.DestroyEntity(entity);
+        }
+
         // Reset entities
         //for (const auto& [entity, signature] : entityMgr.GetEntitySignatures()) {
             // --- Player Reset ---
@@ -149,6 +151,21 @@ namespace Framework {
             //    continue;
             //}
         //}
+
+        // -----------------------------------------------------------------
+        // Timer Reset on respawn
+        // Resets the run timer so it restarts from 0 when the player moves
+        // again after respawning. Level-to-level resets are handled by
+        // TimerStartTriggerScript::OnCreate() which fires on each scene load.
+        // -----------------------------------------------------------------
+        TimerSystem::Get().Reset();
+
+        // Re-arm the TimerStartTrigger so it waits for next movement input
+        for (const Entity& entity : entityMgr.GetAllEntitiesWithComponent(true, NativeScriptsComponentType)) {
+            if (TimerStartTriggerScript* trigger = entityMgr.GetScript<TimerStartTriggerScript>(entity)) {
+                trigger->ResetFired();
+            }
+        }
     }
 
     // --- Reset Helpers ---
