@@ -116,7 +116,10 @@ namespace Framework {
 						targetStateString = fsm.fsm.GetCurrentState();
 
 						// Convert FSM state to uppercase to match JSON keys (e.g. "Chase" -> "CHASE")
-						std::transform(targetStateString.begin(), targetStateString.end(), targetStateString.begin(), ::toupper);
+						//std::transform(targetStateString.begin(), targetStateString.end(), targetStateString.begin(), ::toupper);
+						// Convert FSM state to uppercase to match JSON keys (e.g. "Chase" -> "CHASE")
+						std::transform(targetStateString.begin(), targetStateString.end(), targetStateString.begin(),
+							[](unsigned char c) { return static_cast<char>(std::toupper(c)); });
 					}
 
 					// Fallback for Player/Non-FSM entities using the legacy AnimationState enum
@@ -127,10 +130,7 @@ namespace Framework {
 						case AnimationState::JUMPING: targetStateString = "JUMPING"; break;
 						case AnimationState::FALLING: targetStateString = "FALLING"; break;
 						case AnimationState::DEATH: targetStateString = "DEATH"; break;
-						case AnimationState::INVULNERABLE_IDLE: targetStateString = "INVULNERABLE_IDLE"; break;
-						case AnimationState::INVULNERABLE_RUNNING: targetStateString = "INVULNERABLE_RUNNING"; break;
-						case AnimationState::INVULNERABLE_JUMPING: targetStateString = "INVULNERABLE_JUMPING"; break;
-						case AnimationState::INVULNERABLE_FALLING: targetStateString = "INVULNERABLE_FALLING"; break;
+						case AnimationState::HURT: targetStateString = "HURT"; break;
 						default: targetStateString = "IDLE"; break; // Fallback
 						}
 					}

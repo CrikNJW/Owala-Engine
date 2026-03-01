@@ -1,4 +1,4 @@
-/*****************************************************************//**
+/*******************************************************************
 * \file   PhysicsSystem.cpp
 *
 * \primary_author
@@ -20,7 +20,9 @@
 #include "FileUtility.h"
 #include "OwalaTime.h"
 #include "GameManager.h"
+#include "LayerManager.h"
 
+#include <filesystem> // For checking file paths
 
 namespace Framework {
     // ----- Layer Collision Functions ------- //
@@ -60,11 +62,83 @@ namespace Framework {
         }
     }
 
+    void PhysicsSystem::ReloadCollisionMatrixFromFile() {
+        try {
+            rapidjson::Document doc;
+            std::string filepath = FileIOKeys::LAYER_CONFIG_FILEPATH;
+
+            // Try root folder first for consistency
+            if (std::filesystem::exists(std::string(FileIOKeys::ROOT_FOLDER_PREFIX) + filepath)) {
+                filepath = std::string(FileIOKeys::ROOT_FOLDER_PREFIX) + filepath;
+                Logger::Get().Info(DebugType::PhysicsSystem)
+                    << "Using root folder config: " << filepath << std::endl;
+            }
+
+            if (!FileIOSystem::ReadFile(filepath, doc)) {
+                Logger::Get().Error(DebugType::PhysicsSystem)
+                    << "Could not reload collision matrix from file: " << filepath << std::endl;
+                return;
+            }
+
+            if (!doc.IsObject()) {
+                Logger::Get().Error(DebugType::PhysicsSystem)
+                    << "Invalid collision matrix file format" << std::endl;
+                return;
+            }
+
+            // Load the collision matrix data
+            if (doc.HasMember("CollisionMatrix") && doc["CollisionMatrix"].IsArray()) {
+                const rapidjson::Value& matrixArray = doc["CollisionMatrix"];
+
+                Logger::Get().Info(DebugType::PhysicsSystem)
+                    << "Reloading " << matrixArray.Size() << " collision matrix entries..." << std::endl;
+
+                // Apply saved settings
+                for (rapidjson::SizeType i = 0; i < matrixArray.Size(); ++i) {
+                    const auto& obj = matrixArray[i];
+
+                    if (obj.HasMember("layer1") && obj.HasMember("layer2") && obj.HasMember("canCollide")) {
+                        uint8_t layer1 = static_cast<uint8_t>(obj["layer1"].GetInt());
+                        uint8_t layer2 = static_cast<uint8_t>(obj["layer2"].GetInt());
+                        bool canCollide = obj["canCollide"].GetBool();
+
+                        SetLayerCollision(
+                            static_cast<CollisionLayer>(layer1),
+                            static_cast<CollisionLayer>(layer2),
+                            canCollide
+                        );
+                    }
+                }
+
+                Logger::Get().Info(DebugType::PhysicsSystem)
+                    << "Successfully reloaded collision matrix from: " << filepath << std::endl;
+            }
+            else {
+                Logger::Get().Error(DebugType::PhysicsSystem)
+                    << "No CollisionMatrix found in config file" << std::endl;
+            }
+        }
+        catch (const std::exception& e) {
+            Logger::Get().Error(DebugType::PhysicsSystem)
+                << "Exception while reloading collision matrix: " << e.what() << std::endl;
+        }
+    }
+
 
 
     void PhysicsSystem::Initialize() {
 
-        InitializeCollisionMatrix();
+        
+        if (!collisionMatrixInitialized_) {
+            InitializeCollisionMatrix();
+            collisionMatrixInitialized_ = true;
+            Logger::Get().Info(DebugType::PhysicsSystem)
+                << "Collision matrix initialized with defaults" << std::endl;
+        }
+        else {
+            Logger::Get().Info(DebugType::PhysicsSystem)
+                << "Collision matrix already initialized, skipping reset" << std::endl;
+        }
         FileIOSystem::LoadWorldConfig(gravity_.y);
         // --- Initialize the Implicit Grid ---
         grid_.resize(GridCellsX * GridCellsY);
@@ -391,7 +465,7 @@ namespace Framework {
             int i = entityToColliderIndex_[dynE];
 
             const Vector2D& pos1 = entityMgr.GetComponent<Transform>(dynE).position;
-            const Vector2D& halfSize1 = entityMgr.GetComponent<AABBCollider>(dynE).HalfSize;
+            const Vector2D& halfSize1 = entityMgr.GetComponent<Framework::AABBCollider>(dynE).HalfSize;
             float rotation1 = 0.0f;
             if (entityMgr.HasComponent(dynE, RotationFlagType)) {
                 rotation1 = entityMgr.GetComponent<RotationFlag>(dynE).currentRotation;
@@ -446,6 +520,28 @@ namespace Framework {
             return;
         }
 
+        // --- CHECK IF PLAYER IS INVULNERABLE AND COLLIDING WITH DYNAMIC TRAP ---
+        // Identify if one entity is player and the other is a dynamic trap
+        bool isE1Player = entityMgr.HasComponent(e1, PlayerTagType);
+        bool isE2Player = entityMgr.HasComponent(e2, PlayerTagType);
+        
+        bool isE1DynamicTrap = entityMgr.HasComponent(e1, TrapPlatformComponentType) && 
+                                entityMgr.HasComponent(e1, RigidBodyType);
+        bool isE2DynamicTrap = entityMgr.HasComponent(e2, TrapPlatformComponentType) && 
+                                entityMgr.HasComponent(e2, RigidBodyType);
+
+        // If player and dynamic trap are colliding, check invulnerability
+        if ((isE1Player && isE2DynamicTrap) || (isE2Player && isE1DynamicTrap)) {
+            Entity playerEntity = isE1Player ? e1 : e2;
+            
+            if (entityMgr.HasComponent(playerEntity, PlayerStateType)) {
+                const PlayerState& playerState = entityMgr.GetComponent<PlayerState>(playerEntity);
+                if (playerState.isHurt) {
+                    return; // Skip collision resolution entirely
+                }
+            }
+        }
+
         // Determine which entity is dynamic (needs RigidBody + Velocity)
         bool e1IsDynamic = entityMgr.HasComponent(e1, RigidBodyType) && entityMgr.HasComponent(e1, VelocityType);
         bool e2IsDynamic = entityMgr.HasComponent(e2, RigidBodyType) && entityMgr.HasComponent(e2, VelocityType);
@@ -458,6 +554,28 @@ namespace Framework {
         if (e2IsDynamic) {
             if (entityMgr.GetComponent<RigidBody>(e2).InverseMass <= 0.0f) {
                 e2IsDynamic = false;
+            }
+        }
+
+        // Detect trap entities
+        bool e1IsTrap = entityMgr.HasComponent(e1, TrapPlatformComponentType);
+        bool e2IsTrap = entityMgr.HasComponent(e2, TrapPlatformComponentType);
+
+        // trap v player, make trap static to avoid player pushing
+        if ((e1IsTrap && isE2Player) || (e2IsTrap && isE1Player)) {
+            if (e1IsTrap) e1IsDynamic = false;
+            if (e2IsTrap) e2IsDynamic = false;
+        }
+
+        // trap v trap, allows stacking (top trap lands on bottom trap)
+        if (e1IsTrap && e2IsTrap && e1IsDynamic && e2IsDynamic) {
+            const Vector2D& pos1 = entityMgr.GetComponent<Transform>(e1).position;
+            const Vector2D& pos2 = entityMgr.GetComponent<Transform>(e2).position;
+            
+            if (pos1.y > pos2.y) {
+                e2IsDynamic = false;
+            } else {
+                e1IsDynamic = false;
             }
         }
 
@@ -647,6 +765,10 @@ namespace Framework {
             }
         }
     }
+
+
+
+
 
     //--------- DEBUG DRAW FUNCTIONS ---------//
     std::vector<PhysicsDebugCell> PhysicsSystem::GetDebugDrawData(Framework::CameraSystem* cameraSystem, Entity cameraID) {
