@@ -101,6 +101,8 @@ namespace Framework {
         auto prev = clock::now();
         Framework::Time::Initialize();
         systemTimes_.resize(systems_.size());
+        
+        EngineMode previousMode = mode_;
 
         while (running_) {
             WindowsSystem* winSys = nullptr;
@@ -114,6 +116,14 @@ namespace Framework {
                 if (auto* i = dynamic_cast<InputSystem*>(s)) inputSys = i;
                 if (auto* a = dynamic_cast<AudioSystem*>(s)) audioSys = a;
                 if (auto* p = dynamic_cast<PhysicsSystem*>(s)) physSys = p;
+            }
+
+            // Stop all audio channels when Editor Mode is toggled
+            if (mode_ != previousMode) {
+                if (audioSys && mode_ == EngineMode::Editor) {
+                    audioSys->stopAll(false);
+                }
+                previousMode = mode_;
             }
 
             bool isFocused = true;

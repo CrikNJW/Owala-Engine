@@ -37,6 +37,8 @@ namespace Framework{
 		Platform,
 		Enemy,
 		Trigger,
+		TrapPlatform,    
+		Invulnrabilty, 
 		Count = 32  // Maximum layers 
 	};
 
@@ -73,6 +75,8 @@ namespace Framework{
 		SFX,
 		MUSIC
 	};
+
+
 
 	// Different slider sound types
 	enum class SliderSoundType {
@@ -192,12 +196,16 @@ namespace Framework{
 		float mapMaxX = 100.0f;
 		float mapMinY = -100.0f;
 		float mapMaxY = 100.0f;
+
+		bool zoomInitialized = false;  // ADD THIS LINE
+
 	};
 
 	struct TextureComponent {
 		std::string textureKey; // Key to identify the texture resource
 		Vector2D HalfSize = { 50.f, 50.f };
 		bool flipHorizontal = false;
+		float alpha = 1.0f; // Opacity of the texture (1.0 = fully opaque, 0.0 = fully transparent)
 	};
 
 	struct AudioComponent {
@@ -288,6 +296,9 @@ namespace Framework{
 
 		bool wasHoveredLastFrame = false; // Track hover state changes
 	
+		// Scene to unload when this button is clicked (for additive scene layering)
+		std::string sceneToUnloadOnClick = "";
+
 		// Texture keys for different button states
 		std::string defaultTextureKey = "";   // Default/idle state
 		std::string hoverTextureKey = "";     // When hovering
@@ -298,7 +309,7 @@ namespace Framework{
 		bool hoverIsAnimated = false;
 		bool pressedIsAnimated = false;
 
-		// NEW: Track current state for texture switching
+		// Track current state for texture switching
 		enum class ButtonVisualState {
 			DEFAULT,
 			HOVER,
@@ -336,6 +347,9 @@ namespace Framework{
 
 			void Reset() noexcept {
 				if (!Instance) return;
+
+				Instance->InvokeOnDestroy();
+
 				if (DestroyScript) DestroyScript(this);
 				else { delete Instance; Instance = nullptr; }
 				Instance = nullptr;
@@ -435,6 +449,9 @@ namespace Framework{
 
 		// Used during deserialization to restore state
 		std::string serializedState;
+
+		// Visual effect: active attack circle radius (0 = none)
+		float attackCircleRadius = 0.0f;
 	};
 
 	// Particle Component
@@ -497,6 +514,9 @@ namespace Framework{
 	struct Slider {
 		Entity handleEntity = 0;
 		std::string handleName = "";
+
+		Entity fillEntity = 0;
+		std::string fillName = "";
 
 		float minValue = 0.0f;
 		float maxValue = 1.0f;

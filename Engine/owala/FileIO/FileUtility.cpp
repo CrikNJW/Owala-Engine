@@ -18,6 +18,8 @@
 #include "pch.h"
 #include "FileUtility.h"
 
+#include "GameManager.h"
+
 namespace Framework {
 	std::string FileIOSystem::SanitizeFileName(const std::string& name) {
 		std::string sanitized_name = name;
@@ -33,40 +35,85 @@ namespace Framework {
 		return sanitized_name;
 	}
 
-	const bool FileIOSystem::ReadFile(const string& fileName, Document& doc) {
-		try {
-			ifstream file(fileName);
-			if (!file) Logger::Get().Error(DebugType::FileIOSystem) << "Could not open file: " << fileName << std::endl;
-
-			IStreamWrapper isw(file);
-			doc.ParseStream(isw);
-
-			file.close();
-			return true;
+	bool FileIOSystem::ReadFile(const string& fileName, Document& doc) {
+		ifstream file(fileName);
+		if (!file) {
+			Logger::Get().Info(DebugType::FileIOSystem) << "Could not open file: " << fileName << std::endl;
+			return false;
 		}
-		catch (const exception& e) {
-			throw GameException(DebugType::FileIOSystem, e.what());
-		}
+
+		IStreamWrapper isw(file);
+		doc.ParseStream(isw);
+
+		file.close();
+		return true;
 	}
 
-	const bool FileIOSystem::WriteFileJson(const string& fileName, Document& d) {
-		try {
-			// Write JSON file
-			std::ofstream os(fileName);
-			if (!os) Logger::Get().Error(DebugType::FileIOSystem) << "Could not open file: " << fileName << std::endl;
-
-			// Convert Document to JSON string
-			StringBuffer buffer;
-			Writer<StringBuffer> writer(buffer);
-			d.Accept(writer);
-
-			// Write to file
-			os << buffer.GetString();
-			return true;
+	bool FileIOSystem::WriteFileJson(const string& fileName, Document& d, bool writeToRoot) {
+		// Write JSON file
+		std::ofstream os(fileName);
+		if (!os) {
+			Logger::Get().Error(DebugType::FileIOSystem) << "Could not open file: " << fileName << std::endl;
+			return false;
 		}
-		catch (const exception& e) {
-			throw GameException(DebugType::FileIOSystem, e.what());
+
+		// Convert Document to JSON string
+		StringBuffer buffer;
+		PrettyWriter<StringBuffer> writer(buffer);
+		d.Accept(writer);
+
+		// Write to local file
+		os << buffer.GetString();
+		Logger::Get().Info(DebugType::FileIOSystem) << "Successfully wrote to: " << fileName << std::endl;
+
+		if (writeToRoot) {
+			// Check if root Data folder exists and serialize data to root folder
+			if (std::filesystem::exists(FileIOKeys::ROOT_DATA_FOLDER)) {
+				std::string rootFilePath = FileIOKeys::ROOT_FOLDER_PREFIX + std::string(fileName);
+				std::ofstream os(rootFilePath);
+				if (!os) {
+					Logger::Get().Error(DebugType::FileIOSystem) << "Could not open file: " << rootFilePath << std::endl;
+				}
+
+				// Write to root file
+				os << buffer.GetString();
+				Logger::Get().Info(DebugType::FileIOSystem) << "Successfully wrote to: " << rootFilePath << std::endl;
+			}
+			else {
+				Logger::Get().Error(DebugType::FileIOSystem) << "Can't find root Data folder!" << std::endl;
+			}
 		}
+
+		return true;
+	}
+
+	bool FileIOSystem::DeleteFileJson(const string& fileName, bool deleteFromRoot) {
+		if (!fs::exists(fileName)) {
+			Logger::Get().Error(DebugType::FileIOSystem) << "Can't find file to delete: " << fileName << std::endl;
+			return false; 
+		}
+
+		fs::remove(fileName);
+		Logger::Get().Info(DebugType::FileIOSystem) << "Deleted file: " << fileName << std::endl;
+
+		if (deleteFromRoot) {
+			if (std::filesystem::exists(FileIOKeys::ROOT_DATA_FOLDER)) {
+				std::string rootFilePath = std::string(FileIOKeys::ROOT_FOLDER_PREFIX) + fileName;
+				if (fs::exists(rootFilePath)) {
+					fs::remove(rootFilePath);
+					Logger::Get().Info(DebugType::FileIOSystem)
+						<< "Deleted file from root folder: " << rootFilePath << std::endl;
+				}
+				else {
+					Logger::Get().Error(DebugType::FileIOSystem) << "Can't find file to delete: " << rootFilePath << std::endl;
+				}
+			}
+			else {
+				Logger::Get().Error(DebugType::FileIOSystem) << "Can't find root Data folder!" << std::endl;
+			}
+		}
+
+		return true;
 	}
 
 	WindowConfig FileIOSystem::LoadWindowConfig() {
@@ -147,25 +194,75 @@ namespace Framework {
 		kb_y = static_cast<float>(knockback_y.GetDouble());
 	}
 
-	void FileIOSystem::LoadWorldConfig(float& gravity) {
-		rapidjson::Document d;
+	void FileIOSystem::SaveWorldConfig() {
+		rapidjson::Document doc;
+		doc.SetObject();
+		rapidjson::Document::AllocatorType& alloc = doc.GetAllocator();
+
+		/* Physics Config Serialization */
+		rapidjson::Value physicsObj(rapidjson::kObjectType);
+		PhysicsSystem* physicsSystem = GameManager::GetInstance().GetSystems().physics_;
+
+		if (physicsSystem) {
+			physicsObj.AddMember(rapidjson::StringRef(FileIOKeys::GBL_GRAVITYX), physicsSystem->gravity_.x, alloc);
+			physicsObj.AddMember(rapidjson::StringRef(FileIOKeys::GBL_GRAVITYY), physicsSystem->gravity_.y, alloc);
+		}
+
+		doc.AddMember(rapidjson::StringRef(FileIOKeys::GBL_PHYSICSCAT), physicsObj, alloc);
+
+		/* Performance Config Serialization */
+		rapidjson::Value performanceObj(rapidjson::kObjectType);
+		Graphics* graphicsSystem = GameManager::GetInstance().GetSystems().gfx_;
+
+		performanceObj.AddMember(rapidjson::StringRef(FileIOKeys::GBL_ENABLEFPSLIMIT), graphicsSystem->IsFPSCapEnabled(), alloc);
+		performanceObj.AddMember(rapidjson::StringRef(FileIOKeys::GBL_MAXFPS), graphicsSystem->GetFPSCap(), alloc);
+
+		doc.AddMember(rapidjson::StringRef(FileIOKeys::GBL_PERFORMANCECAT), performanceObj, alloc);
+
+		if (WriteFileJson(FileIOKeys::WORLD_CONFIG_FILEPATH, doc)) {
+			Logger::Get().Info(DebugType::FileIOSystem) << "World Config Saved!" << std::endl;
+		}
+	}
+
+	void FileIOSystem::LoadWorldConfig() {
+		rapidjson::Document doc;
 		//Read the file name passed in as a path
-		if (!ReadFile(FileIOKeys::WORLD_CONFIG_FILEPATH, d)) {
-			Logger::Get().Error(DebugType::FileIOSystem) << "Unable to read file: " << FileIOKeys::WORLD_CONFIG_FILEPATH << std::endl;
+		if (!ReadFile(FileIOKeys::WORLD_CONFIG_FILEPATH, doc)) {
+			Logger::Get().Info(DebugType::FileIOSystem) << "Unable to read file: " << FileIOKeys::WORLD_CONFIG_FILEPATH << std::endl;
+			return;
 		}
 
-		// Check if gravity member exists && is float
-		if (!(d.HasMember(FileIOKeys::WORLD_GRAVITY) && d[FileIOKeys::WORLD_GRAVITY].IsFloat())) {
-			Logger::Get().Info(DebugType::FileIOSystem) << "Invalid or missing gravity in " << FileIOKeys::WORLD_CONFIG_FILEPATH << std::endl;
+		/* Physics Config Deserialization */
+		if (doc.HasMember(FileIOKeys::GBL_PHYSICSCAT) && doc[FileIOKeys::GBL_PHYSICSCAT].IsObject()) {
+			const rapidjson::Value& physicsObj = doc[FileIOKeys::GBL_PHYSICSCAT];
+			PhysicsSystem* physicsSystem = GameManager::GetInstance().GetSystems().physics_;
+
+			if (physicsSystem) {
+				if (physicsObj.HasMember(FileIOKeys::GBL_GRAVITYX) && physicsObj[FileIOKeys::GBL_GRAVITYX].IsFloat()) {
+					physicsSystem->gravity_.x = physicsObj[FileIOKeys::GBL_GRAVITYX].GetFloat();
+				}
+				if (physicsObj.HasMember(FileIOKeys::GBL_GRAVITYY) && physicsObj[FileIOKeys::GBL_GRAVITYY].IsFloat()) {
+					physicsSystem->gravity_.y = physicsObj[FileIOKeys::GBL_GRAVITYY].GetFloat();
+				}
+				Logger::Get().Info(DebugType::FileIOSystem) << "Physics Configuration Loaded" << std::endl;
+			}
 		}
 
-		const rapidjson::Value& gravityData = d[FileIOKeys::WORLD_GRAVITY];
-
-		// Debugging output
-		Logger::Get().Info(DebugType::FileIOSystem) << "World gravity read from " << FileIOKeys::WORLD_CONFIG_FILEPATH << ": " << gravityData.GetFloat() << std::endl;
-
-		// Set variables
-		gravity = gravityData.GetFloat();
+		/* Performance Config Deserialization */
+		if (doc.HasMember(FileIOKeys::GBL_PERFORMANCECAT) && doc[FileIOKeys::GBL_PERFORMANCECAT].IsObject()) {
+			const rapidjson::Value& performanceObj = doc[FileIOKeys::GBL_PERFORMANCECAT];
+			Graphics* graphicsSystem = GameManager::GetInstance().GetSystems().gfx_;
+			
+			if (graphicsSystem) {
+				if (performanceObj.HasMember(FileIOKeys::GBL_ENABLEFPSLIMIT) && performanceObj[FileIOKeys::GBL_ENABLEFPSLIMIT].IsBool()) {
+					graphicsSystem->ToggleFPSCap(performanceObj[FileIOKeys::GBL_ENABLEFPSLIMIT].GetBool());
+				}
+				if (performanceObj.HasMember(FileIOKeys::GBL_MAXFPS) && performanceObj[FileIOKeys::GBL_MAXFPS].IsFloat()) {
+					graphicsSystem->SetFPSCap(performanceObj[FileIOKeys::GBL_MAXFPS].GetFloat());
+				}
+				Logger::Get().Info(DebugType::FileIOSystem) << "Performance Configuration Loaded" << std::endl;
+			}
+		}
 	}
 
 	AnimationInfo FileIOSystem::LoadAnimationInfo(std::string filepath) {
@@ -206,6 +303,17 @@ namespace Framework {
 						sheet["count"].GetInt()
 						});
 				}
+			}
+		}
+
+		// Map frame events if they exist
+		if (d.HasMember("frameEvents") && d["frameEvents"].IsObject()) {
+			const rapidjson::Value& eventsJson = d["frameEvents"];
+			for (auto it = eventsJson.MemberBegin(); it != eventsJson.MemberEnd(); ++it) {
+				// RapidJSON object keys are always strings, convert back to int
+				int frameIdx = std::stoi(it->name.GetString());
+				std::string evtName = it->value.GetString();
+				anim.frameEvents[frameIdx] = evtName;
 			}
 		}
 
@@ -280,16 +388,11 @@ namespace Framework {
 				d.PushBack(asset, alloc);
 			}
 
-			// Write to local Data folder
-			WriteFileJson(FileIOKeys::SCENE_ASSETS_FILEPATH, d);
-			Logger::Get().Info(DebugType::FileIOSystem) << "Successfully saved scene asset <" << sceneAsset.name << "> to: " << FileIOKeys::SCENE_ASSETS_FILEPATH << std::endl;
-			
-			// Check if root Data folder exists and write to it as well
-			if (std::filesystem::exists(FileIOKeys::ROOT_DATA_FOLDER)) {
-				std::string rootFilePath = std::string(FileIOKeys::ROOT_FOLDER_PREFIX) + FileIOKeys::SCENE_ASSETS_FILEPATH;
-				WriteFileJson(rootFilePath, d);
-				Logger::Get().Info(DebugType::FileIOSystem) << "Successfully saved scene asset <" << sceneAsset.name << "> to: " << rootFilePath << std::endl;
+			// Write to Data folder
+			if (WriteFileJson(FileIOKeys::SCENE_ASSETS_FILEPATH, d)) {
+				Logger::Get().Info(DebugType::FileIOSystem) << "Successfully saved scene asset <" << sceneAsset.name << "> to: " << FileIOKeys::SCENE_ASSETS_FILEPATH << std::endl;
 			}
+			else { throw std::runtime_error("Failed to save scene asset."); }
 			
 			return true;
 		}
@@ -316,17 +419,12 @@ namespace Framework {
 				d.PushBack(asset, alloc);
 			}
 
-			// Write to local Data folder
-			WriteFileJson(FileIOKeys::SCENE_ASSETS_FILEPATH, d);
-			Logger::Get().Info(DebugType::FileIOSystem) << "Successfully saved all scene assets to: " << FileIOKeys::SCENE_ASSETS_FILEPATH << std::endl;
-			
-			// Check if root Data folder exists and write to it as well
-			if (std::filesystem::exists(FileIOKeys::ROOT_DATA_FOLDER)) {
-				std::string rootFilePath = std::string(FileIOKeys::ROOT_FOLDER_PREFIX) + FileIOKeys::SCENE_ASSETS_FILEPATH;
-				WriteFileJson(rootFilePath, d);
-				Logger::Get().Info(DebugType::FileIOSystem) << "Successfully saved all scene assets to: " << rootFilePath << std::endl;
+			// Write to Data folder
+			if (WriteFileJson(FileIOKeys::SCENE_ASSETS_FILEPATH, d)) {
+				Logger::Get().Info(DebugType::FileIOSystem) << "Successfully saved all scene assets to: " << FileIOKeys::SCENE_ASSETS_FILEPATH << std::endl;
 			}
-
+			else { throw std::runtime_error("Failed to save all scene assets."); }
+			
 			return true;
 		}
 		catch (...) {

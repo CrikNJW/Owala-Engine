@@ -28,6 +28,7 @@ namespace Framework {
 		QUIT_GAME,
 		PREV_PAGE,
 		NEXT_PAGE,
+		RESUME_GAME
 	};
 
 	// Enum for different particle movement effects
@@ -52,7 +53,6 @@ namespace Framework {
 	struct PlayerJumpedEvent{
 		Entity player;
 		float damage; //just for example, currently not used yet
-		float volume = 1.0f;
 	};
 
 	struct PlayerWalkEvent {
@@ -72,6 +72,7 @@ namespace Framework {
 		// Data payloads
 		std::string stringParam; // Scene Name, Audio Key etc
 		float floatParam;
+		std::string sceneToUnload; // Scene to unload when this button fires (may be empty)
 	};
 
 	struct ParticleBurstEvent {
@@ -100,6 +101,12 @@ namespace Framework {
 
 		bool overridePosition = false; // If true, use position below
 		Vector2D position = { 0.0f, 0.0f };
+	};
+
+	// Events to publish during specific animation frames, e.g. to trigger SFX or VFX at the right timing
+	struct AnimationEvent {
+		Entity entity;
+		std::string eventName;
 	};
 
 	struct TrapPlatformLandEvent {

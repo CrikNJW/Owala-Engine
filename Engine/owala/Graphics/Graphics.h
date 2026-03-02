@@ -60,6 +60,7 @@ namespace Framework {
         float rotation = 0;     //!< Rotation in radians
         Vector2D minUV;     //!< Usually (0,0)
         Vector2D maxUV;     //!< Usually (1,1)
+        Color color = { 1.0f, 1.0f, 1.0f, 1.0f }; // ADD THIS
     };
 
     // ------------------------------------------------------------------
@@ -137,7 +138,20 @@ namespace Framework {
         void drawSpriteBatchChunk(Texture tex, const std::vector<BatchedSprite>& sprites);
         // -------- Text --------
         void drawText(Font& font, const std::string& text,
-            const Vector2D& pos, float scale, const Color& color);
+            const Vector2D& pos, float scale, const Color& color, float rotationRad);
+
+        /* -------- Framerate Configuration -------- */
+
+        // Toggles between uncapping or capping the framerate.
+        void ToggleFPSCap() { isFPSCapped = !isFPSCapped; };
+        // Enables or Disables FPS cap.
+        void ToggleFPSCap(bool boolean) { isFPSCapped = boolean; };
+        // Returns true if FPS is currently capped, returns false otherwise.
+        const bool IsFPSCapEnabled() const { return isFPSCapped; };
+        // Sets the FPS Limit. Limit will only take effect if the FPSCap option is enabled.
+        void SetFPSCap(float value);
+        // Returns the max FPS limit if FPSCap option is turned on.
+        const float GetFPSCap() const { return m_MaxFPS; };
 
         // ----- Frame Buffer stuff (For Game Viewport) -----
         struct FramebufferSpecs {
@@ -195,7 +209,10 @@ namespace Framework {
         unsigned vboText_ = 0;
 
         float t_ = 0.f;
-
+      
+        bool isFPSCapped = false;
+        float m_MaxFPS = 100.0f; // Default cap
+        bool m_VsyncEnabled = false;
         // Game Frame
 		std::unique_ptr<Framebuffer> gameFramebuffer_;
     };

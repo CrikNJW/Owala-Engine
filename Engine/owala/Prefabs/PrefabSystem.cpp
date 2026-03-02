@@ -97,11 +97,11 @@ namespace Framework {
         }
 
         if (doc.HasMember(Serialization::ENTITY_LAYER) && doc[Serialization::ENTITY_LAYER].IsInt()) {
-            int layerInt = doc[Serialization::ENTITY_LAYER].GetInt();
-            CollisionLayer layer = static_cast<CollisionLayer>(layerInt);
-            if (layer == CollisionLayer::Platform) prefab.layer = "Platform";
-            else if (layer == CollisionLayer::Player) prefab.layer = "Player";
-            else prefab.layer = "Default";
+            prefab.layer = doc[Serialization::ENTITY_LAYER].GetInt();
+        }
+
+        if (doc.HasMember(Serialization::ENTITY_COLLISION_LAYER_NAME) && doc[Serialization::ENTITY_COLLISION_LAYER_NAME].IsString()) {
+            prefab.layer_collision_name = doc[Serialization::ENTITY_COLLISION_LAYER_NAME].GetString();
         }
 
         if (doc.HasMember(Serialization::ENTITY_RENDER_LAYER) && doc[Serialization::ENTITY_RENDER_LAYER].IsInt()) {
@@ -110,6 +110,10 @@ namespace Framework {
 
         if (doc.HasMember(Serialization::ENTITY_CUSTOM_RENDER_ORDER) && doc[Serialization::ENTITY_CUSTOM_RENDER_ORDER].IsInt()) {
             prefab.customRenderOrder = doc[Serialization::ENTITY_CUSTOM_RENDER_ORDER].GetInt();
+        }
+
+        if (doc.HasMember(Serialization::ENTITY_RENDER_LAYER_NAME) && doc[Serialization::ENTITY_RENDER_LAYER_NAME].IsString()) {
+            prefab.layer_render_name = doc[Serialization::ENTITY_RENDER_LAYER_NAME].GetString();
         }
 
         Logger::Get().Info(DebugType::FileIOSystem)
@@ -183,27 +187,23 @@ namespace Framework {
             }
 
             if (prefabObj.HasMember(Serialization::ENTITY_LAYER) && prefabObj[Serialization::ENTITY_LAYER].IsInt()) {
-                int layerInt = prefabObj[Serialization::ENTITY_LAYER].GetInt();
-                CollisionLayer layer = static_cast<CollisionLayer>(layerInt);
-                if (layer == CollisionLayer::Platform) prefab.layer = "Platform";
-                else if (layer == CollisionLayer::Player) prefab.layer = "Player";
-                else prefab.layer = "Default";
+                prefab.layer = prefabObj[Serialization::ENTITY_LAYER].GetInt();
+            }
+
+            if (prefabObj.HasMember(Serialization::ENTITY_COLLISION_LAYER_NAME) && prefabObj[Serialization::ENTITY_COLLISION_LAYER_NAME].IsString()) {
+                prefab.layer_collision_name = prefabObj[Serialization::ENTITY_COLLISION_LAYER_NAME].GetString();
             }
 
             if (prefabObj.HasMember(Serialization::ENTITY_RENDER_LAYER) && prefabObj[Serialization::ENTITY_RENDER_LAYER].IsInt()) {
                 prefab.renderLayer = prefabObj[Serialization::ENTITY_RENDER_LAYER].GetInt();
             }
-            else {
-                if (prefab.layer == "Platform") prefab.renderLayer = 50;
-                else if (prefab.layer == "Player") prefab.renderLayer = 100;
-                else prefab.renderLayer = 0;
-            }
 
             if (prefabObj.HasMember(Serialization::ENTITY_CUSTOM_RENDER_ORDER) && prefabObj[Serialization::ENTITY_CUSTOM_RENDER_ORDER].IsInt()) {
                 prefab.customRenderOrder = prefabObj[Serialization::ENTITY_CUSTOM_RENDER_ORDER].GetInt();
             }
-            else {
-                prefab.customRenderOrder = prefab.renderLayer;
+
+            if (prefabObj.HasMember(Serialization::ENTITY_RENDER_LAYER_NAME) && prefabObj[Serialization::ENTITY_RENDER_LAYER_NAME].IsString()) {
+                prefab.layer_render_name = prefabObj[Serialization::ENTITY_RENDER_LAYER_NAME].GetString();
             }
 
             Logger::Get().Info(DebugType::FileIOSystem) << "Loaded prefab: " << prefab.name << std::endl;
@@ -234,12 +234,13 @@ namespace Framework {
         EntityProperties& props = entityMgr.GetProperties(entity);
         props.name = prefabName;
 
-        if (prefab.layer == "Platform") props.layer = CollisionLayer::Platform;
-        else if (prefab.layer == "Player") props.layer = CollisionLayer::Player;
-        else props.layer = CollisionLayer::Default;
+        // Set collision layer
+        props.layer = static_cast<CollisionLayer>(prefab.layer);
+        props.collisionLayerName = prefab.layer_collision_name;
 
         props.renderLayer = static_cast<RenderLayer>(prefab.renderLayer);
         props.customRenderOrder = prefab.customRenderOrder;
+        props.renderLayerName = prefab.layer_render_name;
 
         // Deserialize tags
         for (const std::string& tag : prefab.tags) {
@@ -290,7 +291,7 @@ namespace Framework {
         EntityManager entityMgr(storage);
 
         if (!entityMgr.ValidateEntity(entity)) {
-            Logger::Get().Error(DebugType::FileIOSystem)  << "Invalid entity provided for prefab creation" << std::endl;
+            Logger::Get().Error(DebugType::FileIOSystem) << "Invalid entity provided for prefab creation" << std::endl;
             return false;
         }
 
@@ -321,27 +322,34 @@ namespace Framework {
         doc.AddMember("name", rapidjson::Value(prefabName.c_str(), alloc), alloc);
         EntityProperties& props = entityMgr.GetProperties(entity);
 
+        // Save collision layer ID
+        doc.AddMember(rapidjson::Value(Serialization::ENTITY_LAYER, alloc).Move(),
+            rapidjson::Value(static_cast<int>(props.layer)).Move(),
+            alloc);
+
+        // Save collision layer name
         if (!props.collisionLayerName.empty()) {
             doc.AddMember(rapidjson::Value(Serialization::ENTITY_COLLISION_LAYER_NAME, alloc).Move(),
-                rapidjson::Value(static_cast<int>(props.layer)).Move(),
+                rapidjson::Value(props.collisionLayerName.c_str(), alloc),
                 alloc);
         }
 
+        // Save render layer ID
+        doc.AddMember(rapidjson::Value(Serialization::ENTITY_RENDER_LAYER, alloc).Move(),
+            rapidjson::Value(static_cast<int>(props.renderLayer)).Move(),
+            alloc);
+
+        // Save custom render order
+        doc.AddMember(rapidjson::Value(Serialization::ENTITY_CUSTOM_RENDER_ORDER, alloc).Move(),
+            rapidjson::Value(props.customRenderOrder).Move(),
+            alloc);
+
+        // Save render layer name
         if (!props.renderLayerName.empty()) {
             doc.AddMember(rapidjson::Value(Serialization::ENTITY_RENDER_LAYER_NAME, alloc).Move(),
                 rapidjson::Value(props.renderLayerName.c_str(), alloc),
                 alloc);
         }
-
-        doc.AddMember(rapidjson::Value(Serialization::ENTITY_LAYER, alloc).Move(),
-            rapidjson::Value(static_cast<int>(props.layer)).Move(),
-            alloc);
-        doc.AddMember(rapidjson::Value(Serialization::ENTITY_RENDER_LAYER, alloc).Move(),
-            rapidjson::Value(static_cast<int>(props.renderLayer)).Move(),
-            alloc);
-        doc.AddMember(rapidjson::Value(Serialization::ENTITY_CUSTOM_RENDER_ORDER, alloc).Move(),
-            rapidjson::Value(props.customRenderOrder).Move(),
-            alloc);
 
         rapidjson::Value componentsObj(rapidjson::kObjectType);
         EntitySerializer::SerializeComponents(entityMgr, entity, componentsObj, alloc);
@@ -382,23 +390,6 @@ namespace Framework {
 
         Logger::Get().Info(DebugType::FileIOSystem) << "Successfully saved custom prefab: " << filepath << std::endl;
 
-        if (std::filesystem::exists(FileIOKeys::ROOT_DATA_FOLDER)) {
-            std::string rootFilePath = std::string(FileIOKeys::ROOT_FOLDER_PREFIX) + filepath;
-            std::string rootCustomFolderPath = std::string(FileIOKeys::ROOT_FOLDER_PREFIX) + customFolderPath;
-            if (!fs::exists(rootCustomFolderPath)) {
-                try {
-                    fs::create_directories(rootCustomFolderPath);
-                    Logger::Get().Info(DebugType::FileIOSystem)<< "Created root custom prefab folder: " << rootCustomFolderPath << std::endl;
-                }
-                catch (const std::exception& e) {
-                    Logger::Get().Error(DebugType::FileIOSystem) << "Failed to create root custom prefab folder: " << e.what() << std::endl;
-                }
-            }
-
-            FileIOSystem::WriteFileJson(rootFilePath, doc);
-            Logger::Get().Info(DebugType::FileIOSystem) << "Saved prefab to root folder: " << rootFilePath << std::endl;
-        }
-
         if (LoadSinglePrefabFile(filepath)) {
             Logger::Get().Info(DebugType::FileIOSystem) << "Loaded new prefab '" << prefabName << "' into prefab system" << std::endl;
         }
@@ -411,36 +402,17 @@ namespace Framework {
             Logger::Get().Error(DebugType::FileIOSystem) << "Prefab not found: " << prefabName << std::endl;
             return false;
         }
-        try {
-            if (fs::exists(prefab->sourceFile)) {
-                fs::remove(prefab->sourceFile);
-                Logger::Get().Info(DebugType::FileIOSystem)  << "Deleted prefab file: " << prefab->sourceFile << std::endl;
-            }
+
+        if (FileIOSystem::DeleteFileJson(prefab->sourceFile)) {
+            Logger::Get().Info(DebugType::FileIOSystem)  << "Deleted prefab file: " << prefab->sourceFile << std::endl;
         }
-        catch (const std::exception& e) {
-            Logger::Get().Error(DebugType::FileIOSystem) << "Failed to delete prefab file: " << e.what() << std::endl;
+        else {
+            Logger::Get().Error(DebugType::FileIOSystem) << "Failed to delete prefab file: " << prefab->sourceFile << std::endl;
             return false;
         }
 
-        if (std::filesystem::exists(FileIOKeys::ROOT_DATA_FOLDER)) {
-            std::string rootFilePath = std::string(FileIOKeys::ROOT_FOLDER_PREFIX) + prefab->sourceFile;
-            try {
-                if (fs::exists(rootFilePath)) {
-                    fs::remove(rootFilePath);
-                    Logger::Get().Info(DebugType::FileIOSystem)
-                        << "Deleted prefab file from root folder: " << rootFilePath << std::endl;
-                }
-            }
-            catch (const std::exception& e) {
-                Logger::Get().Error(DebugType::FileIOSystem) << "Failed to delete prefab file from root folder: " << e.what() << std::endl;
-            }
-        }
-
         prefabs_.erase(prefabName);
-
-        Logger::Get().Info(DebugType::FileIOSystem)
-            << "Removed prefab from system: " << prefabName << std::endl;
-
+        Logger::Get().Info(DebugType::FileIOSystem) << "Removed prefab from system: " << prefabName << std::endl;
         return true;
     }
 
@@ -765,16 +737,23 @@ namespace Framework {
         }
         //rapidjson::Document::AllocatorType& alloc = doc.GetAllocator();
 
-        CollisionLayer layer = CollisionLayer::Default;
-        if (prefab.layer == "Platform") layer = CollisionLayer::Platform;
-        else if (prefab.layer == "Player") layer = CollisionLayer::Player;
-
+        // Save collision layer ID
         if (doc.HasMember(Serialization::ENTITY_LAYER)) {
-            doc[Serialization::ENTITY_LAYER] = static_cast<int>(layer);
+            doc[Serialization::ENTITY_LAYER] = prefab.layer;
         }
         else {
             rapidjson::Value layerKey(Serialization::ENTITY_LAYER, alloc);
-            doc.AddMember(layerKey, static_cast<int>(layer), alloc);
+            doc.AddMember(layerKey, prefab.layer, alloc);
+        }
+
+        // Save collision layer name
+        if (doc.HasMember(Serialization::ENTITY_COLLISION_LAYER_NAME)) {
+            doc[Serialization::ENTITY_COLLISION_LAYER_NAME].SetString(prefab.layer_collision_name.c_str(), alloc);
+        }
+        else {
+            rapidjson::Value layerCollisionNameKey(Serialization::ENTITY_COLLISION_LAYER_NAME, alloc);
+            rapidjson::Value layerCollisionNameVal(prefab.layer_collision_name.c_str(), alloc);
+            doc.AddMember(layerCollisionNameKey, layerCollisionNameVal, alloc);
         }
 
         if (doc.HasMember(Serialization::ENTITY_RENDER_LAYER)) {
@@ -793,17 +772,22 @@ namespace Framework {
             doc.AddMember(customOrderKey, prefab.customRenderOrder, alloc);
         }
 
-        FileIOSystem::WriteFileJson(filePath, doc);
-        Logger::Get().Info(DebugType::FileIOSystem)
-            << "Saved prefab to: " << filePath << std::endl;
-
-        if (std::filesystem::exists(FileIOKeys::ROOT_DATA_FOLDER)) {
-            std::string rootFilePath = std::string(FileIOKeys::ROOT_FOLDER_PREFIX) + filePath;
-            FileIOSystem::WriteFileJson(rootFilePath, doc);
-            Logger::Get().Info(DebugType::FileIOSystem)  << "Saved prefab to: " << rootFilePath << std::endl;
+        // Save render layer name
+        if (!prefab.layer_render_name.empty()) {
+            if (doc.HasMember(Serialization::ENTITY_RENDER_LAYER_NAME)) {
+                doc[Serialization::ENTITY_RENDER_LAYER_NAME].SetString(prefab.layer_render_name.c_str(), alloc);
+            }
+            else {
+                rapidjson::Value renderLayerNameKey(Serialization::ENTITY_RENDER_LAYER_NAME, alloc);
+                rapidjson::Value renderLayerNameVal(prefab.layer_render_name.c_str(), alloc);
+                doc.AddMember(renderLayerNameKey, renderLayerNameVal, alloc);
+            }
         }
 
-        Logger::Get().Info(DebugType::FileIOSystem) << "Prefab saved successfully: " << prefabName << std::endl;
+        if (FileIOSystem::WriteFileJson(filePath, doc)) {
+            Logger::Get().Info(DebugType::FileIOSystem) << 
+                "Saved prefab <" << prefabName << "> to: " << filePath << std::endl;
+        }
 
         return true;
     }

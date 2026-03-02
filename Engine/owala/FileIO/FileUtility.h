@@ -47,8 +47,12 @@ namespace Framework {
 		static string SanitizeFileName(const string& name);
 		
 		// Read & Write helpers
-		static const bool ReadFile(const string& fileName, Document& doc);
-		static const bool WriteFileJson(const string& fileName, Document& d);
+		static bool ReadFile(const string& fileName, Document& doc);
+
+		// WriteFileJson and DeleteFileJson return true as long as the local Debug file was modified.
+		// Any issues modifying the file in root Data folder will be logged but will not return false
+		static bool WriteFileJson(const string& fileName, Document& d, bool writeToRoot = true);
+		static bool DeleteFileJson(const string& fileName, bool deleteFromRoot = true);
 
 		// Load window width and height from json file
 		static WindowConfig LoadWindowConfig();
@@ -56,8 +60,11 @@ namespace Framework {
 		// Load PlayerStats from player config json file
 		static void LoadPlayerStats(float& moveSpeed, float& jumpHeight , float& invuln, float& kb_dur, float& kb_x, float& kb_y);
 
+		// Saves world config variables to world config json file
+		static void SaveWorldConfig();
+
 		// Load world config variables from world config json file
-		static void LoadWorldConfig(float& gravity);
+		static void LoadWorldConfig();
 
 		// Load AnimationInfo from a given filepath
 		static AnimationInfo LoadAnimationInfo(std::string filepath);
@@ -83,7 +90,10 @@ namespace Framework {
 
 		static constexpr const char* WIN_CONFIG_FILEPATH = "Data/config.json";
 		static constexpr const char* PLAYER_CONFIG_FILEPATH = "Data/player.json";
-		static constexpr const char* WORLD_CONFIG_FILEPATH = "Data/world.json";
+#ifdef BUILD_EDITOR
+		static constexpr const char* EDITOR_CFG_PATH = "Data/Config/editorConfig.json";
+#endif
+		static constexpr const char* WORLD_CONFIG_FILEPATH = "Data/Config/worldConfig.json";
 		static constexpr const char* AUDIO_NAMES_FILEPATH = "Data/audioFiles.json";
 
 		static constexpr const char* SCENE_ASSETS_FILEPATH = "Data/scenes.json";
@@ -91,6 +101,20 @@ namespace Framework {
 
 		// layer manager Json Key
 		static constexpr const char* LAYER_CONFIG_FILEPATH = "Data/LayerConfig.json";
+
+#ifdef BUILD_EDITOR
+		/* Editor-Only JSON Keys */
+		static constexpr const char* EDITOR_HISTORY_STACK = "MaxHistoryStack";
+#endif
+
+		/* Globals JSON Keys */
+		static constexpr const char* GBL_PHYSICSCAT = "Physics2D";
+		static constexpr const char* GBL_GRAVITYX = "DefaultGravityX";
+		static constexpr const char* GBL_GRAVITYY = "DefaultGravityY";
+		static constexpr const char* GBL_PERFORMANCECAT = "Performance";
+		static constexpr const char* GBL_ENABLEFPSLIMIT = "bEnableMaxFPS";
+		static constexpr const char* GBL_MAXFPS = "MaxFPS";
+		static constexpr const char* GBL_GAMESPEED = "GameSpeed";
 
 		// Window config Json keys
 		static constexpr const char* WINDOW_W = "window_width";

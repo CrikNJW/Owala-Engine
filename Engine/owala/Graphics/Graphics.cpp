@@ -61,19 +61,22 @@ namespace Framework {
     void main(){ FragColor = uColor; }
     )";
 
-    // Textured quad (pos + uv)
+    // Textured quad (pos + uv) - passthrough, no snap needed
     static const char* VS_TEX = R"(#version 330 core
     layout(location=0) in vec2 aPos;
     layout(location=1) in vec2 aUV;
+    layout(location=2) in vec4 aColor;
     out vec2 vUV;
-    void main(){ gl_Position = vec4(aPos, 0.0, 1.0); vUV = aUV; }
+    out vec4 vColor;
+    void main(){ gl_Position = vec4(aPos, 0.0, 1.0); vUV = aUV; vColor = aColor; }
     )";
 
     static const char* FS_TEX = R"(#version 330 core
     in vec2 vUV;
+    in vec4 vColor;
     uniform sampler2D uTex;
     out vec4 FragColor;
-    void main(){ FragColor = texture(uTex, vUV); }
+    void main(){ FragColor = texture(uTex, vUV) * vColor; }
     )";
 
     // Textured glyphs (pos + uv), alpha from red channel
@@ -159,7 +162,9 @@ namespace Framework {
 
     // Cached uniform locations (avoid glGetUniformLocation per draw)
     static GLint g_uColorLoc = -1;
+    static GLint g_uColorLoc_Tex = -1;
     static GLint g_uTexLoc_Tex = -1;
+    static GLint g_uScreenSizeLoc_Tex = -1;
     static GLint g_uColorLoc_Text = -1;
     static GLint g_uTexLoc_Text = -1;
 
@@ -174,100 +179,100 @@ namespace Framework {
     // =========================
 
     void Graphics::Initialize() {
-        // GLEW must be initialized after a valid GL context is current (WindowsSystem did that)
+        // 1. Initialize GLEW
         glewExperimental = GL_TRUE;
         if (glewInit() != GLEW_OK) {
             std::fprintf(stderr, "GLEW init failed\n");
+            return;
         }
 
-        // Back-face culling
+        // 2. Rendering State & V-Sync
         glEnable(GL_CULL_FACE);
         glCullFace(GL_BACK);
 
-        // Set initial viewport
-        int fbw = 0, fbh = 0;
+        // Disable V-Sync to unlock FPS
+		glfwSwapInterval(0); //0 disables vsync, 1 enables vsync, 2 caps FPS to half your refresh rate 
+
+        // 3. Viewport & Resolution
+        int fbw, fbh;
         glfwGetFramebufferSize(GameManager::GetInstance().GetSystems().win_->window(), &fbw, &fbh);
         glViewport(0, 0, fbw, fbh);
-
         screenWidth = fbw;
         screenHeight = fbh;
 
-        // ----- Colored pipeline -----
+        // 4. Colored Pipeline (Primitives)
         progCol_ = linkProgram(VS_COLOR, FS_COLOR);
-        //progCol_ = linkProgramFromFiles("../Shaders/color.vert", "../Shaders/color.frag");
-
-
         glGenVertexArrays(1, &vaoCol_);
-        glBindVertexArray(vaoCol_);
-
         glGenBuffers(1, &vboCol_);
+        glBindVertexArray(vaoCol_);
         glBindBuffer(GL_ARRAY_BUFFER, vboCol_);
         glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 2 * 3, nullptr, GL_STREAM_DRAW);
-
-        glEnableVertexAttribArray(0); // aPos
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (void*)0);
-
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
         g_uColorLoc = glGetUniformLocation(progCol_, "uColor");
 
-        // ----- Textured sprite pipeline -----
+        // 5. Textured Sprite Pipeline (Batched)
         progTex_ = linkProgram(VS_TEX, FS_TEX);
-        //progTex_ = linkProgramFromFiles("../Shaders/texture.vert", "../Shaders/texture.frag");
-
-
         glGenVertexArrays(1, &vaoTex_);
-        glBindVertexArray(vaoTex_);
-
         glGenBuffers(1, &vboTex_);
+        glBindVertexArray(vaoTex_);
         glBindBuffer(GL_ARRAY_BUFFER, vboTex_);
+        // Pre-allocate buffer for MAX_SPRITES_DEFAULT
+        glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 8 * MAX_SPRITES_DEFAULT, nullptr, GL_DYNAMIC_DRAW);
 
-        // Reserve enough for many sprites in one go:
-        // 6 verts * (x,y,u,v) * MAX_SPRITES
-        const size_t bytes = sizeof(float) * 6 * 4 * MAX_SPRITES_DEFAULT;
-        glBufferData(GL_ARRAY_BUFFER, bytes, nullptr, GL_DYNAMIC_DRAW);
-
-        glEnableVertexAttribArray(0); // aPos
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, (void*)0);
-        glEnableVertexAttribArray(1); // aUV
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, (void*)(sizeof(float) * 2));
+        glEnableVertexAttribArray(0); // Pos
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(1); // UV
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(2 * sizeof(float)));
+        glEnableVertexAttribArray(2); // Color
+        glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(4 * sizeof(float)));
 
         g_uTexLoc_Tex = glGetUniformLocation(progTex_, "uTex");
+        g_batchVerts.reserve(6 * 8 * 2048);
 
-        // Pre-size batch CPU buffer to avoid realloc churn
-        g_batchVerts.reserve(6 * 4 * 2048);
-
-        // ----- Text rendering pipeline -----
+        // 6. Text Rendering Pipeline
         progText_ = linkProgram(VS_TEXT, FS_TEXT);
-        //progText_ = linkProgramFromFiles("../Shaders/text.vert", "../Shaders/text.frag");
-
         glGenVertexArrays(1, &vaoText_);
-        glBindVertexArray(vaoText_);
-
         glGenBuffers(1, &vboText_);
+        glBindVertexArray(vaoText_);
         glBindBuffer(GL_ARRAY_BUFFER, vboText_);
         glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4 * 256, nullptr, GL_STREAM_DRAW);
 
-        glEnableVertexAttribArray(0); // aPos
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, (void*)0);
-        glEnableVertexAttribArray(1); // aUV
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, (void*)(sizeof(float) * 2));
+        glEnableVertexAttribArray(0); // Pos
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(1); // UV
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
 
         g_uColorLoc_Text = glGetUniformLocation(progText_, "uColor");
         g_uTexLoc_Text = glGetUniformLocation(progText_, "uTex");
 
-        // Unbind
+        // 7. Final Cleanup & Framebuffer
         glBindVertexArray(0);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-        // Create game framebuffer
-		CreateGameFramebuffer(800, 600);
+        CreateGameFramebuffer(800, 600);
     }
-
     void Graphics::Update() {
+        // 1. Calculate target duration (e.g., 0.01 for 100 FPS)
+        float local_maxFPS = isFPSCapped ? m_MaxFPS : 999.0f;
+        double targetFrameTime = (local_maxFPS > 0) ? (1.0 / (double)local_maxFPS) : 0.0;
+
+        // 2. Wait logic (only if cap is enabled and reasonable)
+        if (targetFrameTime > 0.0) {
+            // We measure from the end of the LAST swap to the start of THIS swap
+            static double lastFrameTime = glfwGetTime();
+
+            while ((glfwGetTime() - lastFrameTime) < targetFrameTime) {
+                // Precise busy-wait
+            }
+            lastFrameTime = glfwGetTime();
+        }
+
+        // 3. Engine time update
         t_ += Framework::Time::DeltaTime();
-        // Present the frame (anything drawn since beginFrame)
+
+        // 4. Present frame
         glfwSwapBuffers(GameManager::GetInstance().GetSystems().win_->window());
     }
-
     void Graphics::Shutdown() {
         if (vboCol_) { glDeleteBuffers(1, &vboCol_);  vboCol_ = 0; }
         if (vaoCol_) { glDeleteVertexArrays(1, &vaoCol_); vaoCol_ = 0; }
@@ -394,13 +399,13 @@ namespace Framework {
         Vector2D p3 = rot(-hx, hy);
 
         const float verts[] = {
-            p0.x, p0.y,  minUV.x, minUV.y,
-            p1.x, p1.y,  maxUV.x, minUV.y,
-            p2.x, p2.y,  maxUV.x, maxUV.y,
+            p0.x, p0.y, minUV.x, minUV.y, 1,1,1,1,
+            p1.x, p1.y, maxUV.x, minUV.y, 1,1,1,1,
+            p2.x, p2.y, maxUV.x, maxUV.y, 1,1,1,1,
 
-            p0.x, p0.y,  minUV.x, minUV.y,
-            p2.x, p2.y,  maxUV.x, maxUV.y,
-            p3.x, p3.y,  minUV.x, maxUV.y,
+            p0.x, p0.y, minUV.x, minUV.y, 1,1,1,1,
+            p2.x, p2.y, maxUV.x, maxUV.y, 1,1,1,1,
+            p3.x, p3.y, minUV.x, maxUV.y, 1,1,1,1,
         };
 
         glEnable(GL_BLEND);
@@ -457,15 +462,27 @@ namespace Framework {
     void Graphics::drawSpriteBatchChunk(Texture tex, const std::vector<BatchedSprite>& sprites) {
 
         g_batchVerts.clear();
-        g_batchVerts.reserve(sprites.size() * 6 * 4);
+        g_batchVerts.reserve(sprites.size() * 6 * 8);
 
         float aspectCorrection = (float)screenHeight / (float)screenWidth;
+        float halfW = (float)screenWidth * 0.5f;
+        float halfH = (float)screenHeight * 0.5f;
+        // Add a microscopic half-pixel expansion to hide floating-point tearing
+        // Since 'hx' and 'hy' are in vertical NDC space before aspect correction,
+        // 0.5f / halfH represents exactly half a pixel on the screen.
+        // Dilation is proportional: a 2x tall sprite gets 2x the dilation, keeping
+        // the sub-pixel gap closed consistently regardless of tile count.
+        const float referenceTileH = sprites.empty() ? 1.0f : sprites[0].size.y;
+        const float baseDilation = 1.5f / halfH; // 1.5 pixels worth in NDC
 
         for (const auto& s : sprites) {
             const float cx = s.topLeft.x + s.size.x * 0.5f;
             const float cy = s.topLeft.y + s.size.y * 0.5f;
-            const float hx = s.size.x * 0.5f;
-            const float hy = s.size.y * 0.5f;
+            // Scale dilation proportionally to this sprite's size vs the reference tile
+            float scaleX = (referenceTileH > 0.0f) ? (s.size.x / referenceTileH) : 1.0f;
+            float scaleY = (referenceTileH > 0.0f) ? (s.size.y / referenceTileH) : 1.0f;
+            const float hx = (s.size.x * 0.5f) + baseDilation * scaleX;
+            const float hy = (s.size.y * 0.5f) + baseDilation * scaleY;
 
             const float c = std::cos(s.rotation);
             const float q = std::sin(s.rotation);
@@ -488,13 +505,13 @@ namespace Framework {
             Vector2D p3 = rot(-hx, hy);
 
             g_batchVerts.insert(g_batchVerts.end(), {
-                p0.x, p0.y, s.minUV.x, s.minUV.y,
-                p1.x, p1.y, s.maxUV.x, s.minUV.y,
-                p2.x, p2.y, s.maxUV.x, s.maxUV.y,
+                p0.x, p0.y, s.minUV.x, s.minUV.y, s.color.r, s.color.g, s.color.b, s.color.a,
+                p1.x, p1.y, s.maxUV.x, s.minUV.y, s.color.r, s.color.g, s.color.b, s.color.a,
+                p2.x, p2.y, s.maxUV.x, s.maxUV.y, s.color.r, s.color.g, s.color.b, s.color.a,
 
-                p0.x, p0.y, s.minUV.x, s.minUV.y,
-                p2.x, p2.y, s.maxUV.x, s.maxUV.y,
-                p3.x, p3.y, s.minUV.x, s.maxUV.y
+                p0.x, p0.y, s.minUV.x, s.minUV.y, s.color.r, s.color.g, s.color.b, s.color.a,
+                p2.x, p2.y, s.maxUV.x, s.maxUV.y, s.color.r, s.color.g, s.color.b, s.color.a,
+                p3.x, p3.y, s.minUV.x, s.maxUV.y, s.color.r, s.color.g, s.color.b, s.color.a
                 });
         }
         drawSpriteBatchRaw(tex, g_batchVerts.data(), sprites.size());
@@ -508,7 +525,7 @@ namespace Framework {
         }
 
         const size_t vertCount = spriteCount * 6;
-        const size_t byteCount = vertCount * 4 * sizeof(float);
+        const size_t byteCount = vertCount * 8 * sizeof(float);
 
         // === CRITICAL SAFETY CHECK ===
         if (spriteCount > MAX_SPRITES_DEFAULT) {
@@ -537,7 +554,7 @@ namespace Framework {
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, tex);
         glUniform1i(g_uTexLoc_Tex, 0);
-
+        glUniform2f(g_uScreenSizeLoc_Tex, static_cast<float>(getScreenWidth()), static_cast<float>(getScreenHeight()));
         glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(vertCount));
 
         // Check for OpenGL errors
@@ -646,7 +663,7 @@ namespace Framework {
         }
     }
 
-    void Graphics::drawText(Font& font, const std::string& textToDraw, const Vector2D& pos, float scale, const Color& color) {
+    void Graphics::drawText(Font& font, const std::string& textToDraw, const Vector2D& pos, float scale, const Color& color, float rotationRad) {
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glUseProgram(progText_);
@@ -664,9 +681,37 @@ namespace Framework {
         std::vector<float> vertices;
         vertices.reserve(textToDraw.length() * 6 * 4);
 
-        float x = (pos.x + 1.0f) * 0.5f * screenWidth;
-        float y = (pos.y + 1.0f) * 0.5f * screenHeight;
-        y -= font.GetAscent(scale);
+        float cos_r = std::cos(rotationRad);
+        float sin_r = std::sin(rotationRad);
+
+        float start_x = (pos.x + 1.0f) * 0.5f * screenWidth;
+        float start_y = (pos.y + 1.0f) * 0.5f * screenHeight;
+
+        // 1. Calculate the exact pixel width of the text block
+        float textWidthPx = 0.0f;
+        for (char c_signed : textToDraw) {
+            unsigned char c = static_cast<unsigned char>(c_signed);
+            textWidthPx += (font.GetCharacters().at(c).Advance >> 6) * scale;
+        }
+
+        // 2. Set pivot to the exact visual center of the text
+        float pivot_x = start_x + (textWidthPx * 0.5f);
+        float pivot_y = start_y - (font.GetAscent(scale) * 0.5f);
+
+        float x = start_x;
+        float y = start_y - font.GetAscent(scale); // Standard baseline
+
+        // Helper lambda to rotate pixel coordinates around the dynamic center
+        auto transformToNDC = [&](float px, float py, float& ndc_x, float& ndc_y) {
+            float dx = px - pivot_x;
+            float dy = py - pivot_y;
+
+            float rot_x = pivot_x + (dx * cos_r - dy * sin_r);
+            float rot_y = pivot_y + (dx * sin_r + dy * cos_r);
+
+            ndc_x = (rot_x / screenWidth) * 2.0f - 1.0f;
+            ndc_y = (rot_y / screenHeight) * 2.0f - 1.0f;
+            };
 
         for (char c_signed : textToDraw) {
             unsigned char c = static_cast<unsigned char>(c_signed);
@@ -677,10 +722,18 @@ namespace Framework {
             float w = ch.Size.x * scale;
             float h = ch.Size.y * scale;
 
-            float ndc_xpos = (xpos / screenWidth) * 2.0f - 1.0f;
-            float ndc_ypos = (ypos / screenHeight) * 2.0f - 1.0f;
-            float ndc_w = (w / screenWidth) * 2.0f;
-            float ndc_h = (h / screenHeight) * 2.0f;
+            // 4 corners of the character quad in pixel space
+            float x1 = xpos, y1 = ypos + h; // Top-Left
+            float x2 = xpos, y2 = ypos;     // Bottom-Left
+            float x3 = xpos + w, y3 = ypos;     // Bottom-Right
+            float x4 = xpos + w, y4 = ypos + h; // Top-Right
+
+            // Rotate and convert to NDC
+            float nx1, ny1, nx2, ny2, nx3, ny3, nx4, ny4;
+            transformToNDC(x1, y1, nx1, ny1);
+            transformToNDC(x2, y2, nx2, ny2);
+            transformToNDC(x3, y3, nx3, ny3);
+            transformToNDC(x4, y4, nx4, ny4);
 
             float u = ch.TexCoords.x;
             float v = ch.TexCoords.y;
@@ -688,13 +741,13 @@ namespace Framework {
             float uvh = ch.TexCoords.w;
 
             vertices.insert(vertices.end(), {
-                ndc_xpos,         ndc_ypos + ndc_h,   u,       v,
-                ndc_xpos,         ndc_ypos,           u,       v + uvh,
-                ndc_xpos + ndc_w, ndc_ypos,           u + uvw, v + uvh,
+                nx1, ny1, u,       v,
+                nx2, ny2, u,       v + uvh,
+                nx3, ny3, u + uvw, v + uvh,
 
-                ndc_xpos,         ndc_ypos + ndc_h,   u,       v,
-                ndc_xpos + ndc_w, ndc_ypos,           u + uvw, v + uvh,
-                ndc_xpos + ndc_w, ndc_ypos + ndc_h,   u + uvw, v
+                nx1, ny1, u,       v,
+                nx3, ny3, u + uvw, v + uvh,
+                nx4, ny4, u + uvw, v
                 });
 
             x += (ch.Advance >> 6) * scale;
@@ -707,6 +760,17 @@ namespace Framework {
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindTexture(GL_TEXTURE_2D, 0);
         glDisable(GL_BLEND);
+    }
+
+    // =========================
+    // Framerate Configuration
+    // =========================
+    void Graphics::SetFPSCap(float value) {
+        if (value < 15.f) {
+            value = 15.f;
+        }
+
+        m_MaxFPS = value;
     }
 
     // =========================

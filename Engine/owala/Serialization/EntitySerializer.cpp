@@ -310,8 +310,10 @@ namespace Framework {
 			SerializeEntities(entities, ecs, entitiesData, alloc);
 			doc.AddMember(rapidjson::StringRef(Serialization::ENTITIES), entitiesData, alloc);
 
-			FileIOSystem::WriteFileJson(filePath, doc);
-			Logger::Get().Info(DebugType::EntitySeralizer) << "Successfully saved scene <" << sceneName << "> to: " << filePath << std::endl;
+			if (FileIOSystem::WriteFileJson(filePath, doc)) {
+				Logger::Get().Info(DebugType::EntitySeralizer) << "Successfully saved scene <" << sceneName << "> to: " << filePath << std::endl;
+			}
+			else { throw std::runtime_error("Failed to save scene"); }
 		}
 		catch (...) {
 			Logger::Get().Error(DebugType::EntitySeralizer) << "Failed to save scene <" << sceneName << "> to: " << filePath << std::endl;
@@ -1134,6 +1136,10 @@ namespace Framework {
 		outData.AddMember(rapidjson::StringRef(Serialization::BUTTON_DEFAULT_ANIMATED), button.defaultIsAnimated, alloc);
 		outData.AddMember(rapidjson::StringRef(Serialization::BUTTON_HOVER_ANIMATED), button.hoverIsAnimated, alloc);
 		outData.AddMember(rapidjson::StringRef(Serialization::BUTTON_PRESSED_ANIMATED), button.pressedIsAnimated, alloc);
+		
+		rapidjson::Value sceneToUnloadVal;
+		sceneToUnloadVal.SetString(button.sceneToUnloadOnClick.c_str(), static_cast<rapidjson::SizeType>(button.sceneToUnloadOnClick.length()), alloc);
+		outData.AddMember(rapidjson::StringRef(Serialization::BUTTON_SCENE_TO_UNLOAD), sceneToUnloadVal, alloc);
 	}
 
 	// SceneOwned Component
@@ -1225,6 +1231,11 @@ namespace Framework {
 		const char* hName = slider.handleName.empty() ? "" : slider.handleName.c_str();
 		handleNameVal.SetString(hName, static_cast<rapidjson::SizeType>(strlen(hName)), alloc);
 		componentData.AddMember(rapidjson::StringRef(Serialization::SLIDER_HANDLE_NAME), handleNameVal, alloc);
+
+		rapidjson::Value fillNameVal;
+		const char* fName = slider.fillName.empty() ? "" : slider.fillName.c_str();
+		fillNameVal.SetString(fName, static_cast<rapidjson::SizeType>(strlen(fName)), alloc);
+		componentData.AddMember(rapidjson::StringRef(Serialization::SLIDER_FILL_NAME), fillNameVal, alloc);
 
 		componentData.AddMember(rapidjson::StringRef(Serialization::SLIDER_MIN_VALUE), slider.minValue, alloc);
 		componentData.AddMember(rapidjson::StringRef(Serialization::SLIDER_MAX_VALUE), slider.maxValue, alloc);
@@ -1760,6 +1771,15 @@ namespace Framework {
 			out.pressedIsAnimated = componentData[Serialization::BUTTON_PRESSED_ANIMATED].GetBool();
 		}
 
+		if (componentData.HasMember(Serialization::BUTTON_SCENE_TO_UNLOAD) &&
+			componentData[Serialization::BUTTON_SCENE_TO_UNLOAD].IsString()) {
+			out.sceneToUnloadOnClick = componentData[Serialization::BUTTON_SCENE_TO_UNLOAD].GetString();
+		}
+
+		else {
+			out.sceneToUnloadOnClick = ""; // Default for old save files
+		}
+
 		return true;
 	}
 
@@ -1923,6 +1943,10 @@ namespace Framework {
 	bool EntitySerializer::DeserializeComponent(const rapidjson::Value& componentData, Slider& out) {
 		if (componentData.HasMember(Serialization::SLIDER_HANDLE_NAME) && componentData[Serialization::SLIDER_HANDLE_NAME].IsString()) {
 			out.handleName = componentData[Serialization::SLIDER_HANDLE_NAME].GetString();
+		}
+
+		if (componentData.HasMember(Serialization::SLIDER_FILL_NAME) && componentData[Serialization::SLIDER_FILL_NAME].IsString()) {
+			out.fillName = componentData[Serialization::SLIDER_FILL_NAME].GetString();
 		}
 
 		// When deserializing, we can't set the handle entity yet since it may not exist

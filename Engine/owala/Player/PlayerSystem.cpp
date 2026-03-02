@@ -25,6 +25,10 @@
 #include "MessageBus.h"
 #include "GameMessages.h"
 #include "ParticleEffectManager.h"
+#include "OwalaTime.h"
+#include "TimerSystem.h"
+#include "FirebaseManager.h"
+#include "SceneManager.h" 
 
 namespace Framework {
     void PlayerSystem::Initialize() {
@@ -33,9 +37,18 @@ namespace Framework {
     }
 
     void PlayerSystem::Update() {
+
+
         GameManager& gm = GameManager::GetInstance();
         PhysicsSystem& physics_ = *gm.GetSystems().physics_;
         if (physics_.IsPaused()) { return; }
+
+        TimerSystem::Get().Update(Framework::Time::DeltaTime());
+        FirebaseManager::Get().Update();
+
+
+        // In PlayerSystem::Update(), at the beginning of the player loop:
+
         InputSystem& input_ = *gm.GetSystems().input_;
         EntityManager entityMgr(gm.GetECS()); // To access entity creation/destruction if needed
 
@@ -110,9 +123,8 @@ namespace Framework {
                         vel.Vel.y = jumpVelocity; // Apply the calculated upward velocity
                         state.isWalking = false;
 
-                            float jumpVolume = 0.3f;
                             //messageBus
-                            MessageBus::Instance().Publish(PlayerJumpedEvent{ entity, jumpVolume }); //empty cause currently theres nothign to pass and just for testing
+                            MessageBus::Instance().Publish(PlayerJumpedEvent{ entity });
                         }
 
                         // Sets the direction the player is facing based on movement
@@ -214,6 +226,7 @@ namespace Framework {
                 if (!entityMgr.HasComponent(entity, PlayerStateType)) continue;
 
                 PlayerState& state = entityMgr.GetComponent<PlayerState>(entity);
+                EntityProperties& props = entityMgr.GetProperties(entity);
 
                 if (state.isHurt) {
                     state.invulnerabilityTimer += Framework::Time::DeltaTime();
@@ -221,7 +234,10 @@ namespace Framework {
                     if (state.invulnerabilityTimer >= INVULNERABILITY_DURATION) {
                         // End invulnerability
                         state.isHurt = false;
+
                         state.invulnerabilityTimer = 0.0f;
+
+                        props.layer = CollisionLayer::Player;
 
                         Framework::Logger::Get().Info(DebugType::PlayerSystem) << "Player invulnerability ended. Lives remaining: " << state.currentLives << std::endl;
                     }
@@ -337,7 +353,7 @@ namespace Framework {
             TrapPlatformComponent& trapComp = entityMgr.GetComponent<TrapPlatformComponent>(trapEntity);
 
             // Only check traps that are currently falling
-            if (!trapComp.hasFallen) continue;
+            if (!trapComp.isTriggered && !trapComp.hasFallen) continue;
 
             const Vector2D& playerPos = entityMgr.GetComponent<Transform>(playerEntity).position;
             const Vector2D& playerHalfSize = entityMgr.GetComponent<AABBCollider>(playerEntity).HalfSize;
@@ -426,7 +442,6 @@ namespace Framework {
                 if (entityMgr.HasComponent(enemy, FSMComponentType)) {
                     enemyType = "bird enemy";
                 }
-                Vector2D enemyPos = entityMgr.GetComponent<Transform>(enemy).position;
 
                 DamagePlayer(playerEntity, enemyType, enemyPos);
                 break;
@@ -452,6 +467,9 @@ namespace Framework {
         else {
             playerState.isHurt = true;
             playerState.invulnerabilityTimer = 0.0f;
+
+            EntityProperties& props = entityMgr.GetProperties(playerEntity);
+            props.layer = CollisionLayer::Invulnrabilty;
 
             if (entityMgr.HasComponent(playerEntity, TransformType) && entityMgr.HasComponent(playerEntity, VelocityType)) {
                 Vector2D playerPos = entityMgr.GetComponent<Transform>(playerEntity).position;
@@ -527,16 +545,16 @@ namespace Framework {
 
     void PlayerSystem::CheckEnemyDeathFromTraps() {
         EntityManager entityMgr(GameManager::GetInstance().GetECS());
+        //float dt = Time::DeltaTime();
 
         for (const Entity& enemyEntity : entityMgr.GetAllEntitiesWithComponent(true, FSMComponentType)) {
-            if (!entityMgr.HasComponent(enemyEntity, EnemyTagType) || 
+            if (!entityMgr.HasComponent(enemyEntity, EnemyTagType) ||
                 !entityMgr.HasComponent(enemyEntity, TransformType) ||
                 !entityMgr.HasComponent(enemyEntity, AABBColliderType)) {
                 continue;
             }
 
             FSMComponent& fsmComp = entityMgr.GetComponent<FSMComponent>(enemyEntity);
-
             if (fsmComp.fsm.GetCurrentState() == "Death") continue;
 
             // Check all trap platforms
@@ -544,12 +562,22 @@ namespace Framework {
                 TrapPlatformComponent& trapComp = entityMgr.GetComponent<TrapPlatformComponent>(trapEntity);
 
                 // Only check falling traps
-                if (!trapComp.hasFallen) continue;
+                if (!trapComp.isTriggered && !trapComp.hasFallen) continue;
 
                 const Vector2D& enemyPos = entityMgr.GetComponent<Transform>(enemyEntity).position;
                 const Vector2D& enemyHalfSize = entityMgr.GetComponent<AABBCollider>(enemyEntity).HalfSize;
                 const Vector2D& trapPos = entityMgr.GetComponent<Transform>(trapEntity).position;
                 const Vector2D& trapHalfSize = entityMgr.GetComponent<AABBCollider>(trapEntity).HalfSize;
+
+                Vector2D trapVel = { 0.0f, 0.0f };
+                if (entityMgr.HasComponent(trapEntity, VelocityType)) {
+                    trapVel = entityMgr.GetComponent<Velocity>(trapEntity).Vel;
+                }
+
+                Vector2D enemyVel = { 0.0f, 0.0f };
+                if (entityMgr.HasComponent(enemyEntity, VelocityType)) {
+                    enemyVel = entityMgr.GetComponent<Velocity>(enemyEntity).Vel;
+                }
 
                 // Enemy bounds
                 AABB_Bounds enemyBounds = {
@@ -563,21 +591,40 @@ namespace Framework {
                 }
                 AABB_Bounds trapBounds = PhysicsSystem::GetRotatedAABB(trapPos, trapHalfSize, trapRotation);
 
-                if (CollisionIntersection_RectRect_Static(enemyBounds, trapBounds)) {
-                    // Check if trap has velocity (is falling or has fallen)
-                    bool isTrapFalling = false;
-                    if (entityMgr.HasComponent(trapEntity, VelocityType)) {
-                        float trapVelY = entityMgr.GetComponent<Velocity>(trapEntity).Vel.y;
-                        isTrapFalling = (trapVelY < -50.0f); // Falling fast enough
-                    }
+                // Physics might have resolved the overlap, so expand trap bounds slightly 
+                // to detect "touching" contact.
+                float tolerance = 2.0f;
+                AABB_Bounds expandedTrapBounds = trapBounds;
+                expandedTrapBounds.min.x -= tolerance;
+                expandedTrapBounds.max.x += tolerance;
+                expandedTrapBounds.min.y -= tolerance;
+                expandedTrapBounds.max.y += tolerance;
 
-                    // Check if trap is above enemy (crushing from above)
-                    float trapBottom = trapBounds.min.y;
-                    float enemyTop = enemyBounds.max.y;
-                    bool isTrapAbove = (trapBottom <= enemyTop + 20.0f);
+                // 3. Intersection Check
+                if (CollisionIntersection_RectRect_Static(enemyBounds, expandedTrapBounds)) {
 
-                    // Kill if trap is falling OR if trap has fallen and is resting on enemy
-                    if ((isTrapFalling && isTrapAbove) || (trapComp.hasFallen && isTrapAbove)) {
+                    // --- NEW LOGIC STARTS HERE ---
+
+                    // Calculate the actual overlap dimensions
+                    float overlapMinX = std::max(enemyBounds.min.x, expandedTrapBounds.min.x);
+                    float overlapMaxX = std::min(enemyBounds.max.x, expandedTrapBounds.max.x);
+                    float overlapMinY = std::max(enemyBounds.min.y, expandedTrapBounds.min.y);
+                    float overlapMaxY = std::min(enemyBounds.max.y, expandedTrapBounds.max.y);
+
+                    float overlapWidth = std::max(0.0f, overlapMaxX - overlapMinX);
+                    float overlapHeight = std::max(0.0f, overlapMaxY - overlapMinY);
+
+                    // A crushing hit is mostly horizontal surface contact (Vertical Penetration < Horizontal Width)
+                    bool isVerticalHit = overlapHeight < overlapWidth;
+
+                    // Ensure the trap is physically above the enemy
+                    bool isTrapAbove = trapPos.y > enemyPos.y;
+
+                    // Kill ONLY if:
+                    // 1. It's a vertical collision (not a side swipe)
+                    // 2. The trap is above the bird
+                    // 3. The trap is in the falling state
+                    if (isVerticalHit && isTrapAbove && trapComp.hasFallen) {
                         TriggerEnemyDeath(enemyEntity, "falling trap platform");
                         break;
                     }

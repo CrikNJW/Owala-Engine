@@ -28,7 +28,14 @@ namespace Framework {
 		ResourceManager& resourceManager_ = *GameManager::GetInstance().GetSystems().resourceManager_;
 		PhysicsSystem& physics_ = *GameManager::GetInstance().GetSystems().physics_;
 		// If physics is paused, skip animation update
-		if (physics_.IsPaused()) { return; }
+		if (physics_.IsAnimationPaused()) { return; }
+
+		#ifdef BUILD_EDITOR
+		// In editor mode, only update animations when the game is actively playing
+		if (auto* editor = GameManager::GetInstance().GetEditor()) {
+			if (!editor->IsGamePlaying()) { return; }
+		}
+		#endif
 
 		const auto& animationProfiles = resourceManager_.GetAnimationProfiles();
 		// Small padding to avoid texture bleeding
@@ -84,19 +91,35 @@ namespace Framework {
 					animationComponent.currentState = AnimationState::IDLE;
 				}
 				else if (stateName == "Waking") {
-					animationComponent.currentState = AnimationState::WAKING; // Use idle while waking
+					animationComponent.currentState = AnimationState::WAKING;
 				}
 				else if (stateName == "SimpleChase" || stateName == "Bounce" || stateName == "Hover") {
-					animationComponent.currentState = AnimationState::RUNNING; // "Fly" animation
+					animationComponent.currentState = AnimationState::RUNNING;
 				}
 				else if (stateName == "Attack") {
-					animationComponent.currentState = AnimationState::JUMPING; // "Dive" animation
+					animationComponent.currentState = AnimationState::JUMPING;
 				}
 				else if (stateName == "Recovery") {
-					animationComponent.currentState = AnimationState::RUNNING; // Back to "Fly" after missing
+					animationComponent.currentState = AnimationState::RUNNING;
 				}
 				else if (stateName == "Death") {
 					animationComponent.currentState = AnimationState::DEATH;
+				}
+				// --- ADD WITCH STATE MAPPINGS ---
+				else if (stateName == "WitchIdle") {
+					animationComponent.currentState = AnimationState::IDLE;
+				}
+				else if (stateName == "WitchAlerted") {
+					animationComponent.currentState = AnimationState::WAKING;
+				}
+				else if (stateName == "WitchEnraged" || stateName == "WitchCharging") {
+					animationComponent.currentState = AnimationState::RUNNING;
+				}
+				else if (stateName == "WitchTeleport") {
+					animationComponent.currentState = AnimationState::JUMPING;
+				}
+				else if (stateName == "WitchAttack") {
+					animationComponent.currentState = AnimationState::HURT;
 				}
 			}
 
@@ -227,8 +250,15 @@ namespace Framework {
 				//	Check if it's time to switch to the next frame
 				if (animationComponent.elapsedTime >= animationComponent.frameDuration) {
 					animationComponent.elapsedTime -= animationComponent.frameDuration;; // Subtract frame duration(to handle any dt overflow). Eg. elapsedTime = 0.12, 0.12 - 0.1 = 0.02, animation will have 0.08 seconds before next frame change.
-
 					animationComponent.currentFrame++; // Move to the next frame
+
+					if (animationInfo.frameEvents.count(animationComponent.currentFrame)) {
+						// Get whatever string was set in the Editor/JSON for this frame
+						const std::string& eventString = animationInfo.frameEvents.at(animationComponent.currentFrame);
+
+						// Broadcast the generic event
+						MessageBus::Instance().Publish(AnimationEvent{ entity, eventString });
+					}
 
 					//Handle looping at the last frame
 					if (animationComponent.currentFrame >= animationComponent.frameCount) {

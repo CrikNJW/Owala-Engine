@@ -53,7 +53,6 @@ namespace Framework {
 	class CameraSystem;
 	struct SystemTime; // Forward Declaration
 	//class PhysicsSystem; // forward Declaration
-
 }
 
 namespace Editor {
@@ -62,6 +61,9 @@ namespace Editor {
 
 
 	struct EditorSettings {
+		int windowWidth = 1920;
+		int windowHeight = 1080;
+
 		bool showDebugInfo = true;
 		bool showLevelEditor = true;
 		bool showHierarchy = true;
@@ -69,6 +71,8 @@ namespace Editor {
 		bool showGameViewport = true;
 		bool showAssetBrowser = true;
 		bool showToolbar = true;
+		bool showPreferencesWindow = false;
+		bool showProjectSettingsWindow = false;
 		bool showPrefabEditor = false;
 		bool showLayerManager = true;
 		bool showAnimationEditor = false;
@@ -108,6 +112,7 @@ namespace Editor {
 		ImTextureID textureID = 0;
 		ImVec2 uv0;
 		ImVec2 uv1;
+		ImVec2 halfSize{ 25.0f, 25.0f };
 	};
 
 	// Struct for handling Editing Session of the Inspector Window for the HistoryManager.
@@ -177,7 +182,6 @@ namespace Editor {
 		bool showGrid_ = false;
 		float baseGridCellSize_ = 100.f;   // NEW: World-space size of a cell at zoom 1.0
 
-
 		//Drag and Drop State
 		bool isDraggingPrefab_ = false;
 		DraggablePrefabInfo dragDropPayload_; // Holds info about the prefab being dragged
@@ -204,7 +208,6 @@ namespace Editor {
 
 		//---layer manager variables ----//
 		Framework::LayerManager layerManager_;
-
 
 		// Layer editor state
 		bool showLayerConfigWindow_ = false;
@@ -243,8 +246,6 @@ namespace Editor {
 		DraggableFSMInfo fsmDragDropPayload_;
 		bool isDraggingFSM_ = false;
 
-
-
 		// --- Camera State Management ---
 		struct CameraState {
 			Vector2D position{ 0.0f, 0.0f };
@@ -264,6 +265,10 @@ namespace Editor {
 
 		// Internal Checkers
 		void SanityCheck();
+
+		// Editor Configuration
+		void LoadEditorConfig();
+		void SaveEditorConfig();
 
 		// Handles placing the dragged prefab when the mouse is released.
 		void HandleDragDropPlacement(); // Renamed from HandleTilePlacement	
@@ -301,7 +306,10 @@ namespace Editor {
 		void ShowTilemapEditor();
 		void ShowAssetBrowser(std::vector<std::filesystem::path>& droppedFiles);
 		void ShowGameViewport();
+		void ShowMenuBar();
 		void ShowToolbar();
+		void ShowPreferencesWindow();
+		void ShowProjectSettingsWindow();
 		void ShowDebugVisualizationPanel();
 		void ShowPrefabEditor();
 		void ShowTilePalette();
@@ -334,6 +342,7 @@ namespace Editor {
 		void ShowAnimationEditor();
 		void LoadAnimationFiles();
 		void SaveAnimationFile(const std::string& animationName);
+		void SaveTextureToAnimationMapping();
 		void ReloadAnimationFromFile(const std::string& animationName);
 		void RefreshAnimationInResourceManager(const std::string& animationName);
 
@@ -393,6 +402,8 @@ namespace Editor {
 			bool isLooping = true;
 			int startFrame = 0;
 			std::vector<std::pair<std::string, int>> spritesheets; // texture, frameCount pairs
+			std::vector<std::string> textureKeys; // keys from textureToAnimationMapping.json
+			std::map<int, std::string> frameEvents; // maps frame numbers to event names for quick lookup when editing events on specific frames
 		};
 
 		std::vector<AnimationFileData> loadedAnimations_;

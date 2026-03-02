@@ -132,6 +132,7 @@ namespace Framework {
         if (!collisionMatrixInitialized_) {
             InitializeCollisionMatrix();
             collisionMatrixInitialized_ = true;
+            ReloadCollisionMatrixFromFile();
             Logger::Get().Info(DebugType::PhysicsSystem)
                 << "Collision matrix initialized with defaults" << std::endl;
         }
@@ -139,7 +140,6 @@ namespace Framework {
             Logger::Get().Info(DebugType::PhysicsSystem)
                 << "Collision matrix already initialized, skipping reset" << std::endl;
         }
-        FileIOSystem::LoadWorldConfig(gravity_.y);
         // --- Initialize the Implicit Grid ---
         grid_.resize(GridCellsX * GridCellsY);
         // reserve space for performance
@@ -508,6 +508,13 @@ namespace Framework {
             return;
         }
 
+        // This prevents the trap from "resting" on the bird.
+        // We let them overlap so PlayerSystem can detect the kill.
+        bool isE1Enemy = entityMgr.HasComponent(e1, EnemyTagType);
+        bool isE2Enemy = entityMgr.HasComponent(e2, EnemyTagType);
+        bool isE1Player = entityMgr.HasComponent(e1, PlayerTagType);
+        bool isE2Player = entityMgr.HasComponent(e2, PlayerTagType);
+
         // --- LAYER-BASED COLLISION CHECK ---
         if (entityMgr.GetProperties(e1).layer == CollisionLayer::Default || entityMgr.GetProperties(e2).layer == CollisionLayer::Default) {
             return;
@@ -516,15 +523,22 @@ namespace Framework {
         CollisionLayer& layer1 = entityMgr.GetProperties(e1).layer;
         CollisionLayer& layer2 = entityMgr.GetProperties(e2).layer;
 
+        if ((isE1Enemy && isE2Player) || (isE2Enemy && isE1Player)) {
+            static bool loggedOnce = false;
+            if (!loggedOnce) {
+                Logger::Get().Info(DebugType::PhysicsSystem)
+                    << "Enemy-Player collision check: Layer1=" << static_cast<int>(layer1)
+                    << ", Layer2=" << static_cast<int>(layer2)
+                    << ", CanCollide=" << collisionMatrix_[static_cast<size_t>(layer1)][static_cast<size_t>(layer2)]
+                    << std::endl;
+                loggedOnce = true;
+            }
+        }
+
         if (!collisionMatrix_[static_cast<size_t>(layer1)][static_cast<size_t>(layer2)]) {
             return;
         }
 
-        // --- CHECK IF PLAYER IS INVULNERABLE AND COLLIDING WITH DYNAMIC TRAP ---
-        // Identify if one entity is player and the other is a dynamic trap
-        bool isE1Player = entityMgr.HasComponent(e1, PlayerTagType);
-        bool isE2Player = entityMgr.HasComponent(e2, PlayerTagType);
-        
         bool isE1DynamicTrap = entityMgr.HasComponent(e1, TrapPlatformComponentType) && 
                                 entityMgr.HasComponent(e1, RigidBodyType);
         bool isE2DynamicTrap = entityMgr.HasComponent(e2, TrapPlatformComponentType) && 

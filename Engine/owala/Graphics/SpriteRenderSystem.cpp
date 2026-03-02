@@ -51,6 +51,7 @@ namespace Framework {
     void SpriteRenderSystem::Update() {
         GameManager::GetInstance().GetSystems().gfx_->beginFrame(clearColor_);
         RenderSprites();
+        RenderAttackCircles();
         if (drawColliders_) {
             RenderColliderOutlines();
         }
@@ -103,7 +104,7 @@ namespace Framework {
 
                 // Draw the text immediately
                 if (item.font) {
-                    gfx_.drawText(*item.font, item.textLine, item.screenPos, item.scale, item.color);
+                    gfx_.drawText(*item.font, item.textLine, item.screenPos, item.scale, item.color, item.rotation);
                 }
             }
             else {
@@ -147,7 +148,7 @@ namespace Framework {
             try {
                 const Transform& transform = entityMgr.GetComponent<Transform>(entity);
                 const Vector2D& worldPos = transform.position;
-                bool isUIElement = entityMgr.HasComponent(entity, GUITagType); // Check if entity is a UI element
+                bool isUIElement = entityMgr.HasComponent(entity, GUITagType);
                 bool isScreenSpaceParticle = false;
 
                 // Check if particle is screen space
@@ -172,13 +173,14 @@ namespace Framework {
                         continue;
                     }
                 }
+
                 Vector2D finalScale = { 1.0f, 1.0f };
-                //float finalRotation = 0.0f;
                 // --- Apply Scale ---
                 const Vector2D& scale = transform.scale;
                 finalScale = scale;
                 halfSize.x *= finalScale.x;
                 halfSize.y *= finalScale.y;
+
                 // --- Rotation (degrees → radians) ---
                 float rotationRad = 0.0f;
                 bool hasRotationFlag = entityMgr.HasComponent(entity, RotationFlagType);
@@ -199,7 +201,6 @@ namespace Framework {
                 const EntityProperties& props = entityMgr.GetProperties(entity);
                 int renderOrder = props.customRenderOrder;
 
-                // Use predefined render layer if not custom
                 if (props.renderLayer != RenderLayer::Custom) {
                     renderOrder = static_cast<int>(props.renderLayer);
                 }
@@ -208,37 +209,22 @@ namespace Framework {
                 Vector2D screenPos = worldPos;
                 Vector2D screenHalfSize = halfSize;
 
-                // Check if camera exists AND if this is NOT a UI element
                 if (activeCamera != 0 && cameraSystem_ && !isUIElement && !isScreenSpaceParticle) {
-                    // Convert center position from world to screen
                     screenPos = cameraSystem_->WorldToScreen(worldPos, activeCamera);
 
-                    // Get camera for zoom and aspect ratio
                     const Camera& cam = cameraSystem_->GetCamera(activeCamera);
 
                     // Convert world-space size to screen-space size
                     // The key is to scale by the camera's zoom and aspect ratio
-                    float halfWidth = cam.zoom;
-                    float halfHeight = cam.zoom;
-
-                    screenHalfSize.x = halfSize.x / halfWidth;
-                    screenHalfSize.y = halfSize.y / halfHeight;
+                    screenHalfSize.x = halfSize.x / cam.zoom;
+                    screenHalfSize.y = halfSize.y / cam.zoom;
                 }
-
                 else if (isScreenSpaceParticle) {
-                    // Convert 0..1 to -1..1
                     screenPos.x = (worldPos.x * 2.0f) - 1.0f;
                     screenPos.y = (worldPos.y * 2.0f) - 1.0f;
-
-                    // Do NOT apply camera zoom to size. 
-                    // This keeps the particle size constant regardless of camera zoom.
                     screenHalfSize = halfSize;
                 }
-                // Handle UI Elements (GUITag)
                 else if (isUIElement) {
-                    // Graphics.cpp shrinks X by (Height/Width). 
-                    // We must stretch X by (Width/Height) to counteract it, allowing 
-                    // a 1.0 half-size to actually reach the edge of the screen.
                     float aspectRatio = (float)gfx_.getScreenWidth() / (float)gfx_.getScreenHeight();
                     screenHalfSize.x *= aspectRatio;
                 }
@@ -252,6 +238,7 @@ namespace Framework {
                 batchedSprite.topLeft = topLeft;
                 batchedSprite.size = fullSize;
                 batchedSprite.rotation = rotationRad;
+                batchedSprite.color = { 1.0f, 1.0f, 1.0f, sprite.alpha }; // READ ALPHA FROM COMPONENT
 
                 // --- UV Animation ---
                 if (entityMgr.HasComponent(entity, AnimationComponentType)) {
@@ -269,12 +256,30 @@ namespace Framework {
                     std::swap(batchedSprite.minUV.x, batchedSprite.maxUV.x);
                 }
 
-                // UV Inset to prevent texture bleeding
-                /*float uvInset = 0.005f;
-                batchedSprite.minUV.x += uvInset;
-                batchedSprite.minUV.y += uvInset;
-                batchedSprite.maxUV.x -= uvInset;
-                batchedSprite.maxUV.y -= uvInset;*/
+                // --- Half-texel UV inset to prevent texture bleeding at tile edges ---
+                // The inset is scaled proportionally to the UV range of this sprite so that
+                // a multi-tile sprite (large UV range) gets the same visual inset as a
+                // single-tile sprite (small UV range), keeping all tiles consistent.
+                GLint texW = 1, texH = 1;
+                Texture texID = resources_.get<Texture>(sprite.textureKey);
+                glBindTexture(GL_TEXTURE_2D, texID);
+                glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &texW);
+                glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &texH);
+                glBindTexture(GL_TEXTURE_2D, 0);
+
+                // UV range this sprite occupies in the texture (1.0 for a full-texture tile)
+                float uvRangeX = batchedSprite.maxUV.x - batchedSprite.minUV.x;
+                float uvRangeY = batchedSprite.maxUV.y - batchedSprite.minUV.y;
+
+                // Half-texel in UV space, scaled so multi-tile sprites get a proportionally
+                // equivalent inset to a single-tile sprite occupying the full texture.
+                float uInset = (0.5f / static_cast<float>(texW)) * uvRangeX;
+                float vInset = (0.5f / static_cast<float>(texH)) * uvRangeY;
+
+                batchedSprite.minUV.x += uInset;
+                batchedSprite.minUV.y += vInset;
+                batchedSprite.maxUV.x -= uInset;
+                batchedSprite.maxUV.y -= vInset;
 
                 RenderItem item;
                 item.isText = false;
@@ -301,7 +306,7 @@ namespace Framework {
         Graphics& gfx_ = *gm.GetSystems().gfx_;
 
         // Retrieve active camera data
-        float zoom = 1.0f, zoomRefSize= 540.0f, zoomRatio = 1.0f;
+        float zoom = 1.0f, zoomRefSize = 350.0f, zoomRatio = 1.0f;
         Vector2D camPos = { 0.0f, 0.0f };
         Vector2D camSize = { (float)gfx_.getScreenWidth(), (float)gfx_.getScreenHeight() };
 
@@ -325,26 +330,46 @@ namespace Framework {
             }
 
             Font& font = rcm_.get<Font>(textComp.fontKey);
-            const Vector2D& textPos = entityMgr.GetComponent<Transform>(entity).position;
+
+            const Transform& transform = entityMgr.GetComponent<Transform>(entity);
+            const Vector2D& textPos = transform.position;
             bool isUIElement = entityMgr.HasComponent(entity, GUITagType);
+
+            // --- Rotation ---
+            float rotationRad = 0.0f;
+            if (entityMgr.HasComponent(entity, RotationFlagType)) {
+                const RotationFlag& rotationFlag = entityMgr.GetComponent<RotationFlag>(entity);
+                float worldRotationRad = transform.rotation.textureAngle;
+                float localRotationRad = static_cast<float>(rotationFlag.currentRotation * (M_PI / 180.0));
+                rotationRad = worldRotationRad + localRotationRad;
+            }
+            else {
+                rotationRad = transform.rotation.textureAngle;
+            }
 
             // --- Calculate Screen Position ---
             Vector2D screenTextPos = textPos;
+            float finalScale = textComp.scale;
 
             if (!isUIElement) {
-                // Subtract Camera Position from Text Position
-                float relativeX = textPos.x - camPos.x;
-                float relativeY = textPos.y - camPos.y;
+                // Anchor to World Position
+                // Use the standard camera function so text stays attached to the Gizmo/Entity
+                if (activeCamera != 0 && cameraSystem_) {
+                    screenTextPos = cameraSystem_->WorldToScreen(textPos, activeCamera);
+                }
 
-                // offset so that pos is the middle of the text
-                relativeX -= textComp.halfSize.x;
-                relativeY += textComp.halfSize.y;
+                // Scale the Text
+                // Apply your reference zoom ratio to the text scale
+                finalScale *= zoomRatio;
 
-                // Convert Relative Position to NDC
-                screenTextPos = Vector2D(
-                    (relativeX / camSize.x) * 2.0f * zoomRatio,
-                    (relativeY / camSize.y) * 2.0f * zoomRatio
-                );
+                // Apply Offset in Screen Space (NDC)
+                // Convert halfSize (Pixels) -> NDC. 
+                // We scale the offset by 'finalScale' so it shrinks/grows with the text.
+                float ndcHalfW = (textComp.halfSize.x * finalScale / gfx_.getScreenWidth()) * 2.0f;
+                float ndcHalfH = (textComp.halfSize.y * finalScale / gfx_.getScreenHeight()) * 2.0f;
+
+                screenTextPos.x -= ndcHalfW;
+                screenTextPos.y += ndcHalfH;
             }
             else {
                 // Texts with GUI tag already use screen coords
@@ -368,6 +393,7 @@ namespace Framework {
                 item.screenPos = currentLinePos;
                 item.scale = textComp.scale * (isUIElement ? 1.0f : zoomRatio);
                 item.color = textComp.color;
+                item.rotation = rotationRad;
 
                 queue.push_back(item);
 
@@ -471,6 +497,59 @@ namespace Framework {
             for (int i = 0; i < 4; ++i) {
                 int next = (i + 1) % 4;
                 gfx_.drawLine(corners[i], corners[next], { 0.0f, 1.0f, 0.0f, 1.0f });
+            }
+        }
+    }
+
+    void SpriteRenderSystem::RenderAttackCircles() {
+        GameManager& gm = GameManager::GetInstance();
+        CameraSystem* cameraSystem_ = gm.GetSystems().camera_;
+        Graphics& gfx_ = *gm.GetSystems().gfx_;
+        EntityManager entityMgr(gm.GetECS());
+
+        Entity activeCamera = 0;
+        if (cameraSystem_) {
+            activeCamera = cameraSystem_->GetActiveCamera();
+        }
+
+        for (const Entity& e : entityMgr.GetAllEntitiesWithComponent(true, FSMComponentType)) {
+            FSMComponent& fsm = entityMgr.GetComponent<FSMComponent>(e);
+            if (fsm.attackCircleRadius <= 0.0f) continue;
+            if (!entityMgr.HasComponent(e, TransformType)) continue;
+            if (!entityMgr.HasComponent(e, SceneOwnedType)) continue;
+
+            const SceneOwned& sceneOwned = entityMgr.GetComponent<SceneOwned>(e);
+            if (sceneOwned.sceneName != SceneManager::GetInstance().GetActiveScene().name) continue;
+
+            const Transform& transform = entityMgr.GetComponent<Transform>(e);
+            Vector2D worldPos = transform.position;
+            float worldRadius = fsm.attackCircleRadius;
+
+            // Draw circle using line segments
+            const int segments = 48;
+            const float twoPi = 2.0f * static_cast<float>(M_PI);
+
+            // Red circle, brighter at larger radius
+            float intensity = worldRadius / 200.0f;
+            if (intensity > 1.0f) intensity = 1.0f;
+            Color circleColor = { 1.0f, 0.15f, 0.1f, 0.5f + 0.4f * intensity };
+
+            for (int i = 0; i < segments; ++i) {
+                float angle1 = static_cast<float>(i) / segments * twoPi;
+                float angle2 = static_cast<float>(i + 1) / segments * twoPi;
+
+                Vector2D p1 = { worldPos.x + std::cos(angle1) * worldRadius,
+                                worldPos.y + std::sin(angle1) * worldRadius };
+                Vector2D p2 = { worldPos.x + std::cos(angle2) * worldRadius,
+                                worldPos.y + std::sin(angle2) * worldRadius };
+
+                // Convert to screen space
+                if (activeCamera != 0 && cameraSystem_) {
+                    p1 = cameraSystem_->WorldToScreen(p1, activeCamera);
+                    p2 = cameraSystem_->WorldToScreen(p2, activeCamera);
+                }
+
+                gfx_.drawLine(p1, p2, circleColor);
             }
         }
     }
