@@ -54,5 +54,13 @@
     {
         "name": "PauseScene",
         "path": "Data/Scenes/pausescene.json"
+    },
+    {
+        "name": "Level 3",
+        "path": "Data/Scenes/level_3.json"
+    },
+    {
+        "name": "Level 4",
+        "path": "Data/Scenes/level_4.json"
     }
 ]

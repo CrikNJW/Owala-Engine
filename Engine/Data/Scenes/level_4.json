@@ -1,1 +1,1389 @@
-{"scene_name":"Level 4","entities":[{"name":"StagePlatform_08","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":13931609444794922173,"components":{"Transform":{"Position":{"x":850.0,"y":1150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,850.0,0.0,50.0,1150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,850.0,0.0,1.0,1150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":43.0,"offset_x":0.0,"offset_y":7.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_08.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_05","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":16374957098414284837,"components":{"Transform":{"Position":{"x":-1150.0,"y":-1050.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,-1150.0,0.0,50.0,-1050.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,-1150.0,0.0,1.0,-1050.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":50.0,"offset_x":0.0,"offset_y":0.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_05.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_08","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":6524147777046049769,"components":{"Transform":{"Position":{"x":-850.0,"y":1150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,-850.0,0.0,50.0,1150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,-850.0,0.0,1.0,1150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":43.0,"offset_x":0.0,"offset_y":7.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_08.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_08","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":3085196391383090537,"components":{"Transform":{"Position":{"x":-550.0,"y":1150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,-550.0,0.0,50.0,1150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,-550.0,0.0,1.0,1150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":43.0,"offset_x":0.0,"offset_y":7.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_08.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"BG_2","layer":0,"layer_collision_name":"Default","render_layer":0,"custom_render_order":2,"layer_render_name":"Custom","active":true,"uuid":9703862676373829302,"components":{"Transform":{"Position":{"x":0.0,"y":0.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[1.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"TextureComponent":{"texture_key":"SB_Env_Level2_Background_04.png","half_size":{"x":1150.0,"y":1150.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":[]},{"name":"BG_1","layer":0,"layer_collision_name":"Default","render_layer":0,"custom_render_order":1,"layer_render_name":"Custom","active":true,"uuid":961709084999050110,"components":{"Transform":{"Position":{"x":0.0,"y":0.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[1.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"TextureComponent":{"texture_key":"SB_Env_Level2_Background_07.png","half_size":{"x":1150.0,"y":1150.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":[]},{"name":"StagePlatform_05","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":6294501938279677949,"components":{"Transform":{"Position":{"x":-1150.0,"y":50.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,-1150.0,0.0,50.0,50.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,-1150.0,0.0,1.0,50.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":50.0,"offset_x":0.0,"offset_y":0.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_05.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_05","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":10223586581400826727,"components":{"Transform":{"Position":{"x":-1150.0,"y":-50.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,-1150.0,0.0,50.0,-50.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,-1150.0,0.0,1.0,-50.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":50.0,"offset_x":0.0,"offset_y":0.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_05.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_05","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":9497623611949915283,"components":{"Transform":{"Position":{"x":-1150.0,"y":150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,-1150.0,0.0,50.0,150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,-1150.0,0.0,1.0,150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":50.0,"offset_x":0.0,"offset_y":0.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_05.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_05","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":15159790784923212867,"components":{"Transform":{"Position":{"x":-1150.0,"y":-150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,-1150.0,0.0,50.0,-150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,-1150.0,0.0,1.0,-150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":50.0,"offset_x":0.0,"offset_y":0.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_05.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_05","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":4007088151960753023,"components":{"Transform":{"Position":{"x":-1150.0,"y":-250.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,-1150.0,0.0,50.0,-250.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,-1150.0,0.0,1.0,-250.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":50.0,"offset_x":0.0,"offset_y":0.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_05.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_05","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":12085160819803811042,"components":{"Transform":{"Position":{"x":-1150.0,"y":-350.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,-1150.0,0.0,50.0,-350.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,-1150.0,0.0,1.0,-350.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":50.0,"offset_x":0.0,"offset_y":0.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_05.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_05","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":15927618727745011981,"components":{"Transform":{"Position":{"x":-1150.0,"y":250.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,-1150.0,0.0,50.0,250.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,-1150.0,0.0,1.0,250.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":50.0,"offset_x":0.0,"offset_y":0.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_05.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_05","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":9707524677822551166,"components":{"Transform":{"Position":{"x":-1150.0,"y":-450.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,-1150.0,0.0,50.0,-450.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,-1150.0,0.0,1.0,-450.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":50.0,"offset_x":0.0,"offset_y":0.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_05.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_05","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":16953635594591722915,"components":{"Transform":{"Position":{"x":-1150.0,"y":350.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,-1150.0,0.0,50.0,350.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,-1150.0,0.0,1.0,350.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":50.0,"offset_x":0.0,"offset_y":0.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_05.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_05","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":1429392274139813113,"components":{"Transform":{"Position":{"x":-1150.0,"y":450.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,-1150.0,0.0,50.0,450.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,-1150.0,0.0,1.0,450.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":50.0,"offset_x":0.0,"offset_y":0.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_05.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_05","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":4409613615287784785,"components":{"Transform":{"Position":{"x":-1150.0,"y":550.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,-1150.0,0.0,50.0,550.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,-1150.0,0.0,1.0,550.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":50.0,"offset_x":0.0,"offset_y":0.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_05.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_05","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":3882101848098587010,"components":{"Transform":{"Position":{"x":-1150.0,"y":650.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,-1150.0,0.0,50.0,650.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,-1150.0,0.0,1.0,650.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":50.0,"offset_x":0.0,"offset_y":0.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_05.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_05","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":13168475742582204792,"components":{"Transform":{"Position":{"x":-1150.0,"y":750.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,-1150.0,0.0,50.0,750.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,-1150.0,0.0,1.0,750.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":50.0,"offset_x":0.0,"offset_y":0.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_05.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_05","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":8953395645916693953,"components":{"Transform":{"Position":{"x":-1150.0,"y":850.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,-1150.0,0.0,50.0,850.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,-1150.0,0.0,1.0,850.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":50.0,"offset_x":0.0,"offset_y":0.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_05.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_05","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":15761034294676887101,"components":{"Transform":{"Position":{"x":-1150.0,"y":950.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,-1150.0,0.0,50.0,950.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,-1150.0,0.0,1.0,950.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":50.0,"offset_x":0.0,"offset_y":0.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_05.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_02","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":16691437194627878073,"components":{"Transform":{"Position":{"x":550.0,"y":-1150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,550.0,0.0,50.0,-1150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,550.0,0.0,1.0,-1150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":43.0,"offset_x":0.0,"offset_y":-7.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_02.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_05","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":1603653755469957225,"components":{"Transform":{"Position":{"x":-1150.0,"y":1050.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,-1150.0,0.0,50.0,1050.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,-1150.0,0.0,1.0,1050.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":50.0,"offset_x":0.0,"offset_y":0.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_05.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_05","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":13473299345266491480,"components":{"Transform":{"Position":{"x":-1150.0,"y":1150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,-1150.0,0.0,50.0,1150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,-1150.0,0.0,1.0,1150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":50.0,"offset_x":0.0,"offset_y":0.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_05.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_05","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":9724030854841166011,"components":{"Transform":{"Position":{"x":-1150.0,"y":-550.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,-1150.0,0.0,50.0,-550.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,-1150.0,0.0,1.0,-550.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":50.0,"offset_x":0.0,"offset_y":0.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_05.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_05","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":15923105527283892537,"components":{"Transform":{"Position":{"x":-1150.0,"y":-650.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,-1150.0,0.0,50.0,-650.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,-1150.0,0.0,1.0,-650.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":50.0,"offset_x":0.0,"offset_y":0.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_05.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_02","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":8648160034107492017,"components":{"Transform":{"Position":{"x":250.0,"y":-1150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,250.0,0.0,50.0,-1150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,250.0,0.0,1.0,-1150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":43.0,"offset_x":0.0,"offset_y":-7.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_02.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_05","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":12916022801638897700,"components":{"Transform":{"Position":{"x":-1150.0,"y":-750.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,-1150.0,0.0,50.0,-750.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,-1150.0,0.0,1.0,-750.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":50.0,"offset_x":0.0,"offset_y":0.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_05.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_05","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":8435774154532701766,"components":{"Transform":{"Position":{"x":-1150.0,"y":-850.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,-1150.0,0.0,50.0,-850.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,-1150.0,0.0,1.0,-850.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":50.0,"offset_x":0.0,"offset_y":0.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_05.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_02","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":10819645327580366388,"components":{"Transform":{"Position":{"x":950.0,"y":-1150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,950.0,0.0,50.0,-1150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,950.0,0.0,1.0,-1150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":43.0,"offset_x":0.0,"offset_y":-7.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_02.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_05","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":3902647278621864820,"components":{"Transform":{"Position":{"x":-1150.0,"y":-950.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,-1150.0,0.0,50.0,-950.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,-1150.0,0.0,1.0,-950.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":50.0,"offset_x":0.0,"offset_y":0.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_05.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_05","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":7912571476932318896,"components":{"Transform":{"Position":{"x":-1150.0,"y":-1150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,-1150.0,0.0,50.0,-1150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,-1150.0,0.0,1.0,-1150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":50.0,"offset_x":0.0,"offset_y":0.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_05.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_02","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":16086167133342637585,"components":{"Transform":{"Position":{"x":-1050.0,"y":-1150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,-1050.0,0.0,50.0,-1150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,-1050.0,0.0,1.0,-1150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":43.0,"offset_x":0.0,"offset_y":-7.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_02.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_02","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":1323576817218574304,"components":{"Transform":{"Position":{"x":-950.0,"y":-1150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,-950.0,0.0,50.0,-1150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,-950.0,0.0,1.0,-1150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":43.0,"offset_x":0.0,"offset_y":-7.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_02.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_02","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":18276431960001628311,"components":{"Transform":{"Position":{"x":-850.0,"y":-1150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,-850.0,0.0,50.0,-1150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,-850.0,0.0,1.0,-1150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":43.0,"offset_x":0.0,"offset_y":-7.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_02.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_02","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":10128540996545957305,"components":{"Transform":{"Position":{"x":-750.0,"y":-1150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,-750.0,0.0,50.0,-1150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,-750.0,0.0,1.0,-1150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":43.0,"offset_x":0.0,"offset_y":-7.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_02.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_02","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":17056060274083115762,"components":{"Transform":{"Position":{"x":-650.0,"y":-1150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,-650.0,0.0,50.0,-1150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,-650.0,0.0,1.0,-1150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":43.0,"offset_x":0.0,"offset_y":-7.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_02.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_02","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":10677896932731746309,"components":{"Transform":{"Position":{"x":-550.0,"y":-1150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,-550.0,0.0,50.0,-1150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,-550.0,0.0,1.0,-1150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":43.0,"offset_x":0.0,"offset_y":-7.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_02.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_02","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":9247710394194303526,"components":{"Transform":{"Position":{"x":-450.0,"y":-1150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,-450.0,0.0,50.0,-1150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,-450.0,0.0,1.0,-1150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":43.0,"offset_x":0.0,"offset_y":-7.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_02.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_02","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":6920153119211060245,"components":{"Transform":{"Position":{"x":-350.0,"y":-1150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,-350.0,0.0,50.0,-1150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,-350.0,0.0,1.0,-1150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":43.0,"offset_x":0.0,"offset_y":-7.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_02.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_02","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":11914091058295420578,"components":{"Transform":{"Position":{"x":-250.0,"y":-1150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,-250.0,0.0,50.0,-1150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,-250.0,0.0,1.0,-1150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":43.0,"offset_x":0.0,"offset_y":-7.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_02.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_02","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":17486938682463443620,"components":{"Transform":{"Position":{"x":-150.0,"y":-1150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,-150.0,0.0,50.0,-1150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,-150.0,0.0,1.0,-1150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":43.0,"offset_x":0.0,"offset_y":-7.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_02.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_02","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":3788327287482844414,"components":{"Transform":{"Position":{"x":-50.0,"y":-1150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,-50.0,0.0,50.0,-1150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,-50.0,0.0,1.0,-1150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":43.0,"offset_x":0.0,"offset_y":-7.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_02.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_08","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":14735954973030452783,"components":{"Transform":{"Position":{"x":-1050.0,"y":1150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,-1050.0,0.0,50.0,1150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,-1050.0,0.0,1.0,1150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":43.0,"offset_x":0.0,"offset_y":7.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_08.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_08","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":15759693021061240946,"components":{"Transform":{"Position":{"x":-950.0,"y":1150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,-950.0,0.0,50.0,1150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,-950.0,0.0,1.0,1150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":43.0,"offset_x":0.0,"offset_y":7.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_08.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_08","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":2998532335411019378,"components":{"Transform":{"Position":{"x":-750.0,"y":1150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,-750.0,0.0,50.0,1150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,-750.0,0.0,1.0,1150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":43.0,"offset_x":0.0,"offset_y":7.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_08.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_08","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":8947780557041593770,"components":{"Transform":{"Position":{"x":-650.0,"y":1150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,-650.0,0.0,50.0,1150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,-650.0,0.0,1.0,1150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":43.0,"offset_x":0.0,"offset_y":7.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_08.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_08","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":214137853912786229,"components":{"Transform":{"Position":{"x":-450.0,"y":1150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,-450.0,0.0,50.0,1150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,-450.0,0.0,1.0,1150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":43.0,"offset_x":0.0,"offset_y":7.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_08.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_08","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":1055880964046910783,"components":{"Transform":{"Position":{"x":-350.0,"y":1150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,-350.0,0.0,50.0,1150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,-350.0,0.0,1.0,1150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":43.0,"offset_x":0.0,"offset_y":7.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_08.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_08","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":6628504831728670305,"components":{"Transform":{"Position":{"x":-250.0,"y":1150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,-250.0,0.0,50.0,1150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,-250.0,0.0,1.0,1150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":43.0,"offset_x":0.0,"offset_y":7.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_08.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_08","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":15904653900398700731,"components":{"Transform":{"Position":{"x":-150.0,"y":1150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,-150.0,0.0,50.0,1150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,-150.0,0.0,1.0,1150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":43.0,"offset_x":0.0,"offset_y":7.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_08.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_08","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":664177368125835708,"components":{"Transform":{"Position":{"x":-50.0,"y":1150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,-50.0,0.0,50.0,1150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,-50.0,0.0,1.0,1150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":43.0,"offset_x":0.0,"offset_y":7.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_08.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_08","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":15013302082089205278,"components":{"Transform":{"Position":{"x":50.0,"y":1150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,50.0,0.0,50.0,1150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,50.0,0.0,1.0,1150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":43.0,"offset_x":0.0,"offset_y":7.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_08.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_08","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":12347596239952661278,"components":{"Transform":{"Position":{"x":150.0,"y":1150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,150.0,0.0,50.0,1150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,150.0,0.0,1.0,1150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":43.0,"offset_x":0.0,"offset_y":7.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_08.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_08","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":15181403334727420793,"components":{"Transform":{"Position":{"x":250.0,"y":1150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,250.0,0.0,50.0,1150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,250.0,0.0,1.0,1150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":43.0,"offset_x":0.0,"offset_y":7.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_08.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_08","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":7671699266621779837,"components":{"Transform":{"Position":{"x":350.0,"y":1150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,350.0,0.0,50.0,1150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,350.0,0.0,1.0,1150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":43.0,"offset_x":0.0,"offset_y":7.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_08.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_08","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":8461589311897913143,"components":{"Transform":{"Position":{"x":450.0,"y":1150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,450.0,0.0,50.0,1150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,450.0,0.0,1.0,1150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":43.0,"offset_x":0.0,"offset_y":7.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_08.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_08","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":15907456944076057965,"components":{"Transform":{"Position":{"x":550.0,"y":1150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,550.0,0.0,50.0,1150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,550.0,0.0,1.0,1150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":43.0,"offset_x":0.0,"offset_y":7.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_08.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_08","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":14757300309688123758,"components":{"Transform":{"Position":{"x":650.0,"y":1150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,650.0,0.0,50.0,1150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,650.0,0.0,1.0,1150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":43.0,"offset_x":0.0,"offset_y":7.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_08.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_08","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":17609657135718590886,"components":{"Transform":{"Position":{"x":750.0,"y":1150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,750.0,0.0,50.0,1150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,750.0,0.0,1.0,1150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":43.0,"offset_x":0.0,"offset_y":7.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_08.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_05","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":12596360751200854788,"components":{"Transform":{"Position":{"x":1150.0,"y":850.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,1150.0,0.0,50.0,850.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,1150.0,0.0,1.0,850.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":50.0,"offset_x":0.0,"offset_y":0.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_05.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_05","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":808243162424200124,"components":{"Transform":{"Position":{"x":1150.0,"y":950.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,1150.0,0.0,50.0,950.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,1150.0,0.0,1.0,950.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":50.0,"offset_x":0.0,"offset_y":0.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_05.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_05","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":16420978878921179997,"components":{"Transform":{"Position":{"x":1150.0,"y":1050.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,1150.0,0.0,50.0,1050.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,1150.0,0.0,1.0,1050.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":50.0,"offset_x":0.0,"offset_y":0.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_05.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_05","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":14075519384354079437,"components":{"Transform":{"Position":{"x":1150.0,"y":1150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,1150.0,0.0,50.0,1150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,1150.0,0.0,1.0,1150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":50.0,"offset_x":0.0,"offset_y":0.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_05.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_08","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":16251454295309689678,"components":{"Transform":{"Position":{"x":950.0,"y":1150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,950.0,0.0,50.0,1150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,950.0,0.0,1.0,1150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":43.0,"offset_x":0.0,"offset_y":7.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_08.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_08","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":15414216338809179530,"components":{"Transform":{"Position":{"x":1050.0,"y":1150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,1050.0,0.0,50.0,1150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,1050.0,0.0,1.0,1150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":43.0,"offset_x":0.0,"offset_y":7.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_08.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_05","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":12635576486225765766,"components":{"Transform":{"Position":{"x":1150.0,"y":-1150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,1150.0,0.0,50.0,-1150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,1150.0,0.0,1.0,-1150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":50.0,"offset_x":0.0,"offset_y":0.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_05.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_05","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":5912208104730375778,"components":{"Transform":{"Position":{"x":1150.0,"y":-1050.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,1150.0,0.0,50.0,-1050.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,1150.0,0.0,1.0,-1050.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":50.0,"offset_x":0.0,"offset_y":0.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_05.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_05","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":7508730046449676275,"components":{"Transform":{"Position":{"x":1150.0,"y":-950.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,1150.0,0.0,50.0,-950.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,1150.0,0.0,1.0,-950.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":50.0,"offset_x":0.0,"offset_y":0.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_05.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_05","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":4938372037690677888,"components":{"Transform":{"Position":{"x":1150.0,"y":-850.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,1150.0,0.0,50.0,-850.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,1150.0,0.0,1.0,-850.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":50.0,"offset_x":0.0,"offset_y":0.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_05.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_05","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":431389905718528968,"components":{"Transform":{"Position":{"x":1150.0,"y":-750.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,1150.0,0.0,50.0,-750.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,1150.0,0.0,1.0,-750.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":50.0,"offset_x":0.0,"offset_y":0.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_05.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_05","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":426429107200840304,"components":{"Transform":{"Position":{"x":1150.0,"y":-650.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,1150.0,0.0,50.0,-650.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,1150.0,0.0,1.0,-650.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":50.0,"offset_x":0.0,"offset_y":0.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_05.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_05","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":2030364053456958332,"components":{"Transform":{"Position":{"x":1150.0,"y":-550.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,1150.0,0.0,50.0,-550.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,1150.0,0.0,1.0,-550.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":50.0,"offset_x":0.0,"offset_y":0.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_05.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_05","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":1757825766807979428,"components":{"Transform":{"Position":{"x":1150.0,"y":-450.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,1150.0,0.0,50.0,-450.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,1150.0,0.0,1.0,-450.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":50.0,"offset_x":0.0,"offset_y":0.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_05.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_05","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":4422409754218716703,"components":{"Transform":{"Position":{"x":1150.0,"y":-350.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,1150.0,0.0,50.0,-350.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,1150.0,0.0,1.0,-350.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":50.0,"offset_x":0.0,"offset_y":0.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_05.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_02","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":2592882625145726838,"components":{"Transform":{"Position":{"x":1050.0,"y":-1150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,1050.0,0.0,50.0,-1150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,1050.0,0.0,1.0,-1150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":43.0,"offset_x":0.0,"offset_y":-7.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_02.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_02","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":14522258114773749254,"components":{"Transform":{"Position":{"x":850.0,"y":-1150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,850.0,0.0,50.0,-1150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,850.0,0.0,1.0,-1150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":43.0,"offset_x":0.0,"offset_y":-7.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_02.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_02","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":3236473823776719597,"components":{"Transform":{"Position":{"x":650.0,"y":-1150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,650.0,0.0,50.0,-1150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,650.0,0.0,1.0,-1150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":43.0,"offset_x":0.0,"offset_y":-7.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_02.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_02","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":15207483168319034126,"components":{"Transform":{"Position":{"x":350.0,"y":-1150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,350.0,0.0,50.0,-1150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,350.0,0.0,1.0,-1150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":43.0,"offset_x":0.0,"offset_y":-7.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_02.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_02","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":2125563518432598627,"components":{"Transform":{"Position":{"x":150.0,"y":-1150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,150.0,0.0,50.0,-1150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,150.0,0.0,1.0,-1150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":43.0,"offset_x":0.0,"offset_y":-7.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_02.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_02","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":1552391005775402656,"components":{"Transform":{"Position":{"x":450.0,"y":-1150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,450.0,0.0,50.0,-1150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,450.0,0.0,1.0,-1150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":43.0,"offset_x":0.0,"offset_y":-7.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_02.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_02","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":18293068192975179066,"components":{"Transform":{"Position":{"x":750.0,"y":-1150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,750.0,0.0,50.0,-1150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,750.0,0.0,1.0,-1150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":43.0,"offset_x":0.0,"offset_y":-7.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_02.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_02","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":14113368084911066243,"components":{"Transform":{"Position":{"x":50.0,"y":-1150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,50.0,0.0,50.0,-1150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,50.0,0.0,1.0,-1150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":43.0,"offset_x":0.0,"offset_y":-7.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_02.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_05","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":11099633836433749348,"components":{"Transform":{"Position":{"x":1150.0,"y":750.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,1150.0,0.0,50.0,750.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,1150.0,0.0,1.0,750.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":50.0,"offset_x":0.0,"offset_y":0.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_05.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_05","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":269201315196028737,"components":{"Transform":{"Position":{"x":1150.0,"y":450.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,1150.0,0.0,50.0,450.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,1150.0,0.0,1.0,450.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":50.0,"offset_x":0.0,"offset_y":0.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_05.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_05","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":4744771084756765770,"components":{"Transform":{"Position":{"x":1150.0,"y":550.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,1150.0,0.0,50.0,550.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,1150.0,0.0,1.0,550.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":50.0,"offset_x":0.0,"offset_y":0.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_05.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_05","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":4630294486192937919,"components":{"Transform":{"Position":{"x":1150.0,"y":650.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,1150.0,0.0,50.0,650.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,1150.0,0.0,1.0,650.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":50.0,"offset_x":0.0,"offset_y":0.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_05.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_05","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":15159700431814009460,"components":{"Transform":{"Position":{"x":1150.0,"y":50.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,1150.0,0.0,50.0,50.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,1150.0,0.0,1.0,50.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":50.0,"offset_x":0.0,"offset_y":0.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_05.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_05","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":13205512223680922872,"components":{"Transform":{"Position":{"x":1150.0,"y":150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,1150.0,0.0,50.0,150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,1150.0,0.0,1.0,150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":50.0,"offset_x":0.0,"offset_y":0.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_05.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_05","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":6641926839737865570,"components":{"Transform":{"Position":{"x":1150.0,"y":-150.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,1150.0,0.0,50.0,-150.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,1150.0,0.0,1.0,-150.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":50.0,"offset_x":0.0,"offset_y":0.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_05.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_05","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":5847552651090285561,"components":{"Transform":{"Position":{"x":1150.0,"y":350.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,1150.0,0.0,50.0,350.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,1150.0,0.0,1.0,350.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":50.0,"offset_x":0.0,"offset_y":0.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_05.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_05","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":17062398635293036474,"components":{"Transform":{"Position":{"x":1150.0,"y":250.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,1150.0,0.0,50.0,250.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,1150.0,0.0,1.0,250.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":50.0,"offset_x":0.0,"offset_y":0.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_05.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_05","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":432428206522750100,"components":{"Transform":{"Position":{"x":1150.0,"y":-50.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,1150.0,0.0,50.0,-50.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,1150.0,0.0,1.0,-50.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":50.0,"offset_x":0.0,"offset_y":0.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_05.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]},{"name":"StagePlatform_05","layer":2,"layer_collision_name":"","render_layer":50,"custom_render_order":0,"layer_render_name":"","active":true,"uuid":5480909721400741749,"components":{"Transform":{"Position":{"x":1150.0,"y":-250.0},"Rotation":{"angle":0.0,"texture_angle":0.0,"collider_angle":0.0,"texture_matrix":[50.0,0.0,1150.0,0.0,50.0,-250.0,0.0,0.0,1.0],"collider_matrix":[1.0,0.0,1150.0,0.0,1.0,-250.0,0.0,0.0,1.0]},"Scale":{"x":1.0,"y":1.0}},"RigidBody":{"mass":0.0,"inv_mass":0.0,"is_affected_by_gravity":true,"force":{"x":0.0,"y":0.0}},"AABBCollider":{"half_width":50.0,"half_height":50.0,"offset_x":0.0,"offset_y":0.0},"RotationFlag":{"is_rotating":false,"current_rotation":0.0,"target_rotation":0.0},"TextureComponent":{"texture_key":"SB_StagePlatform_05.png","half_size":{"x":50.0,"y":50.0},"flip_x":false},"SceneOwned":{"scene_id":15,"sceneName":"Level 4"}},"tags":["PlatformTag"]}]}
+{
+    "scene_name": "Level 4",
+    "entities": [
+        {
+            "name": "BG_1",
+            "layer": 0,
+            "layer_collision_name": "Default",
+            "render_layer": 0,
+            "custom_render_order": -93,
+            "layer_render_name": "Custom",
+            "active": true,
+            "uuid": 15514987579825272156,
+            "components": {
+                "Transform": {
+                    "Position": {
+                        "x": 0.0,
+                        "y": 0.0
+                    },
+                    "Rotation": {
+                        "angle": 0.0,
+                        "texture_angle": 0.0,
+                        "collider_angle": 0.0,
+                        "texture_matrix": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "collider_matrix": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ]
+                    },
+                    "Scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    }
+                },
+                "TextureComponent": {
+                    "texture_key": "SB_Env_Level2_Background_04.png",
+                    "half_size": {
+                        "x": 1150.0,
+                        "y": 1150.0
+                    },
+                    "flip_x": false
+                },
+                "SceneOwned": {
+                    "scene_id": 16,
+                    "sceneName": "Level 4"
+                }
+            },
+            "tags": []
+        },
+        {
+            "name": "BG_2",
+            "layer": 0,
+            "layer_collision_name": "Default",
+            "render_layer": 0,
+            "custom_render_order": -94,
+            "layer_render_name": "Custom",
+            "active": true,
+            "uuid": 1550121963337100235,
+            "components": {
+                "Transform": {
+                    "Position": {
+                        "x": 0.0,
+                        "y": 0.0
+                    },
+                    "Rotation": {
+                        "angle": 0.0,
+                        "texture_angle": 0.0,
+                        "collider_angle": 0.0,
+                        "texture_matrix": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "collider_matrix": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ]
+                    },
+                    "Scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    }
+                },
+                "TextureComponent": {
+                    "texture_key": "SB_Env_Level2_Background_07.png",
+                    "half_size": {
+                        "x": 1150.0,
+                        "y": 1150.0
+                    },
+                    "flip_x": false
+                },
+                "SceneOwned": {
+                    "scene_id": 16,
+                    "sceneName": "Level 4"
+                }
+            },
+            "tags": []
+        },
+        {
+            "name": "StagePlatform_02",
+            "layer": 2,
+            "layer_collision_name": "Default",
+            "render_layer": 50,
+            "custom_render_order": 0,
+            "layer_render_name": "",
+            "active": true,
+            "uuid": 15213432755822967188,
+            "components": {
+                "Transform": {
+                    "Position": {
+                        "x": 750.0,
+                        "y": -1150.0
+                    },
+                    "Rotation": {
+                        "angle": 0.0,
+                        "texture_angle": 0.0,
+                        "collider_angle": 0.0,
+                        "texture_matrix": [
+                            50.0,
+                            0.0,
+                            750.0,
+                            0.0,
+                            50.0,
+                            -1150.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "collider_matrix": [
+                            1.0,
+                            0.0,
+                            750.0,
+                            0.0,
+                            1.0,
+                            -1150.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ]
+                    },
+                    "Scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    }
+                },
+                "RigidBody": {
+                    "mass": 0.0,
+                    "inv_mass": 0.0,
+                    "is_affected_by_gravity": true,
+                    "force": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                "AABBCollider": {
+                    "half_width": 50.0,
+                    "half_height": 43.0,
+                    "offset_x": 0.0,
+                    "offset_y": -7.0
+                },
+                "RotationFlag": {
+                    "is_rotating": false,
+                    "current_rotation": 0.0,
+                    "target_rotation": 0.0
+                },
+                "TextureComponent": {
+                    "texture_key": "SB_StagePlatform_02.png",
+                    "half_size": {
+                        "x": 50.0,
+                        "y": 50.0
+                    },
+                    "flip_x": false
+                },
+                "SceneOwned": {
+                    "scene_id": 16,
+                    "sceneName": "Level 4"
+                }
+            },
+            "tags": [
+                "PlatformTag"
+            ]
+        },
+        {
+            "name": "StagePlatform_02",
+            "layer": 2,
+            "layer_collision_name": "Default",
+            "render_layer": 50,
+            "custom_render_order": 0,
+            "layer_render_name": "",
+            "active": true,
+            "uuid": 17352710341470092286,
+            "components": {
+                "Transform": {
+                    "Position": {
+                        "x": 650.0,
+                        "y": -1150.0
+                    },
+                    "Rotation": {
+                        "angle": 0.0,
+                        "texture_angle": 0.0,
+                        "collider_angle": 0.0,
+                        "texture_matrix": [
+                            50.0,
+                            0.0,
+                            650.0,
+                            0.0,
+                            50.0,
+                            -1150.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "collider_matrix": [
+                            1.0,
+                            0.0,
+                            650.0,
+                            0.0,
+                            1.0,
+                            -1150.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ]
+                    },
+                    "Scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    }
+                },
+                "RigidBody": {
+                    "mass": 0.0,
+                    "inv_mass": 0.0,
+                    "is_affected_by_gravity": true,
+                    "force": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                "AABBCollider": {
+                    "half_width": 50.0,
+                    "half_height": 43.0,
+                    "offset_x": 0.0,
+                    "offset_y": -7.0
+                },
+                "RotationFlag": {
+                    "is_rotating": false,
+                    "current_rotation": 0.0,
+                    "target_rotation": 0.0
+                },
+                "TextureComponent": {
+                    "texture_key": "SB_StagePlatform_02.png",
+                    "half_size": {
+                        "x": 50.0,
+                        "y": 50.0
+                    },
+                    "flip_x": false
+                },
+                "SceneOwned": {
+                    "scene_id": 16,
+                    "sceneName": "Level 4"
+                }
+            },
+            "tags": [
+                "PlatformTag"
+            ]
+        },
+        {
+            "name": "StagePlatform_02",
+            "layer": 2,
+            "layer_collision_name": "Default",
+            "render_layer": 50,
+            "custom_render_order": 0,
+            "layer_render_name": "",
+            "active": true,
+            "uuid": 2328704073474409971,
+            "components": {
+                "Transform": {
+                    "Position": {
+                        "x": 850.0,
+                        "y": -1150.0
+                    },
+                    "Rotation": {
+                        "angle": 0.0,
+                        "texture_angle": 0.0,
+                        "collider_angle": 0.0,
+                        "texture_matrix": [
+                            50.0,
+                            0.0,
+                            850.0,
+                            0.0,
+                            50.0,
+                            -1150.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "collider_matrix": [
+                            1.0,
+                            0.0,
+                            850.0,
+                            0.0,
+                            1.0,
+                            -1150.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ]
+                    },
+                    "Scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    }
+                },
+                "RigidBody": {
+                    "mass": 0.0,
+                    "inv_mass": 0.0,
+                    "is_affected_by_gravity": true,
+                    "force": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                "AABBCollider": {
+                    "half_width": 50.0,
+                    "half_height": 43.0,
+                    "offset_x": 0.0,
+                    "offset_y": -7.0
+                },
+                "RotationFlag": {
+                    "is_rotating": false,
+                    "current_rotation": 0.0,
+                    "target_rotation": 0.0
+                },
+                "TextureComponent": {
+                    "texture_key": "SB_StagePlatform_02.png",
+                    "half_size": {
+                        "x": 50.0,
+                        "y": 50.0
+                    },
+                    "flip_x": false
+                },
+                "SceneOwned": {
+                    "scene_id": 16,
+                    "sceneName": "Level 4"
+                }
+            },
+            "tags": [
+                "PlatformTag"
+            ]
+        },
+        {
+            "name": "StagePlatform_02",
+            "layer": 2,
+            "layer_collision_name": "Default",
+            "render_layer": 50,
+            "custom_render_order": 0,
+            "layer_render_name": "",
+            "active": true,
+            "uuid": 16339550174678832426,
+            "components": {
+                "Transform": {
+                    "Position": {
+                        "x": 550.0,
+                        "y": -1150.0
+                    },
+                    "Rotation": {
+                        "angle": 0.0,
+                        "texture_angle": 0.0,
+                        "collider_angle": 0.0,
+                        "texture_matrix": [
+                            50.0,
+                            0.0,
+                            550.0,
+                            0.0,
+                            50.0,
+                            -1150.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "collider_matrix": [
+                            1.0,
+                            0.0,
+                            550.0,
+                            0.0,
+                            1.0,
+                            -1150.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ]
+                    },
+                    "Scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    }
+                },
+                "RigidBody": {
+                    "mass": 0.0,
+                    "inv_mass": 0.0,
+                    "is_affected_by_gravity": true,
+                    "force": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                "AABBCollider": {
+                    "half_width": 50.0,
+                    "half_height": 43.0,
+                    "offset_x": 0.0,
+                    "offset_y": -7.0
+                },
+                "RotationFlag": {
+                    "is_rotating": false,
+                    "current_rotation": 0.0,
+                    "target_rotation": 0.0
+                },
+                "TextureComponent": {
+                    "texture_key": "SB_StagePlatform_02.png",
+                    "half_size": {
+                        "x": 50.0,
+                        "y": 50.0
+                    },
+                    "flip_x": false
+                },
+                "SceneOwned": {
+                    "scene_id": 16,
+                    "sceneName": "Level 4"
+                }
+            },
+            "tags": [
+                "PlatformTag"
+            ]
+        },
+        {
+            "name": "StagePlatform_02",
+            "layer": 2,
+            "layer_collision_name": "Default",
+            "render_layer": 50,
+            "custom_render_order": 0,
+            "layer_render_name": "",
+            "active": true,
+            "uuid": 6108207213256854233,
+            "components": {
+                "Transform": {
+                    "Position": {
+                        "x": 1050.0,
+                        "y": -1150.0
+                    },
+                    "Rotation": {
+                        "angle": 0.0,
+                        "texture_angle": 0.0,
+                        "collider_angle": 0.0,
+                        "texture_matrix": [
+                            50.0,
+                            0.0,
+                            1050.0,
+                            0.0,
+                            50.0,
+                            -1150.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "collider_matrix": [
+                            1.0,
+                            0.0,
+                            1050.0,
+                            0.0,
+                            1.0,
+                            -1150.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ]
+                    },
+                    "Scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    }
+                },
+                "RigidBody": {
+                    "mass": 0.0,
+                    "inv_mass": 0.0,
+                    "is_affected_by_gravity": true,
+                    "force": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                "AABBCollider": {
+                    "half_width": 50.0,
+                    "half_height": 43.0,
+                    "offset_x": 0.0,
+                    "offset_y": -7.0
+                },
+                "RotationFlag": {
+                    "is_rotating": false,
+                    "current_rotation": 0.0,
+                    "target_rotation": 0.0
+                },
+                "TextureComponent": {
+                    "texture_key": "SB_StagePlatform_02.png",
+                    "half_size": {
+                        "x": 50.0,
+                        "y": 50.0
+                    },
+                    "flip_x": false
+                },
+                "SceneOwned": {
+                    "scene_id": 16,
+                    "sceneName": "Level 4"
+                }
+            },
+            "tags": [
+                "PlatformTag"
+            ]
+        },
+        {
+            "name": "StagePlatform_05",
+            "layer": 2,
+            "layer_collision_name": "Default",
+            "render_layer": 50,
+            "custom_render_order": 0,
+            "layer_render_name": "",
+            "active": true,
+            "uuid": 6202967011026948581,
+            "components": {
+                "Transform": {
+                    "Position": {
+                        "x": 1150.0,
+                        "y": -1150.0
+                    },
+                    "Rotation": {
+                        "angle": 0.0,
+                        "texture_angle": 0.0,
+                        "collider_angle": 0.0,
+                        "texture_matrix": [
+                            50.0,
+                            0.0,
+                            1150.0,
+                            0.0,
+                            50.0,
+                            -1150.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "collider_matrix": [
+                            1.0,
+                            0.0,
+                            1150.0,
+                            0.0,
+                            1.0,
+                            -1150.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ]
+                    },
+                    "Scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    }
+                },
+                "RigidBody": {
+                    "mass": 0.0,
+                    "inv_mass": 0.0,
+                    "is_affected_by_gravity": true,
+                    "force": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                "AABBCollider": {
+                    "half_width": 50.0,
+                    "half_height": 50.0,
+                    "offset_x": 0.0,
+                    "offset_y": 0.0
+                },
+                "RotationFlag": {
+                    "is_rotating": false,
+                    "current_rotation": 0.0,
+                    "target_rotation": 0.0
+                },
+                "TextureComponent": {
+                    "texture_key": "SB_StagePlatform_05.png",
+                    "half_size": {
+                        "x": 50.0,
+                        "y": 50.0
+                    },
+                    "flip_x": false
+                },
+                "SceneOwned": {
+                    "scene_id": 16,
+                    "sceneName": "Level 4"
+                }
+            },
+            "tags": [
+                "PlatformTag"
+            ]
+        },
+        {
+            "name": "StagePlatform_05",
+            "layer": 2,
+            "layer_collision_name": "Default",
+            "render_layer": 50,
+            "custom_render_order": 0,
+            "layer_render_name": "",
+            "active": true,
+            "uuid": 9134660515192799110,
+            "components": {
+                "Transform": {
+                    "Position": {
+                        "x": 1150.0,
+                        "y": -1050.0
+                    },
+                    "Rotation": {
+                        "angle": 0.0,
+                        "texture_angle": 0.0,
+                        "collider_angle": 0.0,
+                        "texture_matrix": [
+                            50.0,
+                            0.0,
+                            1150.0,
+                            0.0,
+                            50.0,
+                            -1050.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "collider_matrix": [
+                            1.0,
+                            0.0,
+                            1150.0,
+                            0.0,
+                            1.0,
+                            -1050.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ]
+                    },
+                    "Scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    }
+                },
+                "RigidBody": {
+                    "mass": 0.0,
+                    "inv_mass": 0.0,
+                    "is_affected_by_gravity": true,
+                    "force": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                "AABBCollider": {
+                    "half_width": 50.0,
+                    "half_height": 50.0,
+                    "offset_x": 0.0,
+                    "offset_y": 0.0
+                },
+                "RotationFlag": {
+                    "is_rotating": false,
+                    "current_rotation": 0.0,
+                    "target_rotation": 0.0
+                },
+                "TextureComponent": {
+                    "texture_key": "SB_StagePlatform_05.png",
+                    "half_size": {
+                        "x": 50.0,
+                        "y": 50.0
+                    },
+                    "flip_x": false
+                },
+                "SceneOwned": {
+                    "scene_id": 16,
+                    "sceneName": "Level 4"
+                }
+            },
+            "tags": [
+                "PlatformTag"
+            ]
+        },
+        {
+            "name": "StagePlatform_05",
+            "layer": 2,
+            "layer_collision_name": "Default",
+            "render_layer": 50,
+            "custom_render_order": 0,
+            "layer_render_name": "",
+            "active": true,
+            "uuid": 11261475102754041204,
+            "components": {
+                "Transform": {
+                    "Position": {
+                        "x": 1150.0,
+                        "y": -950.0
+                    },
+                    "Rotation": {
+                        "angle": 0.0,
+                        "texture_angle": 0.0,
+                        "collider_angle": 0.0,
+                        "texture_matrix": [
+                            50.0,
+                            0.0,
+                            1150.0,
+                            0.0,
+                            50.0,
+                            -950.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "collider_matrix": [
+                            1.0,
+                            0.0,
+                            1150.0,
+                            0.0,
+                            1.0,
+                            -950.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ]
+                    },
+                    "Scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    }
+                },
+                "RigidBody": {
+                    "mass": 0.0,
+                    "inv_mass": 0.0,
+                    "is_affected_by_gravity": true,
+                    "force": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                "AABBCollider": {
+                    "half_width": 50.0,
+                    "half_height": 50.0,
+                    "offset_x": 0.0,
+                    "offset_y": 0.0
+                },
+                "RotationFlag": {
+                    "is_rotating": false,
+                    "current_rotation": 0.0,
+                    "target_rotation": 0.0
+                },
+                "TextureComponent": {
+                    "texture_key": "SB_StagePlatform_05.png",
+                    "half_size": {
+                        "x": 50.0,
+                        "y": 50.0
+                    },
+                    "flip_x": false
+                },
+                "SceneOwned": {
+                    "scene_id": 16,
+                    "sceneName": "Level 4"
+                }
+            },
+            "tags": [
+                "PlatformTag"
+            ]
+        },
+        {
+            "name": "StagePlatform_05",
+            "layer": 2,
+            "layer_collision_name": "Default",
+            "render_layer": 50,
+            "custom_render_order": 0,
+            "layer_render_name": "",
+            "active": true,
+            "uuid": 7840225332740209475,
+            "components": {
+                "Transform": {
+                    "Position": {
+                        "x": 1150.0,
+                        "y": -850.0
+                    },
+                    "Rotation": {
+                        "angle": 0.0,
+                        "texture_angle": 0.0,
+                        "collider_angle": 0.0,
+                        "texture_matrix": [
+                            50.0,
+                            0.0,
+                            1150.0,
+                            0.0,
+                            50.0,
+                            -850.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "collider_matrix": [
+                            1.0,
+                            0.0,
+                            1150.0,
+                            0.0,
+                            1.0,
+                            -850.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ]
+                    },
+                    "Scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    }
+                },
+                "RigidBody": {
+                    "mass": 0.0,
+                    "inv_mass": 0.0,
+                    "is_affected_by_gravity": true,
+                    "force": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                "AABBCollider": {
+                    "half_width": 50.0,
+                    "half_height": 50.0,
+                    "offset_x": 0.0,
+                    "offset_y": 0.0
+                },
+                "RotationFlag": {
+                    "is_rotating": false,
+                    "current_rotation": 0.0,
+                    "target_rotation": 0.0
+                },
+                "TextureComponent": {
+                    "texture_key": "SB_StagePlatform_05.png",
+                    "half_size": {
+                        "x": 50.0,
+                        "y": 50.0
+                    },
+                    "flip_x": false
+                },
+                "SceneOwned": {
+                    "scene_id": 16,
+                    "sceneName": "Level 4"
+                }
+            },
+            "tags": [
+                "PlatformTag"
+            ]
+        },
+        {
+            "name": "StagePlatform_02",
+            "layer": 2,
+            "layer_collision_name": "Default",
+            "render_layer": 50,
+            "custom_render_order": 0,
+            "layer_render_name": "",
+            "active": true,
+            "uuid": 9078126489944470006,
+            "components": {
+                "Transform": {
+                    "Position": {
+                        "x": 950.0,
+                        "y": -1150.0
+                    },
+                    "Rotation": {
+                        "angle": 0.0,
+                        "texture_angle": 0.0,
+                        "collider_angle": 0.0,
+                        "texture_matrix": [
+                            50.0,
+                            0.0,
+                            950.0,
+                            0.0,
+                            50.0,
+                            -1150.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "collider_matrix": [
+                            1.0,
+                            0.0,
+                            950.0,
+                            0.0,
+                            1.0,
+                            -1150.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ]
+                    },
+                    "Scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    }
+                },
+                "RigidBody": {
+                    "mass": 0.0,
+                    "inv_mass": 0.0,
+                    "is_affected_by_gravity": true,
+                    "force": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                "AABBCollider": {
+                    "half_width": 50.0,
+                    "half_height": 43.0,
+                    "offset_x": 0.0,
+                    "offset_y": -7.0
+                },
+                "RotationFlag": {
+                    "is_rotating": false,
+                    "current_rotation": 0.0,
+                    "target_rotation": 0.0
+                },
+                "TextureComponent": {
+                    "texture_key": "SB_StagePlatform_02.png",
+                    "half_size": {
+                        "x": 50.0,
+                        "y": 50.0
+                    },
+                    "flip_x": false
+                },
+                "SceneOwned": {
+                    "scene_id": 16,
+                    "sceneName": "Level 4"
+                }
+            },
+            "tags": [
+                "PlatformTag"
+            ]
+        },
+        {
+            "name": "StagePlatform_05",
+            "layer": 2,
+            "layer_collision_name": "Default",
+            "render_layer": 50,
+            "custom_render_order": 0,
+            "layer_render_name": "",
+            "active": true,
+            "uuid": 6160619423667106189,
+            "components": {
+                "Transform": {
+                    "Position": {
+                        "x": 1150.0,
+                        "y": -750.0
+                    },
+                    "Rotation": {
+                        "angle": 0.0,
+                        "texture_angle": 0.0,
+                        "collider_angle": 0.0,
+                        "texture_matrix": [
+                            50.0,
+                            0.0,
+                            1150.0,
+                            0.0,
+                            50.0,
+                            -750.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "collider_matrix": [
+                            1.0,
+                            0.0,
+                            1150.0,
+                            0.0,
+                            1.0,
+                            -750.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ]
+                    },
+                    "Scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    }
+                },
+                "RigidBody": {
+                    "mass": 0.0,
+                    "inv_mass": 0.0,
+                    "is_affected_by_gravity": true,
+                    "force": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                "AABBCollider": {
+                    "half_width": 50.0,
+                    "half_height": 50.0,
+                    "offset_x": 0.0,
+                    "offset_y": 0.0
+                },
+                "RotationFlag": {
+                    "is_rotating": false,
+                    "current_rotation": 0.0,
+                    "target_rotation": 0.0
+                },
+                "TextureComponent": {
+                    "texture_key": "SB_StagePlatform_05.png",
+                    "half_size": {
+                        "x": 50.0,
+                        "y": 50.0
+                    },
+                    "flip_x": false
+                },
+                "SceneOwned": {
+                    "scene_id": 16,
+                    "sceneName": "Level 4"
+                }
+            },
+            "tags": [
+                "PlatformTag"
+            ]
+        },
+        {
+            "name": "StagePlatform_05",
+            "layer": 2,
+            "layer_collision_name": "Default",
+            "render_layer": 50,
+            "custom_render_order": 0,
+            "layer_render_name": "",
+            "active": true,
+            "uuid": 11064646019085287819,
+            "components": {
+                "Transform": {
+                    "Position": {
+                        "x": 1150.0,
+                        "y": -550.0
+                    },
+                    "Rotation": {
+                        "angle": 0.0,
+                        "texture_angle": 0.0,
+                        "collider_angle": 0.0,
+                        "texture_matrix": [
+                            50.0,
+                            0.0,
+                            1150.0,
+                            0.0,
+                            50.0,
+                            -550.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "collider_matrix": [
+                            1.0,
+                            0.0,
+                            1150.0,
+                            0.0,
+                            1.0,
+                            -550.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ]
+                    },
+                    "Scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    }
+                },
+                "RigidBody": {
+                    "mass": 0.0,
+                    "inv_mass": 0.0,
+                    "is_affected_by_gravity": true,
+                    "force": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                "AABBCollider": {
+                    "half_width": 50.0,
+                    "half_height": 50.0,
+                    "offset_x": 0.0,
+                    "offset_y": 0.0
+                },
+                "RotationFlag": {
+                    "is_rotating": false,
+                    "current_rotation": 0.0,
+                    "target_rotation": 0.0
+                },
+                "TextureComponent": {
+                    "texture_key": "SB_StagePlatform_05.png",
+                    "half_size": {
+                        "x": 50.0,
+                        "y": 50.0
+                    },
+                    "flip_x": false
+                },
+                "SceneOwned": {
+                    "scene_id": 16,
+                    "sceneName": "Level 4"
+                }
+            },
+            "tags": [
+                "PlatformTag"
+            ]
+        },
+        {
+            "name": "StagePlatform_05",
+            "layer": 2,
+            "layer_collision_name": "Default",
+            "render_layer": 50,
+            "custom_render_order": 0,
+            "layer_render_name": "",
+            "active": true,
+            "uuid": 13731441437819606777,
+            "components": {
+                "Transform": {
+                    "Position": {
+                        "x": 1150.0,
+                        "y": -350.0
+                    },
+                    "Rotation": {
+                        "angle": 0.0,
+                        "texture_angle": 0.0,
+                        "collider_angle": 0.0,
+                        "texture_matrix": [
+                            50.0,
+                            0.0,
+                            1150.0,
+                            0.0,
+                            50.0,
+                            -350.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "collider_matrix": [
+                            1.0,
+                            0.0,
+                            1150.0,
+                            0.0,
+                            1.0,
+                            -350.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ]
+                    },
+                    "Scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    }
+                },
+                "RigidBody": {
+                    "mass": 0.0,
+                    "inv_mass": 0.0,
+                    "is_affected_by_gravity": true,
+                    "force": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                "AABBCollider": {
+                    "half_width": 50.0,
+                    "half_height": 50.0,
+                    "offset_x": 0.0,
+                    "offset_y": 0.0
+                },
+                "RotationFlag": {
+                    "is_rotating": false,
+                    "current_rotation": 0.0,
+                    "target_rotation": 0.0
+                },
+                "TextureComponent": {
+                    "texture_key": "SB_StagePlatform_05.png",
+                    "half_size": {
+                        "x": 50.0,
+                        "y": 50.0
+                    },
+                    "flip_x": false
+                },
+                "SceneOwned": {
+                    "scene_id": 16,
+                    "sceneName": "Level 4"
+                }
+            },
+            "tags": [
+                "PlatformTag"
+            ]
+        },
+        {
+            "name": "StagePlatform_05",
+            "layer": 2,
+            "layer_collision_name": "Default",
+            "render_layer": 50,
+            "custom_render_order": 0,
+            "layer_render_name": "",
+            "active": true,
+            "uuid": 3574250412381872871,
+            "components": {
+                "Transform": {
+                    "Position": {
+                        "x": 1150.0,
+                        "y": -650.0
+                    },
+                    "Rotation": {
+                        "angle": 0.0,
+                        "texture_angle": 0.0,
+                        "collider_angle": 0.0,
+                        "texture_matrix": [
+                            50.0,
+                            0.0,
+                            1150.0,
+                            0.0,
+                            50.0,
+                            -650.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "collider_matrix": [
+                            1.0,
+                            0.0,
+                            1150.0,
+                            0.0,
+                            1.0,
+                            -650.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ]
+                    },
+                    "Scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    }
+                },
+                "RigidBody": {
+                    "mass": 0.0,
+                    "inv_mass": 0.0,
+                    "is_affected_by_gravity": true,
+                    "force": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                "AABBCollider": {
+                    "half_width": 50.0,
+                    "half_height": 50.0,
+                    "offset_x": 0.0,
+                    "offset_y": 0.0
+                },
+                "RotationFlag": {
+                    "is_rotating": false,
+                    "current_rotation": 0.0,
+                    "target_rotation": 0.0
+                },
+                "TextureComponent": {
+                    "texture_key": "SB_StagePlatform_05.png",
+                    "half_size": {
+                        "x": 50.0,
+                        "y": 50.0
+                    },
+                    "flip_x": false
+                },
+                "SceneOwned": {
+                    "scene_id": 16,
+                    "sceneName": "Level 4"
+                }
+            },
+            "tags": [
+                "PlatformTag"
+            ]
+        },
+        {
+            "name": "StagePlatform_05",
+            "layer": 2,
+            "layer_collision_name": "Default",
+            "render_layer": 50,
+            "custom_render_order": 0,
+            "layer_render_name": "",
+            "active": true,
+            "uuid": 5978203645448669901,
+            "components": {
+                "Transform": {
+                    "Position": {
+                        "x": 1150.0,
+                        "y": -450.0
+                    },
+                    "Rotation": {
+                        "angle": 0.0,
+                        "texture_angle": 0.0,
+                        "collider_angle": 0.0,
+                        "texture_matrix": [
+                            50.0,
+                            0.0,
+                            1150.0,
+                            0.0,
+                            50.0,
+                            -450.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "collider_matrix": [
+                            1.0,
+                            0.0,
+                            1150.0,
+                            0.0,
+                            1.0,
+                            -450.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ]
+                    },
+                    "Scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    }
+                },
+                "RigidBody": {
+                    "mass": 0.0,
+                    "inv_mass": 0.0,
+                    "is_affected_by_gravity": true,
+                    "force": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                "AABBCollider": {
+                    "half_width": 50.0,
+                    "half_height": 50.0,
+                    "offset_x": 0.0,
+                    "offset_y": 0.0
+                },
+                "RotationFlag": {
+                    "is_rotating": false,
+                    "current_rotation": 0.0,
+                    "target_rotation": 0.0
+                },
+                "TextureComponent": {
+                    "texture_key": "SB_StagePlatform_05.png",
+                    "half_size": {
+                        "x": 50.0,
+                        "y": 50.0
+                    },
+                    "flip_x": false
+                },
+                "SceneOwned": {
+                    "scene_id": 16,
+                    "sceneName": "Level 4"
+                }
+            },
+            "tags": [
+                "PlatformTag"
+            ]
+        }
+    ]
+}
