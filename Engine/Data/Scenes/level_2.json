@@ -2,6 +2,710 @@
     "scene_name": "Level 2",
     "entities": [
         {
+            "name": "StagePlatform_08",
+            "layer": 2,
+            "layer_collision_name": "",
+            "render_layer": 50,
+            "custom_render_order": 0,
+            "layer_render_name": "",
+            "active": true,
+            "uuid": 2286481022006220660,
+            "components": {
+                "Transform": {
+                    "Position": {
+                        "x": 650.0,
+                        "y": 1150.0
+                    },
+                    "Rotation": {
+                        "angle": 0.0,
+                        "texture_angle": 0.0,
+                        "collider_angle": 0.0,
+                        "texture_matrix": [
+                            50.0,
+                            0.0,
+                            650.0,
+                            0.0,
+                            50.0,
+                            1150.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "collider_matrix": [
+                            1.0,
+                            0.0,
+                            650.0,
+                            0.0,
+                            1.0,
+                            1150.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ]
+                    },
+                    "Scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    }
+                },
+                "Velocity": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "RigidBody": {
+                    "mass": 0.0,
+                    "inv_mass": 0.0,
+                    "is_affected_by_gravity": true,
+                    "force": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                "AABBCollider": {
+                    "half_width": 50.0,
+                    "half_height": 43.0,
+                    "offset_x": 0.0,
+                    "offset_y": 7.0
+                },
+                "RotationFlag": {
+                    "is_rotating": false,
+                    "current_rotation": 0.0,
+                    "target_rotation": 0.0
+                },
+                "TextureComponent": {
+                    "texture_key": "SB_StagePlatform_08.png",
+                    "half_size": {
+                        "x": 50.0,
+                        "y": 50.0
+                    },
+                    "flip_x": false
+                },
+                "SceneOwned": {
+                    "scene_id": 10,
+                    "sceneName": "Level 2"
+                }
+            },
+            "tags": [
+                "PlatformTag"
+            ]
+        },
+        {
+            "name": "StaticPlatform_05",
+            "layer": 2,
+            "layer_collision_name": "",
+            "render_layer": 50,
+            "custom_render_order": 0,
+            "layer_render_name": "",
+            "active": true,
+            "uuid": 972193007722773031,
+            "components": {
+                "Transform": {
+                    "Position": {
+                        "x": 550.0,
+                        "y": 50.0
+                    },
+                    "Rotation": {
+                        "angle": 0.0,
+                        "texture_angle": 0.0,
+                        "collider_angle": 0.0,
+                        "texture_matrix": [
+                            50.0,
+                            0.0,
+                            550.0,
+                            0.0,
+                            50.0,
+                            50.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "collider_matrix": [
+                            1.0,
+                            0.0,
+                            550.0,
+                            0.0,
+                            1.0,
+                            50.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ]
+                    },
+                    "Scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    }
+                },
+                "Velocity": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "RigidBody": {
+                    "mass": 0.0,
+                    "inv_mass": 0.0,
+                    "is_affected_by_gravity": true,
+                    "force": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                "AABBCollider": {
+                    "half_width": 20.0,
+                    "half_height": 50.0,
+                    "offset_x": 0.0,
+                    "offset_y": 0.0
+                },
+                "RotationFlag": {
+                    "is_rotating": false,
+                    "current_rotation": 0.0,
+                    "target_rotation": 0.0
+                },
+                "TextureComponent": {
+                    "texture_key": "SB_StaticPlatform_05.png",
+                    "half_size": {
+                        "x": 50.0,
+                        "y": 50.0
+                    },
+                    "flip_x": false
+                },
+                "SceneOwned": {
+                    "scene_id": 10,
+                    "sceneName": "Level 2"
+                }
+            },
+            "tags": [
+                "PlatformTag"
+            ]
+        },
+        {
+            "name": "StagePlatform_05",
+            "layer": 2,
+            "layer_collision_name": "",
+            "render_layer": 50,
+            "custom_render_order": 0,
+            "layer_render_name": "",
+            "active": true,
+            "uuid": 10143313132888077750,
+            "components": {
+                "Transform": {
+                    "Position": {
+                        "x": -450.0,
+                        "y": -450.0
+                    },
+                    "Rotation": {
+                        "angle": 0.0,
+                        "texture_angle": 0.0,
+                        "collider_angle": 0.0,
+                        "texture_matrix": [
+                            50.0,
+                            0.0,
+                            -450.0,
+                            0.0,
+                            50.0,
+                            -450.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "collider_matrix": [
+                            1.0,
+                            0.0,
+                            -450.0,
+                            0.0,
+                            1.0,
+                            -450.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ]
+                    },
+                    "Scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    }
+                },
+                "Velocity": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "RigidBody": {
+                    "mass": 0.0,
+                    "inv_mass": 0.0,
+                    "is_affected_by_gravity": true,
+                    "force": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                "AABBCollider": {
+                    "half_width": 50.0,
+                    "half_height": 50.0,
+                    "offset_x": 0.0,
+                    "offset_y": 0.0
+                },
+                "RotationFlag": {
+                    "is_rotating": false,
+                    "current_rotation": 0.0,
+                    "target_rotation": 0.0
+                },
+                "TextureComponent": {
+                    "texture_key": "SB_StagePlatform_05.png",
+                    "half_size": {
+                        "x": 50.0,
+                        "y": 50.0
+                    },
+                    "flip_x": false
+                },
+                "SceneOwned": {
+                    "scene_id": 10,
+                    "sceneName": "Level 2"
+                }
+            },
+            "tags": [
+                "PlatformTag"
+            ]
+        },
+        {
+            "name": "StagePlatform_08",
+            "layer": 2,
+            "layer_collision_name": "",
+            "render_layer": 50,
+            "custom_render_order": 0,
+            "layer_render_name": "",
+            "active": true,
+            "uuid": 11379822684081585352,
+            "components": {
+                "Transform": {
+                    "Position": {
+                        "x": -550.0,
+                        "y": 1150.0
+                    },
+                    "Rotation": {
+                        "angle": 0.0,
+                        "texture_angle": 0.0,
+                        "collider_angle": 0.0,
+                        "texture_matrix": [
+                            50.0,
+                            0.0,
+                            -550.0,
+                            0.0,
+                            50.0,
+                            1150.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "collider_matrix": [
+                            1.0,
+                            0.0,
+                            -550.0,
+                            0.0,
+                            1.0,
+                            1150.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ]
+                    },
+                    "Scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    }
+                },
+                "Velocity": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "RigidBody": {
+                    "mass": 0.0,
+                    "inv_mass": 0.0,
+                    "is_affected_by_gravity": true,
+                    "force": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                "AABBCollider": {
+                    "half_width": 50.0,
+                    "half_height": 43.0,
+                    "offset_x": 0.0,
+                    "offset_y": 7.0
+                },
+                "RotationFlag": {
+                    "is_rotating": false,
+                    "current_rotation": 0.0,
+                    "target_rotation": 0.0
+                },
+                "TextureComponent": {
+                    "texture_key": "SB_StagePlatform_08.png",
+                    "half_size": {
+                        "x": 50.0,
+                        "y": 50.0
+                    },
+                    "flip_x": false
+                },
+                "SceneOwned": {
+                    "scene_id": 10,
+                    "sceneName": "Level 2"
+                }
+            },
+            "tags": [
+                "PlatformTag"
+            ]
+        },
+        {
+            "name": "StagePlatform_08",
+            "layer": 2,
+            "layer_collision_name": "",
+            "render_layer": 50,
+            "custom_render_order": 0,
+            "layer_render_name": "",
+            "active": true,
+            "uuid": 3572687649155306977,
+            "components": {
+                "Transform": {
+                    "Position": {
+                        "x": 450.0,
+                        "y": 1150.0
+                    },
+                    "Rotation": {
+                        "angle": 0.0,
+                        "texture_angle": 0.0,
+                        "collider_angle": 0.0,
+                        "texture_matrix": [
+                            50.0,
+                            0.0,
+                            450.0,
+                            0.0,
+                            50.0,
+                            1150.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "collider_matrix": [
+                            1.0,
+                            0.0,
+                            450.0,
+                            0.0,
+                            1.0,
+                            1150.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ]
+                    },
+                    "Scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    }
+                },
+                "Velocity": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "RigidBody": {
+                    "mass": 0.0,
+                    "inv_mass": 0.0,
+                    "is_affected_by_gravity": true,
+                    "force": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                "AABBCollider": {
+                    "half_width": 50.0,
+                    "half_height": 43.0,
+                    "offset_x": 0.0,
+                    "offset_y": 7.0
+                },
+                "RotationFlag": {
+                    "is_rotating": false,
+                    "current_rotation": 0.0,
+                    "target_rotation": 0.0
+                },
+                "TextureComponent": {
+                    "texture_key": "SB_StagePlatform_08.png",
+                    "half_size": {
+                        "x": 50.0,
+                        "y": 50.0
+                    },
+                    "flip_x": false
+                },
+                "SceneOwned": {
+                    "scene_id": 10,
+                    "sceneName": "Level 2"
+                }
+            },
+            "tags": [
+                "PlatformTag"
+            ]
+        },
+        {
+            "name": "StagePlatform_05",
+            "layer": 2,
+            "layer_collision_name": "",
+            "render_layer": 50,
+            "custom_render_order": 0,
+            "layer_render_name": "",
+            "active": true,
+            "uuid": 4754725837198838450,
+            "components": {
+                "Transform": {
+                    "Position": {
+                        "x": -1150.0,
+                        "y": 550.0
+                    },
+                    "Rotation": {
+                        "angle": 0.0,
+                        "texture_angle": 0.0,
+                        "collider_angle": 0.0,
+                        "texture_matrix": [
+                            50.0,
+                            0.0,
+                            -1150.0,
+                            0.0,
+                            50.0,
+                            550.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "collider_matrix": [
+                            1.0,
+                            0.0,
+                            -1150.0,
+                            0.0,
+                            1.0,
+                            550.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ]
+                    },
+                    "Scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    }
+                },
+                "Velocity": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "RigidBody": {
+                    "mass": 0.0,
+                    "inv_mass": 0.0,
+                    "is_affected_by_gravity": true,
+                    "force": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                "AABBCollider": {
+                    "half_width": 50.0,
+                    "half_height": 50.0,
+                    "offset_x": 0.0,
+                    "offset_y": 0.0
+                },
+                "RotationFlag": {
+                    "is_rotating": false,
+                    "current_rotation": 0.0,
+                    "target_rotation": 0.0
+                },
+                "TextureComponent": {
+                    "texture_key": "SB_StagePlatform_05.png",
+                    "half_size": {
+                        "x": 50.0,
+                        "y": 50.0
+                    },
+                    "flip_x": false
+                },
+                "SceneOwned": {
+                    "scene_id": 10,
+                    "sceneName": "Level 2"
+                }
+            },
+            "tags": [
+                "PlatformTag"
+            ]
+        },
+        {
+            "name": "StagePlatform_02",
+            "layer": 2,
+            "layer_collision_name": "",
+            "render_layer": 50,
+            "custom_render_order": 0,
+            "layer_render_name": "",
+            "active": true,
+            "uuid": 1625403901827582022,
+            "components": {
+                "Transform": {
+                    "Position": {
+                        "x": -1050.0,
+                        "y": -1150.0
+                    },
+                    "Rotation": {
+                        "angle": 0.0,
+                        "texture_angle": 0.0,
+                        "collider_angle": 0.0,
+                        "texture_matrix": [
+                            50.0,
+                            0.0,
+                            -1050.0,
+                            0.0,
+                            50.0,
+                            -1150.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "collider_matrix": [
+                            1.0,
+                            0.0,
+                            -1050.0,
+                            0.0,
+                            1.0,
+                            -1150.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ]
+                    },
+                    "Scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    }
+                },
+                "Velocity": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "RigidBody": {
+                    "mass": 0.0,
+                    "inv_mass": 0.0,
+                    "is_affected_by_gravity": true,
+                    "force": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                "AABBCollider": {
+                    "half_width": 50.0,
+                    "half_height": 43.0,
+                    "offset_x": 0.0,
+                    "offset_y": -7.0
+                },
+                "RotationFlag": {
+                    "is_rotating": false,
+                    "current_rotation": 0.0,
+                    "target_rotation": 0.0
+                },
+                "TextureComponent": {
+                    "texture_key": "SB_StagePlatform_02.png",
+                    "half_size": {
+                        "x": 50.0,
+                        "y": 50.0
+                    },
+                    "flip_x": false
+                },
+                "SceneOwned": {
+                    "scene_id": 10,
+                    "sceneName": "Level 2"
+                }
+            },
+            "tags": [
+                "PlatformTag"
+            ]
+        },
+        {
+            "name": "StagePlatform_05",
+            "layer": 2,
+            "layer_collision_name": "",
+            "render_layer": 50,
+            "custom_render_order": 0,
+            "layer_render_name": "",
+            "active": true,
+            "uuid": 9199076717738942288,
+            "components": {
+                "Transform": {
+                    "Position": {
+                        "x": -1150.0,
+                        "y": 50.0
+                    },
+                    "Rotation": {
+                        "angle": 0.0,
+                        "texture_angle": 0.0,
+                        "collider_angle": 0.0,
+                        "texture_matrix": [
+                            50.0,
+                            0.0,
+                            -1150.0,
+                            0.0,
+                            50.0,
+                            50.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "collider_matrix": [
+                            1.0,
+                            0.0,
+                            -1150.0,
+                            0.0,
+                            1.0,
+                            50.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ]
+                    },
+                    "Scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    }
+                },
+                "Velocity": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "RigidBody": {
+                    "mass": 0.0,
+                    "inv_mass": 0.0,
+                    "is_affected_by_gravity": true,
+                    "force": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                "AABBCollider": {
+                    "half_width": 50.0,
+                    "half_height": 50.0,
+                    "offset_x": 0.0,
+                    "offset_y": 0.0
+                },
+                "RotationFlag": {
+                    "is_rotating": false,
+                    "current_rotation": 0.0,
+                    "target_rotation": 0.0
+                },
+                "TextureComponent": {
+                    "texture_key": "SB_StagePlatform_05.png",
+                    "half_size": {
+                        "x": 50.0,
+                        "y": 50.0
+                    },
+                    "flip_x": false
+                },
+                "SceneOwned": {
+                    "scene_id": 10,
+                    "sceneName": "Level 2"
+                }
+            },
+            "tags": [
+                "PlatformTag"
+            ]
+        },
+        {
             "name": "StaticPlatform_08",
             "layer": 2,
             "layer_collision_name": "",
@@ -162,6 +866,94 @@
                 },
                 "TextureComponent": {
                     "texture_key": "SB_StagePlatform_02.png",
+                    "half_size": {
+                        "x": 50.0,
+                        "y": 50.0
+                    },
+                    "flip_x": false
+                },
+                "SceneOwned": {
+                    "scene_id": 10,
+                    "sceneName": "Level 2"
+                }
+            },
+            "tags": [
+                "PlatformTag"
+            ]
+        },
+        {
+            "name": "StagePlatform_05",
+            "layer": 2,
+            "layer_collision_name": "",
+            "render_layer": 50,
+            "custom_render_order": 0,
+            "layer_render_name": "",
+            "active": true,
+            "uuid": 11626666480117300404,
+            "components": {
+                "Transform": {
+                    "Position": {
+                        "x": 1150.0,
+                        "y": -950.0
+                    },
+                    "Rotation": {
+                        "angle": 0.0,
+                        "texture_angle": 0.0,
+                        "collider_angle": 0.0,
+                        "texture_matrix": [
+                            50.0,
+                            0.0,
+                            1150.0,
+                            0.0,
+                            50.0,
+                            -950.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "collider_matrix": [
+                            1.0,
+                            0.0,
+                            1150.0,
+                            0.0,
+                            1.0,
+                            -950.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ]
+                    },
+                    "Scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    }
+                },
+                "Velocity": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "RigidBody": {
+                    "mass": 0.0,
+                    "inv_mass": 0.0,
+                    "is_affected_by_gravity": true,
+                    "force": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                "AABBCollider": {
+                    "half_width": 50.0,
+                    "half_height": 50.0,
+                    "offset_x": 0.0,
+                    "offset_y": 0.0
+                },
+                "RotationFlag": {
+                    "is_rotating": false,
+                    "current_rotation": 0.0,
+                    "target_rotation": 0.0
+                },
+                "TextureComponent": {
+                    "texture_key": "SB_StagePlatform_05.png",
                     "half_size": {
                         "x": 50.0,
                         "y": 50.0
@@ -2115,94 +2907,6 @@
             ]
         },
         {
-            "name": "StagePlatform_05",
-            "layer": 2,
-            "layer_collision_name": "",
-            "render_layer": 50,
-            "custom_render_order": 0,
-            "layer_render_name": "",
-            "active": true,
-            "uuid": 10143313132888077750,
-            "components": {
-                "Transform": {
-                    "Position": {
-                        "x": -450.0,
-                        "y": -450.0
-                    },
-                    "Rotation": {
-                        "angle": 0.0,
-                        "texture_angle": 0.0,
-                        "collider_angle": 0.0,
-                        "texture_matrix": [
-                            50.0,
-                            0.0,
-                            -450.0,
-                            0.0,
-                            50.0,
-                            -450.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ],
-                        "collider_matrix": [
-                            1.0,
-                            0.0,
-                            -450.0,
-                            0.0,
-                            1.0,
-                            -450.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ]
-                    },
-                    "Scale": {
-                        "x": 1.0,
-                        "y": 1.0
-                    }
-                },
-                "Velocity": {
-                    "x": 0.0,
-                    "y": 0.0
-                },
-                "RigidBody": {
-                    "mass": 0.0,
-                    "inv_mass": 0.0,
-                    "is_affected_by_gravity": true,
-                    "force": {
-                        "x": 0.0,
-                        "y": 0.0
-                    }
-                },
-                "AABBCollider": {
-                    "half_width": 50.0,
-                    "half_height": 50.0,
-                    "offset_x": 0.0,
-                    "offset_y": 0.0
-                },
-                "RotationFlag": {
-                    "is_rotating": false,
-                    "current_rotation": 0.0,
-                    "target_rotation": 0.0
-                },
-                "TextureComponent": {
-                    "texture_key": "SB_StagePlatform_05.png",
-                    "half_size": {
-                        "x": 50.0,
-                        "y": 50.0
-                    },
-                    "flip_x": false
-                },
-                "SceneOwned": {
-                    "scene_id": 10,
-                    "sceneName": "Level 2"
-                }
-            },
-            "tags": [
-                "PlatformTag"
-            ]
-        },
-        {
             "name": "StaticPlatform_01",
             "layer": 2,
             "layer_collision_name": "",
@@ -2627,94 +3331,6 @@
                 },
                 "TextureComponent": {
                     "texture_key": "SB_StagePlatform_05.png",
-                    "half_size": {
-                        "x": 50.0,
-                        "y": 50.0
-                    },
-                    "flip_x": false
-                },
-                "SceneOwned": {
-                    "scene_id": 10,
-                    "sceneName": "Level 2"
-                }
-            },
-            "tags": [
-                "PlatformTag"
-            ]
-        },
-        {
-            "name": "StagePlatform_02",
-            "layer": 2,
-            "layer_collision_name": "",
-            "render_layer": 50,
-            "custom_render_order": 0,
-            "layer_render_name": "",
-            "active": true,
-            "uuid": 1625403901827582022,
-            "components": {
-                "Transform": {
-                    "Position": {
-                        "x": -1050.0,
-                        "y": -1150.0
-                    },
-                    "Rotation": {
-                        "angle": 0.0,
-                        "texture_angle": 0.0,
-                        "collider_angle": 0.0,
-                        "texture_matrix": [
-                            50.0,
-                            0.0,
-                            -1050.0,
-                            0.0,
-                            50.0,
-                            -1150.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ],
-                        "collider_matrix": [
-                            1.0,
-                            0.0,
-                            -1050.0,
-                            0.0,
-                            1.0,
-                            -1150.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ]
-                    },
-                    "Scale": {
-                        "x": 1.0,
-                        "y": 1.0
-                    }
-                },
-                "Velocity": {
-                    "x": 0.0,
-                    "y": 0.0
-                },
-                "RigidBody": {
-                    "mass": 0.0,
-                    "inv_mass": 0.0,
-                    "is_affected_by_gravity": true,
-                    "force": {
-                        "x": 0.0,
-                        "y": 0.0
-                    }
-                },
-                "AABBCollider": {
-                    "half_width": 50.0,
-                    "half_height": 43.0,
-                    "offset_x": 0.0,
-                    "offset_y": -7.0
-                },
-                "RotationFlag": {
-                    "is_rotating": false,
-                    "current_rotation": 0.0,
-                    "target_rotation": 0.0
-                },
-                "TextureComponent": {
-                    "texture_key": "SB_StagePlatform_02.png",
                     "half_size": {
                         "x": 50.0,
                         "y": 50.0
@@ -3875,105 +4491,6 @@
             ]
         },
         {
-            "name": "VerticalFallingTrap_02_BIG_310x130",
-            "layer": 2,
-            "layer_collision_name": "",
-            "render_layer": 50,
-            "custom_render_order": 0,
-            "layer_render_name": "",
-            "active": true,
-            "uuid": 17655839145968676790,
-            "components": {
-                "Transform": {
-                    "Position": {
-                        "x": 50.0,
-                        "y": 250.0
-                    },
-                    "Rotation": {
-                        "angle": 0.0,
-                        "texture_angle": 4.71238899230957,
-                        "collider_angle": 4.71238899230957,
-                        "texture_matrix": [
-                            0.000003696713065437507,
-                            130.0,
-                            50.0,
-                            -310.0,
-                            0.0000015502345149798202,
-                            250.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ],
-                        "collider_matrix": [
-                            1.0,
-                            0.0,
-                            50.0,
-                            0.0,
-                            1.0,
-                            250.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ]
-                    },
-                    "Scale": {
-                        "x": 1.0,
-                        "y": 1.0
-                    }
-                },
-                "Velocity": {
-                    "x": 0.0,
-                    "y": 0.0
-                },
-                "RigidBody": {
-                    "mass": 0.0,
-                    "inv_mass": 0.0,
-                    "is_affected_by_gravity": true,
-                    "force": {
-                        "x": 0.0,
-                        "y": 0.0
-                    }
-                },
-                "AABBCollider": {
-                    "half_width": 260.0,
-                    "half_height": 55.0,
-                    "offset_x": 5.0,
-                    "offset_y": -5.0
-                },
-                "RotationFlag": {
-                    "is_rotating": false,
-                    "current_rotation": 0.0,
-                    "target_rotation": 0.0
-                },
-                "TrapPlatform": {
-                    "is_triggered": false,
-                    "has_fallen": false,
-                    "trigger_delay": 0.0,
-                    "current_delay": 0.11643040180206299,
-                    "fall_speed": 502.0,
-                    "original_position": {
-                        "x": 50.0,
-                        "y": 250.0
-                    }
-                },
-                "TextureComponent": {
-                    "texture_key": "SB_TrapPlatform_Horizontal.png",
-                    "half_size": {
-                        "x": 310.0,
-                        "y": 130.0
-                    },
-                    "flip_x": false
-                },
-                "SceneOwned": {
-                    "scene_id": 10,
-                    "sceneName": "Level 2"
-                }
-            },
-            "tags": [
-                "PlatformTag"
-            ]
-        },
-        {
             "name": "StaticPlatform_06",
             "layer": 2,
             "layer_collision_name": "",
@@ -4152,7 +4669,7 @@
         {
             "name": "StaticPlatform_02",
             "layer": 2,
-            "layer_collision_name": "",
+            "layer_collision_name": "Platform",
             "render_layer": 50,
             "custom_render_order": 0,
             "layer_render_name": "",
@@ -6267,94 +6784,6 @@
             ]
         },
         {
-            "name": "StagePlatform_08",
-            "layer": 2,
-            "layer_collision_name": "",
-            "render_layer": 50,
-            "custom_render_order": 0,
-            "layer_render_name": "",
-            "active": true,
-            "uuid": 2286481022006220660,
-            "components": {
-                "Transform": {
-                    "Position": {
-                        "x": 650.0,
-                        "y": 1150.0
-                    },
-                    "Rotation": {
-                        "angle": 0.0,
-                        "texture_angle": 0.0,
-                        "collider_angle": 0.0,
-                        "texture_matrix": [
-                            50.0,
-                            0.0,
-                            650.0,
-                            0.0,
-                            50.0,
-                            1150.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ],
-                        "collider_matrix": [
-                            1.0,
-                            0.0,
-                            650.0,
-                            0.0,
-                            1.0,
-                            1150.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ]
-                    },
-                    "Scale": {
-                        "x": 1.0,
-                        "y": 1.0
-                    }
-                },
-                "Velocity": {
-                    "x": 0.0,
-                    "y": 0.0
-                },
-                "RigidBody": {
-                    "mass": 0.0,
-                    "inv_mass": 0.0,
-                    "is_affected_by_gravity": true,
-                    "force": {
-                        "x": 0.0,
-                        "y": 0.0
-                    }
-                },
-                "AABBCollider": {
-                    "half_width": 50.0,
-                    "half_height": 43.0,
-                    "offset_x": 0.0,
-                    "offset_y": 7.0
-                },
-                "RotationFlag": {
-                    "is_rotating": false,
-                    "current_rotation": 0.0,
-                    "target_rotation": 0.0
-                },
-                "TextureComponent": {
-                    "texture_key": "SB_StagePlatform_08.png",
-                    "half_size": {
-                        "x": 50.0,
-                        "y": 50.0
-                    },
-                    "flip_x": false
-                },
-                "SceneOwned": {
-                    "scene_id": 10,
-                    "sceneName": "Level 2"
-                }
-            },
-            "tags": [
-                "PlatformTag"
-            ]
-        },
-        {
             "name": "StagePlatform_02",
             "layer": 2,
             "layer_collision_name": "",
@@ -7066,94 +7495,6 @@
             "custom_render_order": 0,
             "layer_render_name": "",
             "active": true,
-            "uuid": 3572687649155306977,
-            "components": {
-                "Transform": {
-                    "Position": {
-                        "x": 450.0,
-                        "y": 1150.0
-                    },
-                    "Rotation": {
-                        "angle": 0.0,
-                        "texture_angle": 0.0,
-                        "collider_angle": 0.0,
-                        "texture_matrix": [
-                            50.0,
-                            0.0,
-                            450.0,
-                            0.0,
-                            50.0,
-                            1150.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ],
-                        "collider_matrix": [
-                            1.0,
-                            0.0,
-                            450.0,
-                            0.0,
-                            1.0,
-                            1150.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ]
-                    },
-                    "Scale": {
-                        "x": 1.0,
-                        "y": 1.0
-                    }
-                },
-                "Velocity": {
-                    "x": 0.0,
-                    "y": 0.0
-                },
-                "RigidBody": {
-                    "mass": 0.0,
-                    "inv_mass": 0.0,
-                    "is_affected_by_gravity": true,
-                    "force": {
-                        "x": 0.0,
-                        "y": 0.0
-                    }
-                },
-                "AABBCollider": {
-                    "half_width": 50.0,
-                    "half_height": 43.0,
-                    "offset_x": 0.0,
-                    "offset_y": 7.0
-                },
-                "RotationFlag": {
-                    "is_rotating": false,
-                    "current_rotation": 0.0,
-                    "target_rotation": 0.0
-                },
-                "TextureComponent": {
-                    "texture_key": "SB_StagePlatform_08.png",
-                    "half_size": {
-                        "x": 50.0,
-                        "y": 50.0
-                    },
-                    "flip_x": false
-                },
-                "SceneOwned": {
-                    "scene_id": 10,
-                    "sceneName": "Level 2"
-                }
-            },
-            "tags": [
-                "PlatformTag"
-            ]
-        },
-        {
-            "name": "StagePlatform_08",
-            "layer": 2,
-            "layer_collision_name": "",
-            "render_layer": 50,
-            "custom_render_order": 0,
-            "layer_render_name": "",
-            "active": true,
             "uuid": 14026005291571705002,
             "components": {
                 "Transform": {
@@ -7307,6 +7648,94 @@
                 },
                 "TextureComponent": {
                     "texture_key": "SB_StagePlatform_04.png",
+                    "half_size": {
+                        "x": 50.0,
+                        "y": 50.0
+                    },
+                    "flip_x": false
+                },
+                "SceneOwned": {
+                    "scene_id": 10,
+                    "sceneName": "Level 2"
+                }
+            },
+            "tags": [
+                "PlatformTag"
+            ]
+        },
+        {
+            "name": "StagePlatform_05",
+            "layer": 2,
+            "layer_collision_name": "",
+            "render_layer": 50,
+            "custom_render_order": 0,
+            "layer_render_name": "",
+            "active": true,
+            "uuid": 372147892213819282,
+            "components": {
+                "Transform": {
+                    "Position": {
+                        "x": 600.0,
+                        "y": 0.0
+                    },
+                    "Rotation": {
+                        "angle": 0.0,
+                        "texture_angle": 0.0,
+                        "collider_angle": 0.0,
+                        "texture_matrix": [
+                            50.0,
+                            0.0,
+                            600.0,
+                            0.0,
+                            50.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "collider_matrix": [
+                            1.0,
+                            0.0,
+                            600.0,
+                            0.0,
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ]
+                    },
+                    "Scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    }
+                },
+                "Velocity": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "RigidBody": {
+                    "mass": 0.0,
+                    "inv_mass": 0.0,
+                    "is_affected_by_gravity": true,
+                    "force": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                "AABBCollider": {
+                    "half_width": 50.0,
+                    "half_height": 50.0,
+                    "offset_x": 0.0,
+                    "offset_y": 0.0
+                },
+                "RotationFlag": {
+                    "is_rotating": false,
+                    "current_rotation": 0.0,
+                    "target_rotation": 0.0
+                },
+                "TextureComponent": {
+                    "texture_key": "SB_StagePlatform_05.png",
                     "half_size": {
                         "x": 50.0,
                         "y": 50.0
@@ -7659,6 +8088,94 @@
                 },
                 "TextureComponent": {
                     "texture_key": "SB_StaticPlatform_06.png",
+                    "half_size": {
+                        "x": 50.0,
+                        "y": 50.0
+                    },
+                    "flip_x": false
+                },
+                "SceneOwned": {
+                    "scene_id": 10,
+                    "sceneName": "Level 2"
+                }
+            },
+            "tags": [
+                "PlatformTag"
+            ]
+        },
+        {
+            "name": "StagePlatform_04",
+            "layer": 2,
+            "layer_collision_name": "",
+            "render_layer": 50,
+            "custom_render_order": 0,
+            "layer_render_name": "",
+            "active": true,
+            "uuid": 15605203576645678039,
+            "components": {
+                "Transform": {
+                    "Position": {
+                        "x": 450.0,
+                        "y": 450.0
+                    },
+                    "Rotation": {
+                        "angle": 0.0,
+                        "texture_angle": 0.0,
+                        "collider_angle": 0.0,
+                        "texture_matrix": [
+                            50.0,
+                            0.0,
+                            450.0,
+                            0.0,
+                            50.0,
+                            450.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "collider_matrix": [
+                            1.0,
+                            0.0,
+                            450.0,
+                            0.0,
+                            1.0,
+                            450.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ]
+                    },
+                    "Scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    }
+                },
+                "Velocity": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "RigidBody": {
+                    "mass": 0.0,
+                    "inv_mass": 0.0,
+                    "is_affected_by_gravity": true,
+                    "force": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                "AABBCollider": {
+                    "half_width": 35.0,
+                    "half_height": 50.0,
+                    "offset_x": 15.0,
+                    "offset_y": 0.0
+                },
+                "RotationFlag": {
+                    "is_rotating": false,
+                    "current_rotation": 0.0,
+                    "target_rotation": 0.0
+                },
+                "TextureComponent": {
+                    "texture_key": "SB_StagePlatform_04.png",
                     "half_size": {
                         "x": 50.0,
                         "y": 50.0
@@ -10101,94 +10618,6 @@
             ]
         },
         {
-            "name": "StagePlatform_05",
-            "layer": 2,
-            "layer_collision_name": "",
-            "render_layer": 50,
-            "custom_render_order": 0,
-            "layer_render_name": "",
-            "active": true,
-            "uuid": 11626666480117300404,
-            "components": {
-                "Transform": {
-                    "Position": {
-                        "x": 1150.0,
-                        "y": -950.0
-                    },
-                    "Rotation": {
-                        "angle": 0.0,
-                        "texture_angle": 0.0,
-                        "collider_angle": 0.0,
-                        "texture_matrix": [
-                            50.0,
-                            0.0,
-                            1150.0,
-                            0.0,
-                            50.0,
-                            -950.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ],
-                        "collider_matrix": [
-                            1.0,
-                            0.0,
-                            1150.0,
-                            0.0,
-                            1.0,
-                            -950.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ]
-                    },
-                    "Scale": {
-                        "x": 1.0,
-                        "y": 1.0
-                    }
-                },
-                "Velocity": {
-                    "x": 0.0,
-                    "y": 0.0
-                },
-                "RigidBody": {
-                    "mass": 0.0,
-                    "inv_mass": 0.0,
-                    "is_affected_by_gravity": true,
-                    "force": {
-                        "x": 0.0,
-                        "y": 0.0
-                    }
-                },
-                "AABBCollider": {
-                    "half_width": 50.0,
-                    "half_height": 50.0,
-                    "offset_x": 0.0,
-                    "offset_y": 0.0
-                },
-                "RotationFlag": {
-                    "is_rotating": false,
-                    "current_rotation": 0.0,
-                    "target_rotation": 0.0
-                },
-                "TextureComponent": {
-                    "texture_key": "SB_StagePlatform_05.png",
-                    "half_size": {
-                        "x": 50.0,
-                        "y": 50.0
-                    },
-                    "flip_x": false
-                },
-                "SceneOwned": {
-                    "scene_id": 10,
-                    "sceneName": "Level 2"
-                }
-            },
-            "tags": [
-                "PlatformTag"
-            ]
-        },
-        {
             "name": "StaticPlatform_06",
             "layer": 2,
             "layer_collision_name": "",
@@ -10631,94 +11060,6 @@
                             0.0,
                             1.0,
                             550.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ]
-                    },
-                    "Scale": {
-                        "x": 1.0,
-                        "y": 1.0
-                    }
-                },
-                "Velocity": {
-                    "x": 0.0,
-                    "y": 0.0
-                },
-                "RigidBody": {
-                    "mass": 0.0,
-                    "inv_mass": 0.0,
-                    "is_affected_by_gravity": true,
-                    "force": {
-                        "x": 0.0,
-                        "y": 0.0
-                    }
-                },
-                "AABBCollider": {
-                    "half_width": 50.0,
-                    "half_height": 50.0,
-                    "offset_x": 0.0,
-                    "offset_y": 0.0
-                },
-                "RotationFlag": {
-                    "is_rotating": false,
-                    "current_rotation": 0.0,
-                    "target_rotation": 0.0
-                },
-                "TextureComponent": {
-                    "texture_key": "SB_StagePlatform_05.png",
-                    "half_size": {
-                        "x": 50.0,
-                        "y": 50.0
-                    },
-                    "flip_x": false
-                },
-                "SceneOwned": {
-                    "scene_id": 10,
-                    "sceneName": "Level 2"
-                }
-            },
-            "tags": [
-                "PlatformTag"
-            ]
-        },
-        {
-            "name": "StagePlatform_05",
-            "layer": 2,
-            "layer_collision_name": "",
-            "render_layer": 50,
-            "custom_render_order": 0,
-            "layer_render_name": "",
-            "active": true,
-            "uuid": 9199076717738942288,
-            "components": {
-                "Transform": {
-                    "Position": {
-                        "x": -1150.0,
-                        "y": 50.0
-                    },
-                    "Rotation": {
-                        "angle": 0.0,
-                        "texture_angle": 0.0,
-                        "collider_angle": 0.0,
-                        "texture_matrix": [
-                            50.0,
-                            0.0,
-                            -1150.0,
-                            0.0,
-                            50.0,
-                            50.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ],
-                        "collider_matrix": [
-                            1.0,
-                            0.0,
-                            -1150.0,
-                            0.0,
-                            1.0,
-                            50.0,
                             0.0,
                             0.0,
                             1.0
@@ -11590,6 +11931,94 @@
             ]
         },
         {
+            "name": "StagePlatform_05",
+            "layer": 2,
+            "layer_collision_name": "",
+            "render_layer": 50,
+            "custom_render_order": 0,
+            "layer_render_name": "",
+            "active": true,
+            "uuid": 14226821538267982004,
+            "components": {
+                "Transform": {
+                    "Position": {
+                        "x": 1150.0,
+                        "y": 350.0
+                    },
+                    "Rotation": {
+                        "angle": 0.0,
+                        "texture_angle": 0.0,
+                        "collider_angle": 0.0,
+                        "texture_matrix": [
+                            50.0,
+                            0.0,
+                            1150.0,
+                            0.0,
+                            50.0,
+                            350.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "collider_matrix": [
+                            1.0,
+                            0.0,
+                            1150.0,
+                            0.0,
+                            1.0,
+                            350.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ]
+                    },
+                    "Scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    }
+                },
+                "Velocity": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "RigidBody": {
+                    "mass": 0.0,
+                    "inv_mass": 0.0,
+                    "is_affected_by_gravity": true,
+                    "force": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                "AABBCollider": {
+                    "half_width": 50.0,
+                    "half_height": 50.0,
+                    "offset_x": 0.0,
+                    "offset_y": 0.0
+                },
+                "RotationFlag": {
+                    "is_rotating": false,
+                    "current_rotation": 0.0,
+                    "target_rotation": 0.0
+                },
+                "TextureComponent": {
+                    "texture_key": "SB_StagePlatform_05.png",
+                    "half_size": {
+                        "x": 50.0,
+                        "y": 50.0
+                    },
+                    "flip_x": false
+                },
+                "SceneOwned": {
+                    "scene_id": 10,
+                    "sceneName": "Level 2"
+                }
+            },
+            "tags": [
+                "PlatformTag"
+            ]
+        },
+        {
             "name": "StaticPlatform_02",
             "layer": 2,
             "layer_collision_name": "",
@@ -11773,6 +12202,94 @@
             "custom_render_order": 0,
             "layer_render_name": "",
             "active": true,
+            "uuid": 17249819600112332927,
+            "components": {
+                "Transform": {
+                    "Position": {
+                        "x": -1150.0,
+                        "y": -350.0
+                    },
+                    "Rotation": {
+                        "angle": 0.0,
+                        "texture_angle": 0.0,
+                        "collider_angle": 0.0,
+                        "texture_matrix": [
+                            50.0,
+                            0.0,
+                            -1150.0,
+                            0.0,
+                            50.0,
+                            -350.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "collider_matrix": [
+                            1.0,
+                            0.0,
+                            -1150.0,
+                            0.0,
+                            1.0,
+                            -350.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ]
+                    },
+                    "Scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    }
+                },
+                "Velocity": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "RigidBody": {
+                    "mass": 0.0,
+                    "inv_mass": 0.0,
+                    "is_affected_by_gravity": true,
+                    "force": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                "AABBCollider": {
+                    "half_width": 50.0,
+                    "half_height": 50.0,
+                    "offset_x": 0.0,
+                    "offset_y": 0.0
+                },
+                "RotationFlag": {
+                    "is_rotating": false,
+                    "current_rotation": 0.0,
+                    "target_rotation": 0.0
+                },
+                "TextureComponent": {
+                    "texture_key": "SB_StagePlatform_05.png",
+                    "half_size": {
+                        "x": 50.0,
+                        "y": 50.0
+                    },
+                    "flip_x": false
+                },
+                "SceneOwned": {
+                    "scene_id": 10,
+                    "sceneName": "Level 2"
+                }
+            },
+            "tags": [
+                "PlatformTag"
+            ]
+        },
+        {
+            "name": "StagePlatform_05",
+            "layer": 2,
+            "layer_collision_name": "",
+            "render_layer": 50,
+            "custom_render_order": 0,
+            "layer_render_name": "",
+            "active": true,
             "uuid": 786327906210322606,
             "components": {
                 "Transform": {
@@ -11887,6 +12404,110 @@
                             1.0,
                             0.0,
                             600.0,
+                            0.0,
+                            1.0,
+                            -1050.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ]
+                    },
+                    "Scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    }
+                },
+                "Velocity": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "RigidBody": {
+                    "mass": 1.0,
+                    "inv_mass": 1.0,
+                    "is_affected_by_gravity": false,
+                    "force": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                "AABBCollider": {
+                    "half_width": 25.0,
+                    "half_height": 25.0,
+                    "offset_x": 0.0,
+                    "offset_y": 0.0
+                },
+                "RotationFlag": {
+                    "is_rotating": false,
+                    "current_rotation": 0.0,
+                    "target_rotation": 0.0
+                },
+                "TextureComponent": {
+                    "texture_key": "SB_BirdEnemy_SleepIdle_Spritesheet.png",
+                    "half_size": {
+                        "x": 25.0,
+                        "y": 25.0
+                    },
+                    "flip_x": false
+                },
+                "AnimationComponent": {
+                    "profile_name": "BirdEnemy",
+                    "current_state": 0,
+                    "current_frame": 3,
+                    "frame_duration": 0.10000000149011612,
+                    "start_frame": 0,
+                    "frame_count": 6,
+                    "elapsed_time": 0.0902085229754448,
+                    "is_playing": true,
+                    "is_looping": true
+                },
+                "FSMComponent": {
+                    "DefinitionPath": "Data/FSM/birdEnemy.json",
+                    "CurrentState": "Idle",
+                    "InitialState": "Idle"
+                },
+                "SceneOwned": {
+                    "scene_id": 10,
+                    "sceneName": "Level 2"
+                }
+            },
+            "tags": [
+                "EnemyTag"
+            ]
+        },
+        {
+            "name": "birdEnemy",
+            "layer": 3,
+            "layer_collision_name": "Enemy",
+            "render_layer": 50,
+            "custom_render_order": 0,
+            "layer_render_name": "",
+            "active": true,
+            "uuid": 9771827027699419582,
+            "components": {
+                "Transform": {
+                    "Position": {
+                        "x": 300.0,
+                        "y": -1050.0
+                    },
+                    "Rotation": {
+                        "angle": 0.0,
+                        "texture_angle": 0.0,
+                        "collider_angle": 0.0,
+                        "texture_matrix": [
+                            25.0,
+                            0.0,
+                            300.0,
+                            0.0,
+                            25.0,
+                            -1050.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "collider_matrix": [
+                            1.0,
+                            0.0,
+                            300.0,
                             0.0,
                             1.0,
                             -1050.0,
@@ -12310,6 +12931,94 @@
             ]
         },
         {
+            "name": "StagePlatform_05",
+            "layer": 2,
+            "layer_collision_name": "",
+            "render_layer": 50,
+            "custom_render_order": 0,
+            "layer_render_name": "",
+            "active": true,
+            "uuid": 7326547192137592978,
+            "components": {
+                "Transform": {
+                    "Position": {
+                        "x": -1150.0,
+                        "y": 450.0
+                    },
+                    "Rotation": {
+                        "angle": 0.0,
+                        "texture_angle": 0.0,
+                        "collider_angle": 0.0,
+                        "texture_matrix": [
+                            50.0,
+                            0.0,
+                            -1150.0,
+                            0.0,
+                            50.0,
+                            450.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "collider_matrix": [
+                            1.0,
+                            0.0,
+                            -1150.0,
+                            0.0,
+                            1.0,
+                            450.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ]
+                    },
+                    "Scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    }
+                },
+                "Velocity": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "RigidBody": {
+                    "mass": 0.0,
+                    "inv_mass": 0.0,
+                    "is_affected_by_gravity": true,
+                    "force": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                "AABBCollider": {
+                    "half_width": 50.0,
+                    "half_height": 50.0,
+                    "offset_x": 0.0,
+                    "offset_y": 0.0
+                },
+                "RotationFlag": {
+                    "is_rotating": false,
+                    "current_rotation": 0.0,
+                    "target_rotation": 0.0
+                },
+                "TextureComponent": {
+                    "texture_key": "SB_StagePlatform_05.png",
+                    "half_size": {
+                        "x": 50.0,
+                        "y": 50.0
+                    },
+                    "flip_x": false
+                },
+                "SceneOwned": {
+                    "scene_id": 10,
+                    "sceneName": "Level 2"
+                }
+            },
+            "tags": [
+                "PlatformTag"
+            ]
+        },
+        {
             "name": "StagePlatform_02",
             "layer": 2,
             "layer_collision_name": "",
@@ -12460,6 +13169,32 @@
                     ],
                     "font_size": 1.0,
                     "max_width": 10.0
+                },
+                "SceneOwned": {
+                    "scene_id": 10,
+                    "sceneName": "Level 2"
+                }
+            },
+            "tags": []
+        },
+        {
+            "name": "Pause Controller",
+            "layer": 0,
+            "layer_collision_name": "Default",
+            "render_layer": 50,
+            "custom_render_order": 0,
+            "layer_render_name": "",
+            "active": true,
+            "uuid": 6378545046942658371,
+            "components": {
+                "NativeScripts": {
+                    "scripts": [
+                        {
+                            "type": "PauseMenuController",
+                            "enabled": true,
+                            "execute_in_edit": false
+                        }
+                    ]
                 },
                 "SceneOwned": {
                     "scene_id": 10,
@@ -12645,6 +13380,94 @@
             ]
         },
         {
+            "name": "StaticPlatform_10",
+            "layer": 2,
+            "layer_collision_name": "",
+            "render_layer": 50,
+            "custom_render_order": 0,
+            "layer_render_name": "",
+            "active": true,
+            "uuid": 10963905923732046558,
+            "components": {
+                "Transform": {
+                    "Position": {
+                        "x": 850.0,
+                        "y": -1000.0
+                    },
+                    "Rotation": {
+                        "angle": 0.0,
+                        "texture_angle": 0.0,
+                        "collider_angle": 0.0,
+                        "texture_matrix": [
+                            50.0,
+                            0.0,
+                            850.0,
+                            0.0,
+                            50.0,
+                            -1000.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "collider_matrix": [
+                            1.0,
+                            0.0,
+                            850.0,
+                            0.0,
+                            1.0,
+                            -1000.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ]
+                    },
+                    "Scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    }
+                },
+                "Velocity": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "RigidBody": {
+                    "mass": 0.0,
+                    "inv_mass": 0.0,
+                    "is_affected_by_gravity": true,
+                    "force": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                "AABBCollider": {
+                    "half_width": 35.0,
+                    "half_height": 20.0,
+                    "offset_x": -15.0,
+                    "offset_y": 0.0
+                },
+                "RotationFlag": {
+                    "is_rotating": false,
+                    "current_rotation": 0.0,
+                    "target_rotation": 0.0
+                },
+                "TextureComponent": {
+                    "texture_key": "SB_StaticPlatform_10.png",
+                    "half_size": {
+                        "x": 50.0,
+                        "y": 50.0
+                    },
+                    "flip_x": false
+                },
+                "SceneOwned": {
+                    "scene_id": 10,
+                    "sceneName": "Level 2"
+                }
+            },
+            "tags": [
+                "PlatformTag"
+            ]
+        },
+        {
             "name": "StagePlatform_03",
             "layer": 2,
             "layer_collision_name": "",
@@ -12805,6 +13628,94 @@
                 },
                 "TextureComponent": {
                     "texture_key": "SB_StagePlatform_05.png",
+                    "half_size": {
+                        "x": 50.0,
+                        "y": 50.0
+                    },
+                    "flip_x": false
+                },
+                "SceneOwned": {
+                    "scene_id": 10,
+                    "sceneName": "Level 2"
+                }
+            },
+            "tags": [
+                "PlatformTag"
+            ]
+        },
+        {
+            "name": "StagePlatform_02",
+            "layer": 2,
+            "layer_collision_name": "",
+            "render_layer": 50,
+            "custom_render_order": 0,
+            "layer_render_name": "",
+            "active": true,
+            "uuid": 1230388465508956777,
+            "components": {
+                "Transform": {
+                    "Position": {
+                        "x": -350.0,
+                        "y": -1150.0
+                    },
+                    "Rotation": {
+                        "angle": 0.0,
+                        "texture_angle": 0.0,
+                        "collider_angle": 0.0,
+                        "texture_matrix": [
+                            50.0,
+                            0.0,
+                            -350.0,
+                            0.0,
+                            50.0,
+                            -1150.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "collider_matrix": [
+                            1.0,
+                            0.0,
+                            -350.0,
+                            0.0,
+                            1.0,
+                            -1150.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ]
+                    },
+                    "Scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    }
+                },
+                "Velocity": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "RigidBody": {
+                    "mass": 0.0,
+                    "inv_mass": 0.0,
+                    "is_affected_by_gravity": true,
+                    "force": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                "AABBCollider": {
+                    "half_width": 50.0,
+                    "half_height": 43.0,
+                    "offset_x": 0.0,
+                    "offset_y": -7.0
+                },
+                "RotationFlag": {
+                    "is_rotating": false,
+                    "current_rotation": 0.0,
+                    "target_rotation": 0.0
+                },
+                "TextureComponent": {
+                    "texture_key": "SB_StagePlatform_02.png",
                     "half_size": {
                         "x": 50.0,
                         "y": 50.0
@@ -13121,6 +14032,94 @@
                             0.0,
                             1.0,
                             1150.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ]
+                    },
+                    "Scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    }
+                },
+                "Velocity": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "RigidBody": {
+                    "mass": 0.0,
+                    "inv_mass": 0.0,
+                    "is_affected_by_gravity": true,
+                    "force": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                "AABBCollider": {
+                    "half_width": 50.0,
+                    "half_height": 50.0,
+                    "offset_x": 0.0,
+                    "offset_y": 0.0
+                },
+                "RotationFlag": {
+                    "is_rotating": false,
+                    "current_rotation": 0.0,
+                    "target_rotation": 0.0
+                },
+                "TextureComponent": {
+                    "texture_key": "SB_StagePlatform_05.png",
+                    "half_size": {
+                        "x": 50.0,
+                        "y": 50.0
+                    },
+                    "flip_x": false
+                },
+                "SceneOwned": {
+                    "scene_id": 10,
+                    "sceneName": "Level 2"
+                }
+            },
+            "tags": [
+                "PlatformTag"
+            ]
+        },
+        {
+            "name": "StagePlatform_05",
+            "layer": 2,
+            "layer_collision_name": "",
+            "render_layer": 50,
+            "custom_render_order": 0,
+            "layer_render_name": "",
+            "active": true,
+            "uuid": 5512799343525500711,
+            "components": {
+                "Transform": {
+                    "Position": {
+                        "x": 500.0,
+                        "y": 200.0
+                    },
+                    "Rotation": {
+                        "angle": 0.0,
+                        "texture_angle": 0.0,
+                        "collider_angle": 0.0,
+                        "texture_matrix": [
+                            50.0,
+                            0.0,
+                            500.0,
+                            0.0,
+                            50.0,
+                            200.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "collider_matrix": [
+                            1.0,
+                            0.0,
+                            500.0,
+                            0.0,
+                            1.0,
+                            200.0,
                             0.0,
                             0.0,
                             1.0
@@ -13525,6 +14524,68 @@
             ]
         },
         {
+            "name": "BG_2",
+            "layer": 0,
+            "layer_collision_name": "Default",
+            "render_layer": 0,
+            "custom_render_order": -95,
+            "layer_render_name": "Custom",
+            "active": true,
+            "uuid": 6082889460652526407,
+            "components": {
+                "Transform": {
+                    "Position": {
+                        "x": 0.0,
+                        "y": 0.0
+                    },
+                    "Rotation": {
+                        "angle": 0.0,
+                        "texture_angle": 0.0,
+                        "collider_angle": 0.0,
+                        "texture_matrix": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "collider_matrix": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ]
+                    },
+                    "Scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    }
+                },
+                "TextureComponent": {
+                    "texture_key": "SB_Env_Level2_Background_02.png",
+                    "half_size": {
+                        "x": 1150.0,
+                        "y": 1150.0
+                    },
+                    "flip_x": false
+                },
+                "SceneOwned": {
+                    "scene_id": 10,
+                    "sceneName": "Level 2"
+                }
+            },
+            "tags": []
+        },
+        {
             "name": "StagePlatform_05",
             "layer": 2,
             "layer_collision_name": "",
@@ -13877,6 +14938,94 @@
             ]
         },
         {
+            "name": "StagePlatform_03",
+            "layer": 2,
+            "layer_collision_name": "",
+            "render_layer": 50,
+            "custom_render_order": 0,
+            "layer_render_name": "",
+            "active": true,
+            "uuid": 10136773550419543276,
+            "components": {
+                "Transform": {
+                    "Position": {
+                        "x": 50.0,
+                        "y": 750.0
+                    },
+                    "Rotation": {
+                        "angle": 0.0,
+                        "texture_angle": 0.0,
+                        "collider_angle": 0.0,
+                        "texture_matrix": [
+                            50.0,
+                            0.0,
+                            50.0,
+                            0.0,
+                            50.0,
+                            750.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "collider_matrix": [
+                            1.0,
+                            0.0,
+                            50.0,
+                            0.0,
+                            1.0,
+                            750.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ]
+                    },
+                    "Scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    }
+                },
+                "Velocity": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "RigidBody": {
+                    "mass": 0.0,
+                    "inv_mass": 0.0,
+                    "is_affected_by_gravity": true,
+                    "force": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                "AABBCollider": {
+                    "half_width": 35.0,
+                    "half_height": 43.0,
+                    "offset_x": -15.0,
+                    "offset_y": -7.0
+                },
+                "RotationFlag": {
+                    "is_rotating": false,
+                    "current_rotation": 0.0,
+                    "target_rotation": 0.0
+                },
+                "TextureComponent": {
+                    "texture_key": "SB_StagePlatform_03.png",
+                    "half_size": {
+                        "x": 50.0,
+                        "y": 50.0
+                    },
+                    "flip_x": false
+                },
+                "SceneOwned": {
+                    "scene_id": 10,
+                    "sceneName": "Level 2"
+                }
+            },
+            "tags": [
+                "PlatformTag"
+            ]
+        },
+        {
             "name": "StagePlatform_05",
             "layer": 2,
             "layer_collision_name": "",
@@ -14213,6 +15362,94 @@
                 },
                 "TextureComponent": {
                     "texture_key": "SB_StaticPlatform_02.png",
+                    "half_size": {
+                        "x": 50.0,
+                        "y": 50.0
+                    },
+                    "flip_x": false
+                },
+                "SceneOwned": {
+                    "scene_id": 10,
+                    "sceneName": "Level 2"
+                }
+            },
+            "tags": [
+                "PlatformTag"
+            ]
+        },
+        {
+            "name": "StagePlatform_08",
+            "layer": 2,
+            "layer_collision_name": "",
+            "render_layer": 50,
+            "custom_render_order": 0,
+            "layer_render_name": "",
+            "active": true,
+            "uuid": 607600033750537387,
+            "components": {
+                "Transform": {
+                    "Position": {
+                        "x": -950.0,
+                        "y": 1150.0
+                    },
+                    "Rotation": {
+                        "angle": 0.0,
+                        "texture_angle": 0.0,
+                        "collider_angle": 0.0,
+                        "texture_matrix": [
+                            50.0,
+                            0.0,
+                            -950.0,
+                            0.0,
+                            50.0,
+                            1150.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "collider_matrix": [
+                            1.0,
+                            0.0,
+                            -950.0,
+                            0.0,
+                            1.0,
+                            1150.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ]
+                    },
+                    "Scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    }
+                },
+                "Velocity": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "RigidBody": {
+                    "mass": 0.0,
+                    "inv_mass": 0.0,
+                    "is_affected_by_gravity": true,
+                    "force": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                "AABBCollider": {
+                    "half_width": 50.0,
+                    "half_height": 43.0,
+                    "offset_x": 0.0,
+                    "offset_y": 7.0
+                },
+                "RotationFlag": {
+                    "is_rotating": false,
+                    "current_rotation": 0.0,
+                    "target_rotation": 0.0
+                },
+                "TextureComponent": {
+                    "texture_key": "SB_StagePlatform_08.png",
                     "half_size": {
                         "x": 50.0,
                         "y": 50.0
@@ -15637,6 +16874,110 @@
             ]
         },
         {
+            "name": "birdEnemy",
+            "layer": 3,
+            "layer_collision_name": "Enemy",
+            "render_layer": 50,
+            "custom_render_order": 0,
+            "layer_render_name": "",
+            "active": true,
+            "uuid": 16563100620171615242,
+            "components": {
+                "Transform": {
+                    "Position": {
+                        "x": 350.0,
+                        "y": -450.0
+                    },
+                    "Rotation": {
+                        "angle": 0.0,
+                        "texture_angle": 0.0,
+                        "collider_angle": 0.0,
+                        "texture_matrix": [
+                            25.0,
+                            0.0,
+                            350.0,
+                            0.0,
+                            25.0,
+                            -450.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "collider_matrix": [
+                            1.0,
+                            0.0,
+                            350.0,
+                            0.0,
+                            1.0,
+                            -450.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ]
+                    },
+                    "Scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    }
+                },
+                "Velocity": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "RigidBody": {
+                    "mass": 1.0,
+                    "inv_mass": 1.0,
+                    "is_affected_by_gravity": false,
+                    "force": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                "AABBCollider": {
+                    "half_width": 25.0,
+                    "half_height": 25.0,
+                    "offset_x": 0.0,
+                    "offset_y": 0.0
+                },
+                "RotationFlag": {
+                    "is_rotating": false,
+                    "current_rotation": 0.0,
+                    "target_rotation": 0.0
+                },
+                "TextureComponent": {
+                    "texture_key": "SB_BirdEnemy_SleepIdle_Spritesheet.png",
+                    "half_size": {
+                        "x": 25.0,
+                        "y": 25.0
+                    },
+                    "flip_x": false
+                },
+                "AnimationComponent": {
+                    "profile_name": "BirdEnemy",
+                    "current_state": 0,
+                    "current_frame": 3,
+                    "frame_duration": 0.10000000149011612,
+                    "start_frame": 0,
+                    "frame_count": 6,
+                    "elapsed_time": 0.0902085229754448,
+                    "is_playing": true,
+                    "is_looping": true
+                },
+                "FSMComponent": {
+                    "DefinitionPath": "Data/FSM/birdEnemy.json",
+                    "CurrentState": "Idle",
+                    "InitialState": "Idle"
+                },
+                "SceneOwned": {
+                    "scene_id": 10,
+                    "sceneName": "Level 2"
+                }
+            },
+            "tags": [
+                "EnemyTag"
+            ]
+        },
+        {
             "name": "StagePlatform_05",
             "layer": 2,
             "layer_collision_name": "",
@@ -15785,6 +17126,94 @@
                 }
             },
             "tags": []
+        },
+        {
+            "name": "StagePlatform_05",
+            "layer": 2,
+            "layer_collision_name": "",
+            "render_layer": 50,
+            "custom_render_order": 0,
+            "layer_render_name": "",
+            "active": true,
+            "uuid": 11606614123899013029,
+            "components": {
+                "Transform": {
+                    "Position": {
+                        "x": -550.0,
+                        "y": 550.0
+                    },
+                    "Rotation": {
+                        "angle": 0.0,
+                        "texture_angle": 0.0,
+                        "collider_angle": 0.0,
+                        "texture_matrix": [
+                            50.0,
+                            0.0,
+                            -550.0,
+                            0.0,
+                            50.0,
+                            550.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "collider_matrix": [
+                            1.0,
+                            0.0,
+                            -550.0,
+                            0.0,
+                            1.0,
+                            550.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ]
+                    },
+                    "Scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    }
+                },
+                "Velocity": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "RigidBody": {
+                    "mass": 0.0,
+                    "inv_mass": 0.0,
+                    "is_affected_by_gravity": true,
+                    "force": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                "AABBCollider": {
+                    "half_width": 50.0,
+                    "half_height": 50.0,
+                    "offset_x": 0.0,
+                    "offset_y": 0.0
+                },
+                "RotationFlag": {
+                    "is_rotating": false,
+                    "current_rotation": 0.0,
+                    "target_rotation": 0.0
+                },
+                "TextureComponent": {
+                    "texture_key": "SB_StagePlatform_05.png",
+                    "half_size": {
+                        "x": 50.0,
+                        "y": 50.0
+                    },
+                    "flip_x": false
+                },
+                "SceneOwned": {
+                    "scene_id": 10,
+                    "sceneName": "Level 2"
+                }
+            },
+            "tags": [
+                "PlatformTag"
+            ]
         },
         {
             "name": "StagePlatform_05",
@@ -16104,6 +17533,94 @@
             },
             "tags": [
                 "SpawnPointTag"
+            ]
+        },
+        {
+            "name": "StagePlatform_02",
+            "layer": 2,
+            "layer_collision_name": "",
+            "render_layer": 50,
+            "custom_render_order": 0,
+            "layer_render_name": "",
+            "active": true,
+            "uuid": 1001572703185436414,
+            "components": {
+                "Transform": {
+                    "Position": {
+                        "x": 150.0,
+                        "y": -1150.0
+                    },
+                    "Rotation": {
+                        "angle": 0.0,
+                        "texture_angle": 0.0,
+                        "collider_angle": 0.0,
+                        "texture_matrix": [
+                            50.0,
+                            0.0,
+                            150.0,
+                            0.0,
+                            50.0,
+                            -1150.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "collider_matrix": [
+                            1.0,
+                            0.0,
+                            150.0,
+                            0.0,
+                            1.0,
+                            -1150.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ]
+                    },
+                    "Scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    }
+                },
+                "Velocity": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "RigidBody": {
+                    "mass": 0.0,
+                    "inv_mass": 0.0,
+                    "is_affected_by_gravity": true,
+                    "force": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                "AABBCollider": {
+                    "half_width": 50.0,
+                    "half_height": 43.0,
+                    "offset_x": 0.0,
+                    "offset_y": -7.0
+                },
+                "RotationFlag": {
+                    "is_rotating": false,
+                    "current_rotation": 0.0,
+                    "target_rotation": 0.0
+                },
+                "TextureComponent": {
+                    "texture_key": "SB_StagePlatform_02.png",
+                    "half_size": {
+                        "x": 50.0,
+                        "y": 50.0
+                    },
+                    "flip_x": false
+                },
+                "SceneOwned": {
+                    "scene_id": 10,
+                    "sceneName": "Level 2"
+                }
+            },
+            "tags": [
+                "PlatformTag"
             ]
         },
         {
@@ -16459,6 +17976,82 @@
             ]
         },
         {
+            "name": "HUD_Heart3",
+            "layer": 0,
+            "layer_collision_name": "Default",
+            "render_layer": 0,
+            "custom_render_order": 199,
+            "layer_render_name": "Custom",
+            "active": true,
+            "uuid": 1958901577247180753,
+            "components": {
+                "Transform": {
+                    "Position": {
+                        "x": -0.6299999952316284,
+                        "y": 0.5199999809265137
+                    },
+                    "Rotation": {
+                        "angle": 0.0,
+                        "texture_angle": 0.0,
+                        "collider_angle": 0.0,
+                        "texture_matrix": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "collider_matrix": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ]
+                    },
+                    "Scale": {
+                        "x": 0.36821192502975464,
+                        "y": 0.6185430884361267
+                    }
+                },
+                "TextureComponent": {
+                    "texture_key": "SB_HUD_Heart.png",
+                    "half_size": {
+                        "x": 0.10000000149011612,
+                        "y": 0.10000000149011612
+                    },
+                    "flip_x": false
+                },
+                "NativeScripts": {
+                    "scripts": [
+                        {
+                            "type": "PlayerHealthHUD",
+                            "enabled": true,
+                            "execute_in_edit": false
+                        }
+                    ]
+                },
+                "SceneOwned": {
+                    "scene_id": 10,
+                    "sceneName": "Level 2"
+                },
+                "PlayerHealthComponent": {
+                    "life_num": 3
+                }
+            },
+            "tags": [
+                "GUITag"
+            ]
+        },
+        {
             "name": "StagePlatform_02",
             "layer": 2,
             "layer_collision_name": "Platform",
@@ -16809,6 +18402,68 @@
             "tags": [
                 "PlatformTag"
             ]
+        },
+        {
+            "name": "BG_5",
+            "layer": 0,
+            "layer_collision_name": "Default",
+            "render_layer": 0,
+            "custom_render_order": -98,
+            "layer_render_name": "Custom",
+            "active": true,
+            "uuid": 579415352304836845,
+            "components": {
+                "Transform": {
+                    "Position": {
+                        "x": 0.0,
+                        "y": 0.0
+                    },
+                    "Rotation": {
+                        "angle": 0.0,
+                        "texture_angle": 0.0,
+                        "collider_angle": 0.0,
+                        "texture_matrix": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "collider_matrix": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ]
+                    },
+                    "Scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    }
+                },
+                "TextureComponent": {
+                    "texture_key": "SB_Env_Level2_Background_05.png",
+                    "half_size": {
+                        "x": 1150.0,
+                        "y": 1150.0
+                    },
+                    "flip_x": false
+                },
+                "SceneOwned": {
+                    "scene_id": 10,
+                    "sceneName": "Level 2"
+                }
+            },
+            "tags": []
         },
         {
             "name": "StagePlatform_05",
@@ -20545,6 +22200,94 @@
             ]
         },
         {
+            "name": "StagePlatform_05",
+            "layer": 2,
+            "layer_collision_name": "",
+            "render_layer": 50,
+            "custom_render_order": 0,
+            "layer_render_name": "",
+            "active": true,
+            "uuid": 8489876562167232363,
+            "components": {
+                "Transform": {
+                    "Position": {
+                        "x": 150.0,
+                        "y": -1050.0
+                    },
+                    "Rotation": {
+                        "angle": 0.0,
+                        "texture_angle": 0.0,
+                        "collider_angle": 0.0,
+                        "texture_matrix": [
+                            50.0,
+                            0.0,
+                            150.0,
+                            0.0,
+                            50.0,
+                            -1050.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "collider_matrix": [
+                            1.0,
+                            0.0,
+                            150.0,
+                            0.0,
+                            1.0,
+                            -1050.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ]
+                    },
+                    "Scale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    }
+                },
+                "Velocity": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "RigidBody": {
+                    "mass": 0.0,
+                    "inv_mass": 0.0,
+                    "is_affected_by_gravity": true,
+                    "force": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                "AABBCollider": {
+                    "half_width": 50.0,
+                    "half_height": 50.0,
+                    "offset_x": 0.0,
+                    "offset_y": 0.0
+                },
+                "RotationFlag": {
+                    "is_rotating": false,
+                    "current_rotation": 0.0,
+                    "target_rotation": 0.0
+                },
+                "TextureComponent": {
+                    "texture_key": "SB_StagePlatform_05.png",
+                    "half_size": {
+                        "x": 50.0,
+                        "y": 50.0
+                    },
+                    "flip_x": false
+                },
+                "SceneOwned": {
+                    "scene_id": 10,
+                    "sceneName": "Level 2"
+                }
+            },
+            "tags": [
+                "PlatformTag"
+            ]
+        },
+        {
             "name": "MultiAxisFallingTrap_02_BIG_120x100_01",
             "layer": 2,
             "layer_collision_name": "Platform",
@@ -21441,94 +23184,6 @@
             ]
         },
         {
-            "name": "StaticPlatform_05",
-            "layer": 2,
-            "layer_collision_name": "",
-            "render_layer": 50,
-            "custom_render_order": 0,
-            "layer_render_name": "",
-            "active": true,
-            "uuid": 972193007722773031,
-            "components": {
-                "Transform": {
-                    "Position": {
-                        "x": 550.0,
-                        "y": 50.0
-                    },
-                    "Rotation": {
-                        "angle": 0.0,
-                        "texture_angle": 0.0,
-                        "collider_angle": 0.0,
-                        "texture_matrix": [
-                            50.0,
-                            0.0,
-                            550.0,
-                            0.0,
-                            50.0,
-                            50.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ],
-                        "collider_matrix": [
-                            1.0,
-                            0.0,
-                            550.0,
-                            0.0,
-                            1.0,
-                            50.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ]
-                    },
-                    "Scale": {
-                        "x": 1.0,
-                        "y": 1.0
-                    }
-                },
-                "Velocity": {
-                    "x": 0.0,
-                    "y": 0.0
-                },
-                "RigidBody": {
-                    "mass": 0.0,
-                    "inv_mass": 0.0,
-                    "is_affected_by_gravity": true,
-                    "force": {
-                        "x": 0.0,
-                        "y": 0.0
-                    }
-                },
-                "AABBCollider": {
-                    "half_width": 20.0,
-                    "half_height": 50.0,
-                    "offset_x": 0.0,
-                    "offset_y": 0.0
-                },
-                "RotationFlag": {
-                    "is_rotating": false,
-                    "current_rotation": 0.0,
-                    "target_rotation": 0.0
-                },
-                "TextureComponent": {
-                    "texture_key": "SB_StaticPlatform_05.png",
-                    "half_size": {
-                        "x": 50.0,
-                        "y": 50.0
-                    },
-                    "flip_x": false
-                },
-                "SceneOwned": {
-                    "scene_id": 10,
-                    "sceneName": "Level 2"
-                }
-            },
-            "tags": [
-                "PlatformTag"
-            ]
-        },
-        {
             "name": "StaticPlatform_02",
             "layer": 2,
             "layer_collision_name": "",
@@ -21952,94 +23607,6 @@
             "custom_render_order": 0,
             "layer_render_name": "",
             "active": true,
-            "uuid": 11379822684081585352,
-            "components": {
-                "Transform": {
-                    "Position": {
-                        "x": -550.0,
-                        "y": 1150.0
-                    },
-                    "Rotation": {
-                        "angle": 0.0,
-                        "texture_angle": 0.0,
-                        "collider_angle": 0.0,
-                        "texture_matrix": [
-                            50.0,
-                            0.0,
-                            -550.0,
-                            0.0,
-                            50.0,
-                            1150.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ],
-                        "collider_matrix": [
-                            1.0,
-                            0.0,
-                            -550.0,
-                            0.0,
-                            1.0,
-                            1150.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ]
-                    },
-                    "Scale": {
-                        "x": 1.0,
-                        "y": 1.0
-                    }
-                },
-                "Velocity": {
-                    "x": 0.0,
-                    "y": 0.0
-                },
-                "RigidBody": {
-                    "mass": 0.0,
-                    "inv_mass": 0.0,
-                    "is_affected_by_gravity": true,
-                    "force": {
-                        "x": 0.0,
-                        "y": 0.0
-                    }
-                },
-                "AABBCollider": {
-                    "half_width": 50.0,
-                    "half_height": 43.0,
-                    "offset_x": 0.0,
-                    "offset_y": 7.0
-                },
-                "RotationFlag": {
-                    "is_rotating": false,
-                    "current_rotation": 0.0,
-                    "target_rotation": 0.0
-                },
-                "TextureComponent": {
-                    "texture_key": "SB_StagePlatform_08.png",
-                    "half_size": {
-                        "x": 50.0,
-                        "y": 50.0
-                    },
-                    "flip_x": false
-                },
-                "SceneOwned": {
-                    "scene_id": 10,
-                    "sceneName": "Level 2"
-                }
-            },
-            "tags": [
-                "PlatformTag"
-            ]
-        },
-        {
-            "name": "StagePlatform_08",
-            "layer": 2,
-            "layer_collision_name": "",
-            "render_layer": 50,
-            "custom_render_order": 0,
-            "layer_render_name": "",
-            "active": true,
             "uuid": 8614634004498303739,
             "components": {
                 "Transform": {
@@ -22326,94 +23893,6 @@
                 }
             },
             "tags": []
-        },
-        {
-            "name": "StagePlatform_05",
-            "layer": 2,
-            "layer_collision_name": "",
-            "render_layer": 50,
-            "custom_render_order": 0,
-            "layer_render_name": "",
-            "active": true,
-            "uuid": 4754725837198838450,
-            "components": {
-                "Transform": {
-                    "Position": {
-                        "x": -1150.0,
-                        "y": 550.0
-                    },
-                    "Rotation": {
-                        "angle": 0.0,
-                        "texture_angle": 0.0,
-                        "collider_angle": 0.0,
-                        "texture_matrix": [
-                            50.0,
-                            0.0,
-                            -1150.0,
-                            0.0,
-                            50.0,
-                            550.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ],
-                        "collider_matrix": [
-                            1.0,
-                            0.0,
-                            -1150.0,
-                            0.0,
-                            1.0,
-                            550.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ]
-                    },
-                    "Scale": {
-                        "x": 1.0,
-                        "y": 1.0
-                    }
-                },
-                "Velocity": {
-                    "x": 0.0,
-                    "y": 0.0
-                },
-                "RigidBody": {
-                    "mass": 0.0,
-                    "inv_mass": 0.0,
-                    "is_affected_by_gravity": true,
-                    "force": {
-                        "x": 0.0,
-                        "y": 0.0
-                    }
-                },
-                "AABBCollider": {
-                    "half_width": 50.0,
-                    "half_height": 50.0,
-                    "offset_x": 0.0,
-                    "offset_y": 0.0
-                },
-                "RotationFlag": {
-                    "is_rotating": false,
-                    "current_rotation": 0.0,
-                    "target_rotation": 0.0
-                },
-                "TextureComponent": {
-                    "texture_key": "SB_StagePlatform_05.png",
-                    "half_size": {
-                        "x": 50.0,
-                        "y": 50.0
-                    },
-                    "flip_x": false
-                },
-                "SceneOwned": {
-                    "scene_id": 10,
-                    "sceneName": "Level 2"
-                }
-            },
-            "tags": [
-                "PlatformTag"
-            ]
         },
         {
             "name": "StaticPlatform_06",
@@ -22775,94 +24254,6 @@
             "custom_render_order": 0,
             "layer_render_name": "",
             "active": true,
-            "uuid": 11606614123899013029,
-            "components": {
-                "Transform": {
-                    "Position": {
-                        "x": -550.0,
-                        "y": 550.0
-                    },
-                    "Rotation": {
-                        "angle": 0.0,
-                        "texture_angle": 0.0,
-                        "collider_angle": 0.0,
-                        "texture_matrix": [
-                            50.0,
-                            0.0,
-                            -550.0,
-                            0.0,
-                            50.0,
-                            550.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ],
-                        "collider_matrix": [
-                            1.0,
-                            0.0,
-                            -550.0,
-                            0.0,
-                            1.0,
-                            550.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ]
-                    },
-                    "Scale": {
-                        "x": 1.0,
-                        "y": 1.0
-                    }
-                },
-                "Velocity": {
-                    "x": 0.0,
-                    "y": 0.0
-                },
-                "RigidBody": {
-                    "mass": 0.0,
-                    "inv_mass": 0.0,
-                    "is_affected_by_gravity": true,
-                    "force": {
-                        "x": 0.0,
-                        "y": 0.0
-                    }
-                },
-                "AABBCollider": {
-                    "half_width": 50.0,
-                    "half_height": 50.0,
-                    "offset_x": 0.0,
-                    "offset_y": 0.0
-                },
-                "RotationFlag": {
-                    "is_rotating": false,
-                    "current_rotation": 0.0,
-                    "target_rotation": 0.0
-                },
-                "TextureComponent": {
-                    "texture_key": "SB_StagePlatform_05.png",
-                    "half_size": {
-                        "x": 50.0,
-                        "y": 50.0
-                    },
-                    "flip_x": false
-                },
-                "SceneOwned": {
-                    "scene_id": 10,
-                    "sceneName": "Level 2"
-                }
-            },
-            "tags": [
-                "PlatformTag"
-            ]
-        },
-        {
-            "name": "StagePlatform_05",
-            "layer": 2,
-            "layer_collision_name": "",
-            "render_layer": 50,
-            "custom_render_order": 0,
-            "layer_render_name": "",
-            "active": true,
             "uuid": 12577943874616070717,
             "components": {
                 "Transform": {
@@ -22928,94 +24319,6 @@
                 },
                 "TextureComponent": {
                     "texture_key": "SB_StagePlatform_05.png",
-                    "half_size": {
-                        "x": 50.0,
-                        "y": 50.0
-                    },
-                    "flip_x": false
-                },
-                "SceneOwned": {
-                    "scene_id": 10,
-                    "sceneName": "Level 2"
-                }
-            },
-            "tags": [
-                "PlatformTag"
-            ]
-        },
-        {
-            "name": "StagePlatform_02",
-            "layer": 2,
-            "layer_collision_name": "",
-            "render_layer": 50,
-            "custom_render_order": 0,
-            "layer_render_name": "",
-            "active": true,
-            "uuid": 1230388465508956777,
-            "components": {
-                "Transform": {
-                    "Position": {
-                        "x": -350.0,
-                        "y": -1150.0
-                    },
-                    "Rotation": {
-                        "angle": 0.0,
-                        "texture_angle": 0.0,
-                        "collider_angle": 0.0,
-                        "texture_matrix": [
-                            50.0,
-                            0.0,
-                            -350.0,
-                            0.0,
-                            50.0,
-                            -1150.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ],
-                        "collider_matrix": [
-                            1.0,
-                            0.0,
-                            -350.0,
-                            0.0,
-                            1.0,
-                            -1150.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ]
-                    },
-                    "Scale": {
-                        "x": 1.0,
-                        "y": 1.0
-                    }
-                },
-                "Velocity": {
-                    "x": 0.0,
-                    "y": 0.0
-                },
-                "RigidBody": {
-                    "mass": 0.0,
-                    "inv_mass": 0.0,
-                    "is_affected_by_gravity": true,
-                    "force": {
-                        "x": 0.0,
-                        "y": 0.0
-                    }
-                },
-                "AABBCollider": {
-                    "half_width": 50.0,
-                    "half_height": 43.0,
-                    "offset_x": 0.0,
-                    "offset_y": -7.0
-                },
-                "RotationFlag": {
-                    "is_rotating": false,
-                    "current_rotation": 0.0,
-                    "target_rotation": 0.0
-                },
-                "TextureComponent": {
-                    "texture_key": "SB_StagePlatform_02.png",
                     "half_size": {
                         "x": 50.0,
                         "y": 50.0
@@ -23127,94 +24430,6 @@
             "custom_render_order": 0,
             "layer_render_name": "",
             "active": true,
-            "uuid": 1001572703185436414,
-            "components": {
-                "Transform": {
-                    "Position": {
-                        "x": 150.0,
-                        "y": -1150.0
-                    },
-                    "Rotation": {
-                        "angle": 0.0,
-                        "texture_angle": 0.0,
-                        "collider_angle": 0.0,
-                        "texture_matrix": [
-                            50.0,
-                            0.0,
-                            150.0,
-                            0.0,
-                            50.0,
-                            -1150.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ],
-                        "collider_matrix": [
-                            1.0,
-                            0.0,
-                            150.0,
-                            0.0,
-                            1.0,
-                            -1150.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ]
-                    },
-                    "Scale": {
-                        "x": 1.0,
-                        "y": 1.0
-                    }
-                },
-                "Velocity": {
-                    "x": 0.0,
-                    "y": 0.0
-                },
-                "RigidBody": {
-                    "mass": 0.0,
-                    "inv_mass": 0.0,
-                    "is_affected_by_gravity": true,
-                    "force": {
-                        "x": 0.0,
-                        "y": 0.0
-                    }
-                },
-                "AABBCollider": {
-                    "half_width": 50.0,
-                    "half_height": 43.0,
-                    "offset_x": 0.0,
-                    "offset_y": -7.0
-                },
-                "RotationFlag": {
-                    "is_rotating": false,
-                    "current_rotation": 0.0,
-                    "target_rotation": 0.0
-                },
-                "TextureComponent": {
-                    "texture_key": "SB_StagePlatform_02.png",
-                    "half_size": {
-                        "x": 50.0,
-                        "y": 50.0
-                    },
-                    "flip_x": false
-                },
-                "SceneOwned": {
-                    "scene_id": 10,
-                    "sceneName": "Level 2"
-                }
-            },
-            "tags": [
-                "PlatformTag"
-            ]
-        },
-        {
-            "name": "StagePlatform_02",
-            "layer": 2,
-            "layer_collision_name": "",
-            "render_layer": 50,
-            "custom_render_order": 0,
-            "layer_render_name": "",
-            "active": true,
             "uuid": 11380015006023056391,
             "components": {
                 "Transform": {
@@ -23280,94 +24495,6 @@
                 },
                 "TextureComponent": {
                     "texture_key": "SB_StagePlatform_02.png",
-                    "half_size": {
-                        "x": 50.0,
-                        "y": 50.0
-                    },
-                    "flip_x": false
-                },
-                "SceneOwned": {
-                    "scene_id": 10,
-                    "sceneName": "Level 2"
-                }
-            },
-            "tags": [
-                "PlatformTag"
-            ]
-        },
-        {
-            "name": "StagePlatform_05",
-            "layer": 2,
-            "layer_collision_name": "",
-            "render_layer": 50,
-            "custom_render_order": 0,
-            "layer_render_name": "",
-            "active": true,
-            "uuid": 17249819600112332927,
-            "components": {
-                "Transform": {
-                    "Position": {
-                        "x": -1150.0,
-                        "y": -350.0
-                    },
-                    "Rotation": {
-                        "angle": 0.0,
-                        "texture_angle": 0.0,
-                        "collider_angle": 0.0,
-                        "texture_matrix": [
-                            50.0,
-                            0.0,
-                            -1150.0,
-                            0.0,
-                            50.0,
-                            -350.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ],
-                        "collider_matrix": [
-                            1.0,
-                            0.0,
-                            -1150.0,
-                            0.0,
-                            1.0,
-                            -350.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ]
-                    },
-                    "Scale": {
-                        "x": 1.0,
-                        "y": 1.0
-                    }
-                },
-                "Velocity": {
-                    "x": 0.0,
-                    "y": 0.0
-                },
-                "RigidBody": {
-                    "mass": 0.0,
-                    "inv_mass": 0.0,
-                    "is_affected_by_gravity": true,
-                    "force": {
-                        "x": 0.0,
-                        "y": 0.0
-                    }
-                },
-                "AABBCollider": {
-                    "half_width": 50.0,
-                    "half_height": 50.0,
-                    "offset_x": 0.0,
-                    "offset_y": 0.0
-                },
-                "RotationFlag": {
-                    "is_rotating": false,
-                    "current_rotation": 0.0,
-                    "target_rotation": 0.0
-                },
-                "TextureComponent": {
-                    "texture_key": "SB_StagePlatform_05.png",
                     "half_size": {
                         "x": 50.0,
                         "y": 50.0
@@ -23472,82 +24599,6 @@
             ]
         },
         {
-            "name": "HUD_Heart3",
-            "layer": 0,
-            "layer_collision_name": "Default",
-            "render_layer": 0,
-            "custom_render_order": 199,
-            "layer_render_name": "Custom",
-            "active": true,
-            "uuid": 1958901577247180753,
-            "components": {
-                "Transform": {
-                    "Position": {
-                        "x": -0.6299999952316284,
-                        "y": 0.5199999809265137
-                    },
-                    "Rotation": {
-                        "angle": 0.0,
-                        "texture_angle": 0.0,
-                        "collider_angle": 0.0,
-                        "texture_matrix": [
-                            1.0,
-                            0.0,
-                            0.0,
-                            0.0,
-                            1.0,
-                            0.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ],
-                        "collider_matrix": [
-                            1.0,
-                            0.0,
-                            0.0,
-                            0.0,
-                            1.0,
-                            0.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ]
-                    },
-                    "Scale": {
-                        "x": 0.36821192502975464,
-                        "y": 0.6185430884361267
-                    }
-                },
-                "TextureComponent": {
-                    "texture_key": "SB_HUD_Heart.png",
-                    "half_size": {
-                        "x": 0.10000000149011612,
-                        "y": 0.10000000149011612
-                    },
-                    "flip_x": false
-                },
-                "NativeScripts": {
-                    "scripts": [
-                        {
-                            "type": "PlayerHealthHUD",
-                            "enabled": true,
-                            "execute_in_edit": false
-                        }
-                    ]
-                },
-                "SceneOwned": {
-                    "scene_id": 10,
-                    "sceneName": "Level 2"
-                },
-                "PlayerHealthComponent": {
-                    "life_num": 3
-                }
-            },
-            "tags": [
-                "GUITag"
-            ]
-        },
-        {
             "name": "StagePlatform_04",
             "layer": 2,
             "layer_collision_name": "",
@@ -23634,68 +24685,6 @@
             "tags": [
                 "PlatformTag"
             ]
-        },
-        {
-            "name": "BG_2",
-            "layer": 0,
-            "layer_collision_name": "Default",
-            "render_layer": 0,
-            "custom_render_order": -95,
-            "layer_render_name": "Custom",
-            "active": true,
-            "uuid": 6082889460652526407,
-            "components": {
-                "Transform": {
-                    "Position": {
-                        "x": 0.0,
-                        "y": 0.0
-                    },
-                    "Rotation": {
-                        "angle": 0.0,
-                        "texture_angle": 0.0,
-                        "collider_angle": 0.0,
-                        "texture_matrix": [
-                            1.0,
-                            0.0,
-                            0.0,
-                            0.0,
-                            1.0,
-                            0.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ],
-                        "collider_matrix": [
-                            1.0,
-                            0.0,
-                            0.0,
-                            0.0,
-                            1.0,
-                            0.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ]
-                    },
-                    "Scale": {
-                        "x": 1.0,
-                        "y": 1.0
-                    }
-                },
-                "TextureComponent": {
-                    "texture_key": "SB_Env_Level2_Background_02.png",
-                    "half_size": {
-                        "x": 1150.0,
-                        "y": 1150.0
-                    },
-                    "flip_x": false
-                },
-                "SceneOwned": {
-                    "scene_id": 10,
-                    "sceneName": "Level 2"
-                }
-            },
-            "tags": []
         },
         {
             "name": "StagePlatform_05",
@@ -23786,68 +24775,6 @@
             ]
         },
         {
-            "name": "BG_5",
-            "layer": 0,
-            "layer_collision_name": "Default",
-            "render_layer": 0,
-            "custom_render_order": -98,
-            "layer_render_name": "Custom",
-            "active": true,
-            "uuid": 579415352304836845,
-            "components": {
-                "Transform": {
-                    "Position": {
-                        "x": 0.0,
-                        "y": 0.0
-                    },
-                    "Rotation": {
-                        "angle": 0.0,
-                        "texture_angle": 0.0,
-                        "collider_angle": 0.0,
-                        "texture_matrix": [
-                            1.0,
-                            0.0,
-                            0.0,
-                            0.0,
-                            1.0,
-                            0.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ],
-                        "collider_matrix": [
-                            1.0,
-                            0.0,
-                            0.0,
-                            0.0,
-                            1.0,
-                            0.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ]
-                    },
-                    "Scale": {
-                        "x": 1.0,
-                        "y": 1.0
-                    }
-                },
-                "TextureComponent": {
-                    "texture_key": "SB_Env_Level2_Background_05.png",
-                    "half_size": {
-                        "x": 1150.0,
-                        "y": 1150.0
-                    },
-                    "flip_x": false
-                },
-                "SceneOwned": {
-                    "scene_id": 10,
-                    "sceneName": "Level 2"
-                }
-            },
-            "tags": []
-        },
-        {
             "name": "StagePlatform_05",
             "layer": 2,
             "layer_collision_name": "",
@@ -23936,32 +24863,6 @@
             ]
         },
         {
-            "name": "Pause Controller",
-            "layer": 0,
-            "layer_collision_name": "Default",
-            "render_layer": 50,
-            "custom_render_order": 0,
-            "layer_render_name": "",
-            "active": true,
-            "uuid": 6378545046942658371,
-            "components": {
-                "NativeScripts": {
-                    "scripts": [
-                        {
-                            "type": "PauseMenuController",
-                            "enabled": true,
-                            "execute_in_edit": false
-                        }
-                    ]
-                },
-                "SceneOwned": {
-                    "scene_id": 10,
-                    "sceneName": "Level 2"
-                }
-            },
-            "tags": []
-        },
-        {
             "name": "Background",
             "layer": 0,
             "layer_collision_name": "Default",
@@ -24022,94 +24923,6 @@
                 }
             },
             "tags": []
-        },
-        {
-            "name": "StagePlatform_05",
-            "layer": 2,
-            "layer_collision_name": "",
-            "render_layer": 50,
-            "custom_render_order": 0,
-            "layer_render_name": "",
-            "active": true,
-            "uuid": 14226821538267982004,
-            "components": {
-                "Transform": {
-                    "Position": {
-                        "x": 1150.0,
-                        "y": 350.0
-                    },
-                    "Rotation": {
-                        "angle": 0.0,
-                        "texture_angle": 0.0,
-                        "collider_angle": 0.0,
-                        "texture_matrix": [
-                            50.0,
-                            0.0,
-                            1150.0,
-                            0.0,
-                            50.0,
-                            350.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ],
-                        "collider_matrix": [
-                            1.0,
-                            0.0,
-                            1150.0,
-                            0.0,
-                            1.0,
-                            350.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ]
-                    },
-                    "Scale": {
-                        "x": 1.0,
-                        "y": 1.0
-                    }
-                },
-                "Velocity": {
-                    "x": 0.0,
-                    "y": 0.0
-                },
-                "RigidBody": {
-                    "mass": 0.0,
-                    "inv_mass": 0.0,
-                    "is_affected_by_gravity": true,
-                    "force": {
-                        "x": 0.0,
-                        "y": 0.0
-                    }
-                },
-                "AABBCollider": {
-                    "half_width": 50.0,
-                    "half_height": 50.0,
-                    "offset_x": 0.0,
-                    "offset_y": 0.0
-                },
-                "RotationFlag": {
-                    "is_rotating": false,
-                    "current_rotation": 0.0,
-                    "target_rotation": 0.0
-                },
-                "TextureComponent": {
-                    "texture_key": "SB_StagePlatform_05.png",
-                    "half_size": {
-                        "x": 50.0,
-                        "y": 50.0
-                    },
-                    "flip_x": false
-                },
-                "SceneOwned": {
-                    "scene_id": 10,
-                    "sceneName": "Level 2"
-                }
-            },
-            "tags": [
-                "PlatformTag"
-            ]
         },
         {
             "name": "StagePlatform_05",
@@ -24184,94 +24997,6 @@
                 },
                 "TextureComponent": {
                     "texture_key": "SB_StagePlatform_05.png",
-                    "half_size": {
-                        "x": 50.0,
-                        "y": 50.0
-                    },
-                    "flip_x": false
-                },
-                "SceneOwned": {
-                    "scene_id": 10,
-                    "sceneName": "Level 2"
-                }
-            },
-            "tags": [
-                "PlatformTag"
-            ]
-        },
-        {
-            "name": "StagePlatform_08",
-            "layer": 2,
-            "layer_collision_name": "",
-            "render_layer": 50,
-            "custom_render_order": 0,
-            "layer_render_name": "",
-            "active": true,
-            "uuid": 607600033750537387,
-            "components": {
-                "Transform": {
-                    "Position": {
-                        "x": -950.0,
-                        "y": 1150.0
-                    },
-                    "Rotation": {
-                        "angle": 0.0,
-                        "texture_angle": 0.0,
-                        "collider_angle": 0.0,
-                        "texture_matrix": [
-                            50.0,
-                            0.0,
-                            -950.0,
-                            0.0,
-                            50.0,
-                            1150.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ],
-                        "collider_matrix": [
-                            1.0,
-                            0.0,
-                            -950.0,
-                            0.0,
-                            1.0,
-                            1150.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ]
-                    },
-                    "Scale": {
-                        "x": 1.0,
-                        "y": 1.0
-                    }
-                },
-                "Velocity": {
-                    "x": 0.0,
-                    "y": 0.0
-                },
-                "RigidBody": {
-                    "mass": 0.0,
-                    "inv_mass": 0.0,
-                    "is_affected_by_gravity": true,
-                    "force": {
-                        "x": 0.0,
-                        "y": 0.0
-                    }
-                },
-                "AABBCollider": {
-                    "half_width": 50.0,
-                    "half_height": 43.0,
-                    "offset_x": 0.0,
-                    "offset_y": 7.0
-                },
-                "RotationFlag": {
-                    "is_rotating": false,
-                    "current_rotation": 0.0,
-                    "target_rotation": 0.0
-                },
-                "TextureComponent": {
-                    "texture_key": "SB_StagePlatform_08.png",
                     "half_size": {
                         "x": 50.0,
                         "y": 50.0
@@ -24376,110 +25101,6 @@
             ]
         },
         {
-            "name": "birdEnemy",
-            "layer": 3,
-            "layer_collision_name": "Enemy",
-            "render_layer": 50,
-            "custom_render_order": 0,
-            "layer_render_name": "",
-            "active": true,
-            "uuid": 9771827027699419582,
-            "components": {
-                "Transform": {
-                    "Position": {
-                        "x": 300.0,
-                        "y": -1050.0
-                    },
-                    "Rotation": {
-                        "angle": 0.0,
-                        "texture_angle": 0.0,
-                        "collider_angle": 0.0,
-                        "texture_matrix": [
-                            25.0,
-                            0.0,
-                            300.0,
-                            0.0,
-                            25.0,
-                            -1050.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ],
-                        "collider_matrix": [
-                            1.0,
-                            0.0,
-                            300.0,
-                            0.0,
-                            1.0,
-                            -1050.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ]
-                    },
-                    "Scale": {
-                        "x": 1.0,
-                        "y": 1.0
-                    }
-                },
-                "Velocity": {
-                    "x": 0.0,
-                    "y": 0.0
-                },
-                "RigidBody": {
-                    "mass": 1.0,
-                    "inv_mass": 1.0,
-                    "is_affected_by_gravity": false,
-                    "force": {
-                        "x": 0.0,
-                        "y": 0.0
-                    }
-                },
-                "AABBCollider": {
-                    "half_width": 25.0,
-                    "half_height": 25.0,
-                    "offset_x": 0.0,
-                    "offset_y": 0.0
-                },
-                "RotationFlag": {
-                    "is_rotating": false,
-                    "current_rotation": 0.0,
-                    "target_rotation": 0.0
-                },
-                "TextureComponent": {
-                    "texture_key": "SB_BirdEnemy_SleepIdle_Spritesheet.png",
-                    "half_size": {
-                        "x": 25.0,
-                        "y": 25.0
-                    },
-                    "flip_x": false
-                },
-                "AnimationComponent": {
-                    "profile_name": "BirdEnemy",
-                    "current_state": 0,
-                    "current_frame": 3,
-                    "frame_duration": 0.10000000149011612,
-                    "start_frame": 0,
-                    "frame_count": 6,
-                    "elapsed_time": 0.0902085229754448,
-                    "is_playing": true,
-                    "is_looping": true
-                },
-                "FSMComponent": {
-                    "DefinitionPath": "Data/FSM/birdEnemy.json",
-                    "CurrentState": "Idle",
-                    "InitialState": "Idle"
-                },
-                "SceneOwned": {
-                    "scene_id": 10,
-                    "sceneName": "Level 2"
-                }
-            },
-            "tags": [
-                "EnemyTag"
-            ]
-        },
-        {
             "name": "StagePlatform_05",
             "layer": 2,
             "layer_collision_name": "",
@@ -24575,94 +25196,6 @@
             "custom_render_order": 0,
             "layer_render_name": "",
             "active": true,
-            "uuid": 5512799343525500711,
-            "components": {
-                "Transform": {
-                    "Position": {
-                        "x": 500.0,
-                        "y": 200.0
-                    },
-                    "Rotation": {
-                        "angle": 0.0,
-                        "texture_angle": 0.0,
-                        "collider_angle": 0.0,
-                        "texture_matrix": [
-                            50.0,
-                            0.0,
-                            500.0,
-                            0.0,
-                            50.0,
-                            200.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ],
-                        "collider_matrix": [
-                            1.0,
-                            0.0,
-                            500.0,
-                            0.0,
-                            1.0,
-                            200.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ]
-                    },
-                    "Scale": {
-                        "x": 1.0,
-                        "y": 1.0
-                    }
-                },
-                "Velocity": {
-                    "x": 0.0,
-                    "y": 0.0
-                },
-                "RigidBody": {
-                    "mass": 0.0,
-                    "inv_mass": 0.0,
-                    "is_affected_by_gravity": true,
-                    "force": {
-                        "x": 0.0,
-                        "y": 0.0
-                    }
-                },
-                "AABBCollider": {
-                    "half_width": 50.0,
-                    "half_height": 50.0,
-                    "offset_x": 0.0,
-                    "offset_y": 0.0
-                },
-                "RotationFlag": {
-                    "is_rotating": false,
-                    "current_rotation": 0.0,
-                    "target_rotation": 0.0
-                },
-                "TextureComponent": {
-                    "texture_key": "SB_StagePlatform_05.png",
-                    "half_size": {
-                        "x": 50.0,
-                        "y": 50.0
-                    },
-                    "flip_x": false
-                },
-                "SceneOwned": {
-                    "scene_id": 10,
-                    "sceneName": "Level 2"
-                }
-            },
-            "tags": [
-                "PlatformTag"
-            ]
-        },
-        {
-            "name": "StagePlatform_05",
-            "layer": 2,
-            "layer_collision_name": "",
-            "render_layer": 50,
-            "custom_render_order": 0,
-            "layer_render_name": "",
-            "active": true,
             "uuid": 8204095238188158240,
             "components": {
                 "Transform": {
@@ -24692,94 +25225,6 @@
                             0.0,
                             1.0,
                             -1050.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ]
-                    },
-                    "Scale": {
-                        "x": 1.0,
-                        "y": 1.0
-                    }
-                },
-                "Velocity": {
-                    "x": 0.0,
-                    "y": 0.0
-                },
-                "RigidBody": {
-                    "mass": 0.0,
-                    "inv_mass": 0.0,
-                    "is_affected_by_gravity": true,
-                    "force": {
-                        "x": 0.0,
-                        "y": 0.0
-                    }
-                },
-                "AABBCollider": {
-                    "half_width": 50.0,
-                    "half_height": 50.0,
-                    "offset_x": 0.0,
-                    "offset_y": 0.0
-                },
-                "RotationFlag": {
-                    "is_rotating": false,
-                    "current_rotation": 0.0,
-                    "target_rotation": 0.0
-                },
-                "TextureComponent": {
-                    "texture_key": "SB_StagePlatform_05.png",
-                    "half_size": {
-                        "x": 50.0,
-                        "y": 50.0
-                    },
-                    "flip_x": false
-                },
-                "SceneOwned": {
-                    "scene_id": 10,
-                    "sceneName": "Level 2"
-                }
-            },
-            "tags": [
-                "PlatformTag"
-            ]
-        },
-        {
-            "name": "StagePlatform_05",
-            "layer": 2,
-            "layer_collision_name": "",
-            "render_layer": 50,
-            "custom_render_order": 0,
-            "layer_render_name": "",
-            "active": true,
-            "uuid": 7326547192137592978,
-            "components": {
-                "Transform": {
-                    "Position": {
-                        "x": -1150.0,
-                        "y": 450.0
-                    },
-                    "Rotation": {
-                        "angle": 0.0,
-                        "texture_angle": 0.0,
-                        "collider_angle": 0.0,
-                        "texture_matrix": [
-                            50.0,
-                            0.0,
-                            -1150.0,
-                            0.0,
-                            50.0,
-                            450.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ],
-                        "collider_matrix": [
-                            1.0,
-                            0.0,
-                            -1150.0,
-                            0.0,
-                            1.0,
-                            450.0,
                             0.0,
                             0.0,
                             1.0
@@ -24927,94 +25372,6 @@
             "custom_render_order": 0,
             "layer_render_name": "",
             "active": true,
-            "uuid": 8489876562167232363,
-            "components": {
-                "Transform": {
-                    "Position": {
-                        "x": 150.0,
-                        "y": -1050.0
-                    },
-                    "Rotation": {
-                        "angle": 0.0,
-                        "texture_angle": 0.0,
-                        "collider_angle": 0.0,
-                        "texture_matrix": [
-                            50.0,
-                            0.0,
-                            150.0,
-                            0.0,
-                            50.0,
-                            -1050.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ],
-                        "collider_matrix": [
-                            1.0,
-                            0.0,
-                            150.0,
-                            0.0,
-                            1.0,
-                            -1050.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ]
-                    },
-                    "Scale": {
-                        "x": 1.0,
-                        "y": 1.0
-                    }
-                },
-                "Velocity": {
-                    "x": 0.0,
-                    "y": 0.0
-                },
-                "RigidBody": {
-                    "mass": 0.0,
-                    "inv_mass": 0.0,
-                    "is_affected_by_gravity": true,
-                    "force": {
-                        "x": 0.0,
-                        "y": 0.0
-                    }
-                },
-                "AABBCollider": {
-                    "half_width": 50.0,
-                    "half_height": 50.0,
-                    "offset_x": 0.0,
-                    "offset_y": 0.0
-                },
-                "RotationFlag": {
-                    "is_rotating": false,
-                    "current_rotation": 0.0,
-                    "target_rotation": 0.0
-                },
-                "TextureComponent": {
-                    "texture_key": "SB_StagePlatform_05.png",
-                    "half_size": {
-                        "x": 50.0,
-                        "y": 50.0
-                    },
-                    "flip_x": false
-                },
-                "SceneOwned": {
-                    "scene_id": 10,
-                    "sceneName": "Level 2"
-                }
-            },
-            "tags": [
-                "PlatformTag"
-            ]
-        },
-        {
-            "name": "StagePlatform_05",
-            "layer": 2,
-            "layer_collision_name": "",
-            "render_layer": 50,
-            "custom_render_order": 0,
-            "layer_render_name": "",
-            "active": true,
             "uuid": 2752488107597413750,
             "components": {
                 "Transform": {
@@ -25080,94 +25437,6 @@
                 },
                 "TextureComponent": {
                     "texture_key": "SB_StagePlatform_05.png",
-                    "half_size": {
-                        "x": 50.0,
-                        "y": 50.0
-                    },
-                    "flip_x": false
-                },
-                "SceneOwned": {
-                    "scene_id": 10,
-                    "sceneName": "Level 2"
-                }
-            },
-            "tags": [
-                "PlatformTag"
-            ]
-        },
-        {
-            "name": "StaticPlatform_10",
-            "layer": 2,
-            "layer_collision_name": "",
-            "render_layer": 50,
-            "custom_render_order": 0,
-            "layer_render_name": "",
-            "active": true,
-            "uuid": 10963905923732046558,
-            "components": {
-                "Transform": {
-                    "Position": {
-                        "x": 850.0,
-                        "y": -1000.0
-                    },
-                    "Rotation": {
-                        "angle": 0.0,
-                        "texture_angle": 0.0,
-                        "collider_angle": 0.0,
-                        "texture_matrix": [
-                            50.0,
-                            0.0,
-                            850.0,
-                            0.0,
-                            50.0,
-                            -1000.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ],
-                        "collider_matrix": [
-                            1.0,
-                            0.0,
-                            850.0,
-                            0.0,
-                            1.0,
-                            -1000.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ]
-                    },
-                    "Scale": {
-                        "x": 1.0,
-                        "y": 1.0
-                    }
-                },
-                "Velocity": {
-                    "x": 0.0,
-                    "y": 0.0
-                },
-                "RigidBody": {
-                    "mass": 0.0,
-                    "inv_mass": 0.0,
-                    "is_affected_by_gravity": true,
-                    "force": {
-                        "x": 0.0,
-                        "y": 0.0
-                    }
-                },
-                "AABBCollider": {
-                    "half_width": 35.0,
-                    "half_height": 20.0,
-                    "offset_x": -15.0,
-                    "offset_y": 0.0
-                },
-                "RotationFlag": {
-                    "is_rotating": false,
-                    "current_rotation": 0.0,
-                    "target_rotation": 0.0
-                },
-                "TextureComponent": {
-                    "texture_key": "SB_StaticPlatform_10.png",
                     "half_size": {
                         "x": 50.0,
                         "y": 50.0
@@ -25272,94 +25541,6 @@
             ]
         },
         {
-            "name": "StagePlatform_03",
-            "layer": 2,
-            "layer_collision_name": "",
-            "render_layer": 50,
-            "custom_render_order": 0,
-            "layer_render_name": "",
-            "active": true,
-            "uuid": 10136773550419543276,
-            "components": {
-                "Transform": {
-                    "Position": {
-                        "x": 50.0,
-                        "y": 750.0
-                    },
-                    "Rotation": {
-                        "angle": 0.0,
-                        "texture_angle": 0.0,
-                        "collider_angle": 0.0,
-                        "texture_matrix": [
-                            50.0,
-                            0.0,
-                            50.0,
-                            0.0,
-                            50.0,
-                            750.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ],
-                        "collider_matrix": [
-                            1.0,
-                            0.0,
-                            50.0,
-                            0.0,
-                            1.0,
-                            750.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ]
-                    },
-                    "Scale": {
-                        "x": 1.0,
-                        "y": 1.0
-                    }
-                },
-                "Velocity": {
-                    "x": 0.0,
-                    "y": 0.0
-                },
-                "RigidBody": {
-                    "mass": 0.0,
-                    "inv_mass": 0.0,
-                    "is_affected_by_gravity": true,
-                    "force": {
-                        "x": 0.0,
-                        "y": 0.0
-                    }
-                },
-                "AABBCollider": {
-                    "half_width": 35.0,
-                    "half_height": 43.0,
-                    "offset_x": -15.0,
-                    "offset_y": -7.0
-                },
-                "RotationFlag": {
-                    "is_rotating": false,
-                    "current_rotation": 0.0,
-                    "target_rotation": 0.0
-                },
-                "TextureComponent": {
-                    "texture_key": "SB_StagePlatform_03.png",
-                    "half_size": {
-                        "x": 50.0,
-                        "y": 50.0
-                    },
-                    "flip_x": false
-                },
-                "SceneOwned": {
-                    "scene_id": 10,
-                    "sceneName": "Level 2"
-                }
-            },
-            "tags": [
-                "PlatformTag"
-            ]
-        },
-        {
             "name": "StagePlatform_05",
             "layer": 2,
             "layer_collision_name": "",
@@ -25396,94 +25577,6 @@
                             0.0,
                             1.0,
                             -1050.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ]
-                    },
-                    "Scale": {
-                        "x": 1.0,
-                        "y": 1.0
-                    }
-                },
-                "Velocity": {
-                    "x": 0.0,
-                    "y": 0.0
-                },
-                "RigidBody": {
-                    "mass": 0.0,
-                    "inv_mass": 0.0,
-                    "is_affected_by_gravity": true,
-                    "force": {
-                        "x": 0.0,
-                        "y": 0.0
-                    }
-                },
-                "AABBCollider": {
-                    "half_width": 50.0,
-                    "half_height": 50.0,
-                    "offset_x": 0.0,
-                    "offset_y": 0.0
-                },
-                "RotationFlag": {
-                    "is_rotating": false,
-                    "current_rotation": 0.0,
-                    "target_rotation": 0.0
-                },
-                "TextureComponent": {
-                    "texture_key": "SB_StagePlatform_05.png",
-                    "half_size": {
-                        "x": 50.0,
-                        "y": 50.0
-                    },
-                    "flip_x": false
-                },
-                "SceneOwned": {
-                    "scene_id": 10,
-                    "sceneName": "Level 2"
-                }
-            },
-            "tags": [
-                "PlatformTag"
-            ]
-        },
-        {
-            "name": "StagePlatform_05",
-            "layer": 2,
-            "layer_collision_name": "",
-            "render_layer": 50,
-            "custom_render_order": 0,
-            "layer_render_name": "",
-            "active": true,
-            "uuid": 372147892213819282,
-            "components": {
-                "Transform": {
-                    "Position": {
-                        "x": 600.0,
-                        "y": 0.0
-                    },
-                    "Rotation": {
-                        "angle": 0.0,
-                        "texture_angle": 0.0,
-                        "collider_angle": 0.0,
-                        "texture_matrix": [
-                            50.0,
-                            0.0,
-                            600.0,
-                            0.0,
-                            50.0,
-                            0.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ],
-                        "collider_matrix": [
-                            1.0,
-                            0.0,
-                            600.0,
-                            0.0,
-                            1.0,
-                            0.0,
                             0.0,
                             0.0,
                             1.0
@@ -25624,110 +25717,6 @@
             ]
         },
         {
-            "name": "birdEnemy",
-            "layer": 3,
-            "layer_collision_name": "Enemy",
-            "render_layer": 50,
-            "custom_render_order": 0,
-            "layer_render_name": "",
-            "active": true,
-            "uuid": 16563100620171615242,
-            "components": {
-                "Transform": {
-                    "Position": {
-                        "x": 350.0,
-                        "y": -450.0
-                    },
-                    "Rotation": {
-                        "angle": 0.0,
-                        "texture_angle": 0.0,
-                        "collider_angle": 0.0,
-                        "texture_matrix": [
-                            25.0,
-                            0.0,
-                            350.0,
-                            0.0,
-                            25.0,
-                            -450.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ],
-                        "collider_matrix": [
-                            1.0,
-                            0.0,
-                            350.0,
-                            0.0,
-                            1.0,
-                            -450.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ]
-                    },
-                    "Scale": {
-                        "x": 1.0,
-                        "y": 1.0
-                    }
-                },
-                "Velocity": {
-                    "x": 0.0,
-                    "y": 0.0
-                },
-                "RigidBody": {
-                    "mass": 1.0,
-                    "inv_mass": 1.0,
-                    "is_affected_by_gravity": false,
-                    "force": {
-                        "x": 0.0,
-                        "y": 0.0
-                    }
-                },
-                "AABBCollider": {
-                    "half_width": 25.0,
-                    "half_height": 25.0,
-                    "offset_x": 0.0,
-                    "offset_y": 0.0
-                },
-                "RotationFlag": {
-                    "is_rotating": false,
-                    "current_rotation": 0.0,
-                    "target_rotation": 0.0
-                },
-                "TextureComponent": {
-                    "texture_key": "SB_BirdEnemy_SleepIdle_Spritesheet.png",
-                    "half_size": {
-                        "x": 25.0,
-                        "y": 25.0
-                    },
-                    "flip_x": false
-                },
-                "AnimationComponent": {
-                    "profile_name": "BirdEnemy",
-                    "current_state": 0,
-                    "current_frame": 3,
-                    "frame_duration": 0.10000000149011612,
-                    "start_frame": 0,
-                    "frame_count": 6,
-                    "elapsed_time": 0.0902085229754448,
-                    "is_playing": true,
-                    "is_looping": true
-                },
-                "FSMComponent": {
-                    "DefinitionPath": "Data/FSM/birdEnemy.json",
-                    "CurrentState": "Idle",
-                    "InitialState": "Idle"
-                },
-                "SceneOwned": {
-                    "scene_id": 10,
-                    "sceneName": "Level 2"
-                }
-            },
-            "tags": [
-                "EnemyTag"
-            ]
-        },
-        {
             "name": "StagePlatform_05",
             "layer": 2,
             "layer_collision_name": "",
@@ -25816,50 +25805,50 @@
             ]
         },
         {
-            "name": "StagePlatform_04",
-            "layer": 2,
-            "layer_collision_name": "",
+            "name": "VerticalFallingTrap_NEW_03",
+            "layer": 6,
+            "layer_collision_name": "Invulnrabilty",
             "render_layer": 50,
             "custom_render_order": 0,
             "layer_render_name": "",
             "active": true,
-            "uuid": 15605203576645678039,
+            "uuid": 5173376406798432635,
             "components": {
                 "Transform": {
                     "Position": {
-                        "x": 450.0,
-                        "y": 450.0
+                        "x": 60.0,
+                        "y": 240.0
                     },
                     "Rotation": {
                         "angle": 0.0,
-                        "texture_angle": 0.0,
+                        "texture_angle": -1.5707963705062866,
                         "collider_angle": 0.0,
                         "texture_matrix": [
-                            50.0,
-                            0.0,
-                            450.0,
-                            0.0,
-                            50.0,
-                            450.0,
+                            -0.000013113416571286507,
+                            120.0,
+                            60.0,
+                            -300.0,
+                            -0.000005245366537565133,
+                            240.0,
                             0.0,
                             0.0,
                             1.0
                         ],
                         "collider_matrix": [
-                            1.0,
+                            3.0,
                             0.0,
-                            450.0,
+                            60.0,
                             0.0,
-                            1.0,
-                            450.0,
+                            3.0,
+                            240.0,
                             0.0,
                             0.0,
                             1.0
                         ]
                     },
                     "Scale": {
-                        "x": 1.0,
-                        "y": 1.0
+                        "x": 3.0,
+                        "y": 3.0
                     }
                 },
                 "Velocity": {
@@ -25876,9 +25865,9 @@
                     }
                 },
                 "AABBCollider": {
-                    "half_width": 35.0,
-                    "half_height": 50.0,
-                    "offset_x": 15.0,
+                    "half_width": 60.0,
+                    "half_height": 260.0,
+                    "offset_x": -5.0,
                     "offset_y": 0.0
                 },
                 "RotationFlag": {
@@ -25886,11 +25875,22 @@
                     "current_rotation": 0.0,
                     "target_rotation": 0.0
                 },
-                "TextureComponent": {
-                    "texture_key": "SB_StagePlatform_04.png",
-                    "half_size": {
+                "TrapPlatform": {
+                    "is_triggered": false,
+                    "has_fallen": false,
+                    "trigger_delay": 0.0,
+                    "current_delay": 0.0,
+                    "fall_speed": 502.0,
+                    "original_position": {
                         "x": 50.0,
-                        "y": 50.0
+                        "y": 200.0
+                    }
+                },
+                "TextureComponent": {
+                    "texture_key": "SB_TrapPlatform_Horizontal.png",
+                    "half_size": {
+                        "x": 100.0,
+                        "y": 40.0
                     },
                     "flip_x": false
                 },
