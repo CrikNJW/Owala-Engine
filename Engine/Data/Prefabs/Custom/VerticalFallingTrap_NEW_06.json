@@ -1,14 +1,14 @@
 {
     "name": "VerticalFallingTrap_NEW_06",
-    "layer": 2,
-    "layer_collision_name": "Platform",
+    "layer": 6,
+    "layer_collision_name": "Invulnrabilty",
     "render_layer": 50,
     "custom_render_order": 0,
     "components": {
         "Transform": {
             "Position": {
-                "x": 850.0,
-                "y": -650.0
+                "x": -650.0,
+                "y": 350.0
             },
             "Rotation": {
                 "angle": 0.0,
@@ -17,10 +17,10 @@
                 "texture_matrix": [
                     -0.000013113416571286509,
                     120.0,
-                    850.0,
+                    -650.0,
                     -300.0,
                     -0.000005245366537565133,
-                    -650.0,
+                    350.0,
                     0.0,
                     0.0,
                     1.0
@@ -28,10 +28,10 @@
                 "collider_matrix": [
                     3.0,
                     0.0,
-                    850.0,
+                    -650.0,
                     0.0,
                     3.0,
-                    -650.0,
+                    350.0,
                     0.0,
                     0.0,
                     1.0
@@ -39,7 +39,7 @@
             },
             "Scale": {
                 "x": 2.200000047683716,
-                "y": 2.5999999046325684
+                "y": 3.0
             }
         },
         "Velocity": {
@@ -56,10 +56,10 @@
             }
         },
         "AABBCollider": {
-            "half_width": 48.0,
+            "half_width": 60.0,
             "half_height": 190.0,
             "offset_x": -5.0,
-            "offset_y": -5.0
+            "offset_y": 0.0
         },
         "RotationFlag": {
             "is_rotating": false,
@@ -73,8 +73,8 @@
             "current_delay": 0.0,
             "fall_speed": 502.0,
             "original_position": {
-                "x": 850.0,
-                "y": -650.0
+                "x": -650.0,
+                "y": 350.0
             }
         },
         "TextureComponent": {
@@ -86,8 +86,8 @@
             "flip_x": false
         },
         "SceneOwned": {
-            "scene_id": 8,
-            "sceneName": "Tutorial 2"
+            "scene_id": 16,
+            "sceneName": "Level 4"
         }
     },
     "tags": [
