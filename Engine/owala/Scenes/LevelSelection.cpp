@@ -280,7 +280,8 @@ namespace LevelSelection {
 		CacheUI(entityMgr);
 		save = GetSaveManager(entityMgr);
 
-		bool shouldSkipIntro = (save && save->GetSkipIntro()) ? true : false;
+		//bool shouldSkipIntro = (save && save->GetSkipIntro()) ? true : false;
+		bool shouldSkipIntro = false; // FORCE cutscene to play
 		std::string firstLevel = shouldSkipIntro ? "Tutorial 1" : "Cutscene Intro";
 
 		levelData = {

@@ -30,10 +30,13 @@ namespace Framework {
 		virtual void OnUpdate() {}
 	public:
 		virtual ~ScriptableEntity() {}
+		void InvokeOnCreate() { OnCreate(); }
+		void InvokeOnUpdate() { OnUpdate(); }
+		void InvokeOnDestroy() { OnDestroy(); }
 
 		void SetEntity(Entity entity) { entity_ = entity; }
 		Entity GetEntity() const { return entity_; }
 
-		void InvokeOnDestroy() { OnDestroy(); }
+		//void InvokeOnDestroy() { OnDestroy(); }
 	};
 }

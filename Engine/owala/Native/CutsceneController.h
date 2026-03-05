@@ -13,38 +13,44 @@
  * written consent of DigiPen Institute of Technology is prohibited.
  *********************************************************************/
 #pragma once
-
 #include "ScriptableEntity.h"
+#include "VideoPlayerScript.h" // Add this
 
 using namespace Framework;
 
 class CutsceneController : public ScriptableEntity {
 protected:
-	void OnCreate() override;
-	void OnUpdate() override;
-	void OnDestroy() override;
+    void OnCreate() override;
+    void OnUpdate() override;
+    void OnDestroy() override;
+
 private:
-	/* Data Types */
-	struct Slide {
-		std::string textureKey;
-		float duration;
-	};
+    enum class SlideType { Image, Video };
 
-	/* Variables */
-	std::vector<Slide> slides;
-	int currentSlide = 0;
-	float timer = 0.f;
-	bool isEnding = false; // Prevent spam
+    struct Slide {
+        std::string source;     // texture key for images, file path for videos
+        float duration;         // for images only (ignored for video)
+        SlideType type;
+    };
 
-	/* Variables for Skip handling. */
-	float skipHoldTime = 0.f;
-	bool wasSkipDown = false;
-	bool skipTriggered = false;
+    std::vector<Slide> slides;
+    int currentSlide = 0;
+    float timer = 0.f;
+    bool isEnding = false;
 
-	/* Methods */
-	void ApplySlide();
-	bool NextSlide();
-	void FinishCutscene();
-	void FitImageToScreen();
-	bool IsSkipHeldDown() const;
+    // Skip functionality
+    float skipHoldTime = 0.f;
+    bool wasSkipDown = false;
+    bool skipTriggered = false;
+
+    // Video player (only used when current slide is video)
+    VideoPlayerScript* videoPlayer = nullptr;
+
+    void ShowImageEntity(bool show);
+    void ApplySlide();
+    bool NextSlide();
+    void FinishCutscene();
+    void FitImageToScreen();
+    bool IsSkipHeldDown() const;
+    void CreateVideoPlayer(const std::string& videoPath);
 };
