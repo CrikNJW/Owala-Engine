@@ -7373,7 +7373,33 @@ namespace Editor {
 
 		ImGui::Checkbox("Flip Horizontal", &tex.flipHorizontal);
 		ImGui::SliderFloat("Opacity", &tex.alpha, 0.0f, 1.0f, "%.2f");
-		bool activeNow = ImGui::IsItemActive();
+
+		// UV Override Section
+		ImGui::Separator();
+		ImGui::SeparatorText("UV Override");
+		if (ImGui::IsItemHovered()) {
+			ImGui::SetTooltip("When enabled, the renderer uses these UV coordinates directly\ninstead of the AnimationSystem (used for slider fills, static crops, etc.)");
+		}
+
+		bool activeNow = false;
+
+		if (ImGui::Checkbox("Override UV", &tex.overrideUV)) activeNow = true;
+
+		if (tex.overrideUV) {
+			ImGui::BeginDisabled(!tex.overrideUV);
+			if (ImGui::InputFloat2("Min UV (U0, V0)", &tex.minUV.x, "%.3f")) activeNow = true;
+			if (ImGui::InputFloat2("Max UV (U1, V1)", &tex.maxUV.x, "%.3f")) activeNow = true;
+			if (ImGui::Button("Reset UV")) {
+				std::string beforeJSON = EntitySerializer::SerializeComponentToString(entity, compType, *ecs);
+				tex.minUV = { 0.0f, 0.0f };
+				tex.maxUV = { 1.0f, 1.0f };
+				std::string afterJSON = EntitySerializer::SerializeComponentToString(entity, compType, *ecs);
+				if (beforeJSON != afterJSON) {
+					historyManager_.RecordModifyComponent(entity, "Reset UV Override", beforeJSON, afterJSON, compType);
+				}
+			}
+			ImGui::EndDisabled();
+		}
 
 		if (activeNow && !editSession.wasItemActive) {
 			editSession.Begin(entity, compType);
@@ -7498,15 +7524,18 @@ namespace Editor {
 		}
 
 		ImGui::Separator();
-		ImGui::SeparatorText("Button Visual States");
+		ImGui::SeparatorText("Button States");
 
-		bool visualStatesChanged = false;
-		std::string visualStatesBeforeJSON = EntitySerializer::SerializeComponentToString(entity, compType, *ecs);
+		bool stateChanged = false;
+		std::string stateBeforeJSON = EntitySerializer::SerializeComponentToString(entity, compType, *ecs);
 
-		auto HandleStateUI = [&](const char* label, std::string& texKey, bool& isAnim) {
+		// Added optional parameters for sound key and volume
+		auto HandleStateUI = [&](const char* label, std::string& texKey, bool& isAnim, std::string* soundKey = nullptr, float* soundVol = nullptr) {
 			if (ImGui::TreeNodeEx(label, ImGuiTreeNodeFlags_DefaultOpen)) {
+
+				// 1. Texture Properties
 				ImGui::Text("Texture Key:");
-				if (ImGui::InputText("##Texture", &texKey)) visualStatesChanged = true;
+				if (ImGui::InputText("##Texture", &texKey)) stateChanged = true;
 
 				if (ImGui::BeginDragDropTarget()) {
 					const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_PATH");
@@ -7514,26 +7543,54 @@ namespace Editor {
 						std::string dropped_path(static_cast<const char*>(payload->Data), payload->DataSize - 1);
 						fs::path dropped_file(dropped_path);
 						texKey = dropped_file.filename().string();
-						visualStatesChanged = true;
+						stateChanged = true;
 						resourceManager_->unload<Texture>(texKey);
 						resourceManager_->loadTexture(texKey, dropped_file.string());
 					}
 					ImGui::EndDragDropTarget();
 				}
-				if (ImGui::Checkbox("Is Animated", &isAnim)) visualStatesChanged = true;
+				if (ImGui::Checkbox("Is Animated", &isAnim)) stateChanged = true;
+
+				// 2. Sound Properties (Only renders if sound variables are passed in)
+				if (soundKey && soundVol) {
+					ImGui::Spacing();
+					ImGui::Text("Sound Key:");
+					if (ImGui::InputText("##Sound", soundKey)) stateChanged = true;
+
+					if (ImGui::BeginDragDropTarget()) {
+						const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_PATH");
+						if (payload) {
+							std::string dropped_path(static_cast<const char*>(payload->Data), payload->DataSize - 1);
+							fs::path dropped_file(dropped_path);
+							std::string ext = dropped_file.extension().string();
+							std::transform(ext.begin(), ext.end(), ext.begin(), [](unsigned char c) { return static_cast<char>(::tolower(c)); });
+
+							if (ext == ".ogg" || ext == ".wav" || ext == ".mp3") {
+								*soundKey = dropped_file.filename().string();
+								stateChanged = true;
+							}
+						}
+						ImGui::EndDragDropTarget();
+					}
+
+					ImGui::Text("Volume:");
+					if (ImGui::SliderFloat("##Volume", soundVol, 0.0f, 1.0f, "%.2f")) stateChanged = true;
+				}
+
 				ImGui::TreePop();
 			}
 			ImGui::Spacing();
 			};
 
+		// Pass the specific properties for each state. Default gets no sound pointers.
 		HandleStateUI("Default State", buttonComp.defaultTextureKey, buttonComp.defaultIsAnimated);
-		HandleStateUI("Hover State", buttonComp.hoverTextureKey, buttonComp.hoverIsAnimated);
-		HandleStateUI("Pressed State", buttonComp.pressedTextureKey, buttonComp.pressedIsAnimated);
+		HandleStateUI("Hover State", buttonComp.hoverTextureKey, buttonComp.hoverIsAnimated, &buttonComp.hoverSoundKey, &buttonComp.hoverSoundVolume);
+		HandleStateUI("Pressed State", buttonComp.pressedTextureKey, buttonComp.pressedIsAnimated, &buttonComp.clickSoundKey, &buttonComp.clickSoundVolume);
 
-		if (visualStatesChanged) {
+		if (stateChanged) {
 			std::string afterJSON = EntitySerializer::SerializeComponentToString(entity, compType, *ecs);
-			if (visualStatesBeforeJSON != afterJSON) {
-				historyManager_.RecordModifyComponent(entity, "Modified Button Visual States", visualStatesBeforeJSON, afterJSON, compType);
+			if (stateBeforeJSON != afterJSON) {
+				historyManager_.RecordModifyComponent(entity, "Modified Button States", stateBeforeJSON, afterJSON, compType);
 			}
 		}
 

@@ -10,6 +10,8 @@
 #include "LevelSelection.h"
 
 #include "Entity.h"
+#include "Vector2D.h"
+#include "OwalaTime.h"
 #include "GameManager.h"
 #include "EntityManager.h"
 #include "SceneManager.h"
@@ -26,7 +28,6 @@ std::string LevelSelection::pendingScene = "";
 #pragma region LOCAL LEVEL FUNCTIONS
 namespace {
 
-
 	struct LevelEntry {
 		int index = 1;
 		std::string displayName;
@@ -40,6 +41,8 @@ namespace {
 		// Buttons
 		Entity arrowLeft = 0, arrowRight = 0;
 		Entity backButton = 0, selectButton = 0;
+		Entity leaderboardButton = 0;
+		Entity leaderboardPanel = 0;
 
 		// Tickets
 		Entity ticketPrev = 0, ticketCurrent = 0, ticketNext = 0;
@@ -47,16 +50,31 @@ namespace {
 		// Dynamic Texts
 		Entity levelText = 0;
 
+		// Lighting
+		Entity shadowOverlay = 0;
+		std::vector<Entity> spotlights; // Optional Entity, does not need to be validated
+
 		bool ValidateRef() const {
 			return arrowLeft != 0 && arrowRight != 0 && backButton != 0 && selectButton != 0
 				&& ticketPrev != 0 && ticketCurrent != 0 && ticketNext != 0
-				&& levelText != 0;
+				&& levelText != 0 && shadowOverlay != 0;
 		}
 	};
 
 	struct EntityState {
 		Entity entity;
 		bool wasActive;
+	};
+
+	// Animation State Machine
+	struct CarouselAnim {
+		bool isAnimating = false;
+		int direction = 0;
+		float timer = 0.f;
+		float duration = 0.3f;
+
+		Vector2D leftPos, centerPos, rightPos;
+		Vector2D sideScale, centerScale;
 	};
 
 	// Caching
@@ -69,8 +87,10 @@ namespace {
 	std::vector<LevelEntry> levelData;
 	int currentIndex = 0;
 	SaveManager* save = nullptr;
-
-
+	bool leaderboardOpen = false;
+	
+	// Animation Tracking
+	CarouselAnim carousel;
 
 	bool ConsumeClick(Framework::EntityManager& entityMgr, Framework::InputSystem& inputSystem, Entity entity) {
 		if (!entityMgr.ValidateEntity(entity)) return false;
@@ -99,7 +119,11 @@ namespace {
 			else if (name == "Ticket_Next") ui.ticketNext = entity;
 			else if (name == "LevelText") ui.levelText = entity;
 			else if (name == "LeaderboardText") leaderboardTextEntity = entity;
-
+			else if (name == "LeaderboardButton") ui.leaderboardButton = entity;
+			else if (name == "LeaderboardPanel") ui.leaderboardPanel = entity;
+			else if (name == "ShadowOverlay") ui.shadowOverlay = entity;
+			else if (name == "Spotlight") ui.spotlights.push_back(entity);
+			else if (name == "SpotlightShadow") ui.spotlights.push_back(entity);
 		}
 
 		if (!ui.ValidateRef()) {
@@ -107,15 +131,31 @@ namespace {
 			return;
 		}
 
+		// Cache Base Positions
+		carousel.leftPos = entityMgr.GetComponent<Transform>(ui.ticketPrev).position;
+		carousel.centerPos = entityMgr.GetComponent<Transform>(ui.ticketCurrent).position;
+		carousel.rightPos = entityMgr.GetComponent<Transform>(ui.ticketNext).position;
+
+		// Cache Base Scales
+		carousel.sideScale = entityMgr.GetComponent<TextureComponent>(ui.ticketPrev).HalfSize;
+		carousel.centerScale = entityMgr.GetComponent<TextureComponent>(ui.ticketCurrent).HalfSize;
+
 		cached = true;
 	}
 
-	void RefreshLeaderboard() {  // no parameter needed
+	void SetLeaderboardVisible(Framework::EntityManager& entityMgr, bool visible) {
+		if (entityMgr.ValidateEntity(leaderboardTextEntity))
+			entityMgr.GetProperties(leaderboardTextEntity).isActive = visible;
+		if (entityMgr.ValidateEntity(ui.leaderboardPanel))
+			entityMgr.GetProperties(ui.leaderboardPanel).isActive = visible;
+	}
+
+	void RefreshLeaderboard() {
 		if (levelData.empty()) return;
 		std::string levelName = levelData[currentIndex].sceneName;
 
 		FirebaseManager::Get().FetchLeaderboard(levelName,
-			[](std::vector<Framework::LeaderboardEntry> entries) {  // no capture
+			[](std::vector<Framework::LeaderboardEntry> entries) {
 				EntityManager mgr(GameManager::GetInstance().GetECS());
 				if (!mgr.ValidateEntity(leaderboardTextEntity)) return;
 				if (!mgr.HasComponent(leaderboardTextEntity, Framework::TextComponentType)) return;
@@ -123,26 +163,27 @@ namespace {
 				Framework::TextComponent& text = mgr.GetComponent<Framework::TextComponent>(leaderboardTextEntity);
 
 				if (entries.empty()) {
-					text.textToDraw = "No records yet!";
+					text.textToDraw = "BEST TIMES\n===========\nno records yet";
 					text.isDirty = true;
 					return;
 				}
 
-				std::string display = "-- Best Times --\n";
+				std::string display = "BEST TIMES\n===========\n# - NAME - TIME\n-----------\n";
+
 				int rank = 1;
 				for (auto& e : entries) {
-					int mins = (int)(e.time / 60);
-					float secs = e.time - mins * 60;
 					char buf[128];
-					std::snprintf(buf, sizeof(buf), "%d. %s  %02d:%05.2f\n",
-						rank++, e.name.c_str(), mins, secs);
+					std::string name = e.name.size() > 10 ? e.name.substr(0, 10) : e.name;
+					std::snprintf(buf, sizeof(buf), "%d - %s - %.2fs\n", rank++, name.c_str(), e.time);
 					display += buf;
+					if (rank > 10) break;
 				}
+
+				display += "===========";
 				text.textToDraw = display;
 				text.isDirty = true;
 			});
 	}
-
 	SaveManager* GetSaveManager(Framework::EntityManager& entityMgr) {
 		using namespace Framework;
 
@@ -177,30 +218,40 @@ namespace {
 		text.isDirty = true;
 	}
 
+	std::string GetTicketTextureForIndex(int index) {
+		if (levelData.empty()) return "";
+
+		if (save && save->IsUnlocked(levelData[index].index)) {
+			return levelData[index].bannerTextureKey;
+		}
+
+		if (!GameManager::GetInstance().IsGamePlaying() || index == 0) {
+			return levelData[0].bannerTextureKey;
+		}
+
+		return "SB_Locked.png";
+	}
+
 	void RefreshUI(Framework::EntityManager& entityMgr) {
 		if (levelData.empty()) return;
 
+		int n = static_cast<int>(levelData.size());
+		int prevIndex = (currentIndex - 1 + n) % n;
+		int nextIndex = (currentIndex + 1) % n;
+
 		// Left Ticket
 		SetTicketTexture(entityMgr, ui.ticketPrev, "SB_LevelSelection_EmptyTicket.png");
-
 		// Middle Ticket
+		SetTicketTexture(entityMgr, ui.ticketCurrent, GetTicketTextureForIndex(currentIndex));
+		// Right Ticket
+		SetTicketTexture(entityMgr, ui.ticketNext, "SB_LevelSelection_EmptyTicket.png");
+
 		if (save && save->IsUnlocked(levelData[currentIndex].index)) {
-			SetTicketTexture(entityMgr, ui.ticketCurrent, levelData[currentIndex].bannerTextureKey);
 			SetLevelText(entityMgr, levelData[currentIndex].displayName);
 		}
 		else {
-			if (!GameManager::GetInstance().IsGamePlaying() || currentIndex == 0) {
-				SetTicketTexture(entityMgr, ui.ticketCurrent, levelData[0].bannerTextureKey);
-				SetLevelText(entityMgr, levelData[0].displayName);
-			}
-			else {
-				SetTicketTexture(entityMgr, ui.ticketCurrent, "SB_Locked.png");
-				SetLevelText(entityMgr, "locked");
-			}
+			SetLevelText(entityMgr, (!GameManager::GetInstance().IsGamePlaying() || currentIndex == 0) ? levelData[0].displayName : "locked");
 		}
-
-		// Right Ticket
-		SetTicketTexture(entityMgr, ui.ticketNext, "SB_LevelSelection_EmptyTicket.png");
 	}
 
 	static void HideMenuEntities(Framework::EntityManager& entityMgr) {
@@ -236,6 +287,17 @@ namespace {
 
 			// Hide the entity
 			props.isActive = false;
+		}
+	}
+
+	void ToggleLighting(Framework::EntityManager& entityMgr, bool value) {
+		// If light is on, text is shown
+		entityMgr.SetActive(ui.levelText, value);
+		// If light is on, shadow is off
+		entityMgr.SetActive(ui.shadowOverlay, !value);
+		// If light is on, spotlight is on
+		for (Entity spotlight : ui.spotlights) {
+			entityMgr.SetActive(spotlight, value);
 		}
 	}
 
@@ -279,7 +341,6 @@ namespace LevelSelection {
 		EntityManager entityMgr(GameManager::GetInstance().GetECS());
 		CacheUI(entityMgr);
 		save = GetSaveManager(entityMgr);
-
 		bool shouldSkipIntro = (save && save->GetSkipIntro()) ? true : false;
 		std::string firstLevel = shouldSkipIntro ? "Tutorial 1" : "Cutscene Intro";
 
@@ -293,6 +354,8 @@ namespace LevelSelection {
 		HideMenuEntities(entityMgr);
 
 		currentIndex = 0;
+		leaderboardOpen = false;
+		SetLeaderboardVisible(entityMgr, false);
 		RefreshUI(entityMgr);
 	}
 
@@ -306,6 +369,7 @@ namespace LevelSelection {
 	}
 
 	void Update() {
+		FirebaseManager::Get().Update();
 		EntityManager entityMgr(GameManager::GetInstance().GetECS());
 		InputSystem& inputSystem = *GameManager::GetInstance().GetSystems().input_;
 
@@ -315,15 +379,117 @@ namespace LevelSelection {
 		// Keyboard Input Handling
 		HandleSceneKBInputs(inputSystem);
 
-		// Navigation Button Handling
-		if (ConsumeClick(entityMgr, inputSystem, ui.arrowLeft)) {
-			const int n = static_cast<int>(levelData.size());
-			currentIndex = (currentIndex - 1 + n) % n;
-			RefreshUI(entityMgr);
+		// Level Selection Carousel
+		int n = static_cast<int>(levelData.size());
+
+		if (!carousel.isAnimating) {
+			// Left Arrow Clicked
+			if (ConsumeClick(entityMgr, inputSystem, ui.arrowLeft)) {
+				int prevPrevIndex = (currentIndex - 2 + n) % n;
+
+				carousel.isAnimating = true;
+				carousel.direction = 1;
+				carousel.timer = 0.f;
+				ToggleLighting(entityMgr, false);
+
+				// Sets all tickets to blank
+				SetTicketTexture(entityMgr, ui.ticketPrev, "SB_LevelSelection_EmptyTicket.png");
+				SetTicketTexture(entityMgr, ui.ticketCurrent, "SB_LevelSelection_EmptyTicket.png");
+				SetTicketTexture(entityMgr, ui.ticketNext, "SB_LevelSelection_EmptyTicket.png");
+			}
+
+			// Right Arrow Clicked
+			if (ConsumeClick(entityMgr, inputSystem, ui.arrowRight)) {
+				int nextNextIndex = (currentIndex + 2) % n;
+				SetTicketTexture(entityMgr, ui.ticketPrev, GetTicketTextureForIndex(nextNextIndex));
+
+				carousel.isAnimating = true;
+				carousel.direction = -1;
+				carousel.timer = 0.f;
+				ToggleLighting(entityMgr, false);
+				SetTicketTexture(entityMgr, ui.ticketPrev, "SB_LevelSelection_EmptyTicket.png");
+				SetTicketTexture(entityMgr, ui.ticketCurrent, "SB_LevelSelection_EmptyTicket.png");
+				SetTicketTexture(entityMgr, ui.ticketNext, "SB_LevelSelection_EmptyTicket.png");
+			}
 		}
-		if (ConsumeClick(entityMgr, inputSystem, ui.arrowRight)) {
-			currentIndex = (currentIndex + 1) % static_cast<int>(levelData.size());
-			RefreshUI(entityMgr);
+
+		if (carousel.isAnimating) {
+			carousel.timer += Time::DeltaTime();
+			float t = std::min(carousel.timer / carousel.duration, 1.f);
+
+			float easeT = 1.f - std::pow(1.f - t, 3.f);
+
+			// Relative Positions
+			Transform& leftTransform = entityMgr.GetComponent<Transform>(ui.ticketPrev);
+			Transform& centerTransform = entityMgr.GetComponent<Transform>(ui.ticketCurrent);
+			Transform& rightTransform = entityMgr.GetComponent<Transform>(ui.ticketNext);
+
+			// Relative Scales
+			Vector2D& leftScale = entityMgr.GetComponent<TextureComponent>(ui.ticketPrev).HalfSize;
+			Vector2D& centerScale = entityMgr.GetComponent<TextureComponent>(ui.ticketCurrent).HalfSize;
+			Vector2D& rightScale = entityMgr.GetComponent<TextureComponent>(ui.ticketNext).HalfSize;
+
+			// Linear Interp lambda for animation, might move this to a utility class
+			float offsetX = carousel.rightPos.x - carousel.centerPos.x;
+
+			// Offscreen positions for the illusion of wrapping
+			Vector2D farLeftPos = { carousel.leftPos.x - offsetX, carousel.leftPos.y };
+			Vector2D farRightPos = { carousel.rightPos.x + offsetX, carousel.rightPos.y };
+
+			// All tickets are shrunk to normal size when carousel is animating
+			leftScale = centerScale = rightScale = carousel.sideScale;
+
+			if (carousel.direction == -1) {
+				// Center Ticket moves down-left to the left position and shrinks
+				centerTransform.position.x = std::lerp(carousel.centerPos.x, carousel.leftPos.x, easeT);
+				centerTransform.position.y = std::lerp(carousel.centerPos.y, carousel.leftPos.y, easeT);
+
+				// Right Ticket moves up-left to the center position and grows
+				rightTransform.position.x = std::lerp(carousel.rightPos.x, carousel.centerPos.x, easeT);
+				rightTransform.position.y = std::lerp(carousel.rightPos.y, carousel.centerPos.y, easeT);
+
+				// Left Ticket wraps around and moves in from offscreen to the right position
+				leftTransform.position.x = std::lerp(farRightPos.x, carousel.rightPos.x, easeT);
+				leftTransform.position.y = std::lerp(farRightPos.y, carousel.rightPos.y, easeT);
+			}
+			else {
+				// Center Ticket moves down-right to the left position and shrinks
+				centerTransform.position.x = std::lerp(carousel.centerPos.x, carousel.rightPos.x, easeT);
+				centerTransform.position.y = std::lerp(carousel.centerPos.y, carousel.rightPos.y, easeT);
+
+				// Left Ticket moves up-right to the center position and grows
+				leftTransform.position.x = std::lerp(carousel.leftPos.x, carousel.centerPos.x, easeT);
+				leftTransform.position.y = std::lerp(carousel.leftPos.y, carousel.centerPos.y, easeT);;
+
+				// Right Ticket wraps around and moves in from offscreen to the left position
+				rightTransform.position.x = std::lerp(farLeftPos.x, carousel.leftPos.x, easeT);
+				rightTransform.position.y = std::lerp(farLeftPos.y, carousel.leftPos.y, easeT);
+			}
+
+			if (t >= 1.f) {
+				carousel.isAnimating = false;
+
+				// Snap back to original transforms
+				leftTransform.position = carousel.leftPos;
+				centerTransform.position = carousel.centerPos;
+				rightTransform.position = carousel.rightPos;
+
+				leftScale = carousel.sideScale;
+				centerScale = carousel.centerScale;
+				rightScale = carousel.sideScale;
+
+				ToggleLighting(entityMgr, true);
+
+				// Update Index
+				if (carousel.direction == -1) {
+					currentIndex = (currentIndex + 1) % n;
+				}
+				else {
+					currentIndex = (currentIndex - 1 + n) % n;
+				}
+
+				RefreshUI(entityMgr);
+			}
 		}
 
 		// Return to Main Menu Button
@@ -349,11 +515,22 @@ namespace LevelSelection {
 			return;
 		}
 
+		if (ConsumeClick(entityMgr, inputSystem, ui.leaderboardButton)) {
+			leaderboardOpen = !leaderboardOpen;
+			SetLeaderboardVisible(entityMgr, leaderboardOpen);
+			if (leaderboardOpen) {
+				auto& t = entityMgr.GetComponent<Framework::TextComponent>(leaderboardTextEntity);
+				t.textToDraw = "Loading...";
+				t.isDirty = true;
+				RefreshLeaderboard();
+			}
+		}
+
 		// Select Button - WITH FADE EFFECT (Option A)
 		if (ConsumeClick(entityMgr, inputSystem, ui.selectButton)) {
 			if (save && entityMgr.ValidateEntity(save->GetEntity())) {
 				const int levelIndex = levelData[currentIndex].index;
-				if (!save->IsUnlocked(levelIndex)) return;
+				if (!save->IsUnlocked(levelIndex) || carousel.isAnimating) return;
 			}
 			pendingScene = levelData[currentIndex].sceneName;
 			fadingOut = true;
@@ -392,6 +569,7 @@ namespace LevelSelection {
 		RestoreMainMenuEntities(entityMgr);
 
 		levelData.clear();
+		leaderboardOpen = false;
 		currentIndex = 0;
 		cached = false;
 		ui = {};
