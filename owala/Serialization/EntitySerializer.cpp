@@ -30,6 +30,35 @@
 // Internal Helpers - Will move this and the Editor's version to a global utils file later.
 namespace {
 	using namespace Framework;
+
+	bool IsRuntimeRopeEntity(EntityManager& entityMgr, Entity entity) {
+		if (!entityMgr.HasComponent(entity, ComponentType::TextureComponentType)) {
+			return false;
+		}
+		const TextureComponent& tex = entityMgr.GetComponent<TextureComponent>(entity);
+		return tex.textureKey == "SB_PlatformRope.png";
+	}
+
+	bool IsRuntimeRopeJson(const rapidjson::Value& en) {
+		if (!en.HasMember(Serialization::COMPONENTS) || !en[Serialization::COMPONENTS].IsObject()) {
+			return false;
+		}
+
+		const rapidjson::Value& componentLists = en[Serialization::COMPONENTS];
+		if (componentLists.HasMember("RopeComponent")) {
+			return true;
+		}
+
+		if (!componentLists.HasMember(Serialization::TEXTURE_COMPONENT) ||
+			!componentLists[Serialization::TEXTURE_COMPONENT].IsObject()) {
+			return false;
+		}
+
+		const rapidjson::Value& texObj = componentLists[Serialization::TEXTURE_COMPONENT];
+		return texObj.HasMember(Serialization::TEXTURE_KEY) &&
+			texObj[Serialization::TEXTURE_KEY].IsString() &&
+			std::string(texObj[Serialization::TEXTURE_KEY].GetString()) == "SB_PlatformRope.png";
+	}
 }
 
 namespace Framework {
@@ -65,6 +94,10 @@ namespace Framework {
 		EntityManager entityMgr(ecs);
 		for (Entity entity : entities)
 		{
+			// Rope entities are runtime-generated from RopeScript and should never be persisted.
+			if (IsRuntimeRopeEntity(entityMgr, entity)) {
+				continue;
+			}
 
 			rapidjson::Value entityObject(rapidjson::kObjectType);
 			SerializeEntityInternal(entity, ecs, entityObject, alloc);
@@ -838,6 +871,11 @@ namespace Framework {
 
 			if (entitiesData.IsArray()) {
 				for (const rapidjson::Value& en : entitiesData.GetArray()) {
+					// Ignore runtime rope entities from scene files to prevent duplicate ropes on reload.
+					if (IsRuntimeRopeJson(en)) {
+						continue;
+					}
+
 					bool wantsPersistent = false;
 
 					if (en.HasMember(Serialization::TAGS) && en[Serialization::TAGS].IsArray()) {
