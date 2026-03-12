@@ -280,6 +280,7 @@ namespace Framework {
 							float u_min = ((float)localFrame * frameUVWidth) + UV_PADDING;
 							float u_max = (((float)localFrame + 1.0f) * frameUVWidth) - UV_PADDING;
 
+							// Handle horizontal flipping by swapping UVs
 							if (isFacingRight) {
 								animationComponent.minUV.x = u_min;
 								animationComponent.maxUV.x = u_max;
@@ -330,6 +331,13 @@ namespace Framework {
 
 	void AnimationSystem::Shutdown() {
 
+	}
+
+	void AnimationSystem::ResetAnimation(AnimationComponent& animComp) {
+		animComp.currentFrame = animComp.startFrame;
+		animComp.elapsedTime = 0.0f;
+		animComp.isPlaying = true;
+		animComp.delayRemaining = -1.0f;
 	}
 
 } // namespace Framework
