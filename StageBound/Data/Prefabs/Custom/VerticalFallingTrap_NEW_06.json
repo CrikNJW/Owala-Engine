@@ -58,7 +58,7 @@
         "AABBCollider": {
             "half_width": 60.0,
             "half_height": 190.0,
-            "offset_x": -5.0,
+            "offset_x": 0.0,
             "offset_y": 0.0
         },
         "RotationFlag": {
