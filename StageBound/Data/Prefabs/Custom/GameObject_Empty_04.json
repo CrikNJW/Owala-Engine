@@ -55,6 +55,11 @@
         "SceneOwned": {
             "scene_id": 7,
             "sceneName": "Tutorial 1"
+        },
+        "RotationFlag": {
+            "is_rotating": false,
+            "current_rotation": 0.0,
+            "target_rotation": 0.0
         }
     },
     "tags": []
