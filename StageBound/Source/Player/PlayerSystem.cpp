@@ -147,6 +147,12 @@ namespace Framework {
                 << playerTransform.position.x << ", "
                 << playerTransform.position.y << ")" << std::endl;
         });
+
+        // Route damage requests from enemies (e.g. witch attack circle) through
+        // DamagePlayer() so knockback, invulnerability, VFX, and audio all fire.
+        MessageBus::Instance().Subscribe<PlayerDamageRequestEvent>([this](const PlayerDamageRequestEvent& e) {
+            DamagePlayer(e.playerEntity, e.damageSource, e.sourcePos);
+        });
     }
 
     void PlayerSystem::Update() {
@@ -157,12 +163,14 @@ namespace Framework {
         TimerSystem::Get().Update(Framework::Time::DeltaTime());
         FirebaseManager::Get().Update();
 
-
-        // In PlayerSystem::Update(), at the beginning of the player loop:
-
         InputSystem& input_ = *gm.GetSystems().input_;
 
         EntityManager entityMgr(gm.GetECS()); // To access entity creation/destruction if needed
+
+        // Check for F8 Keypress - Cheat Code to toggle God Mode
+        if (input_.KeyPressed(InputSystem::Key::F8)) {
+            m_cheatGodMode = !m_cheatGodMode;
+        }
 
         UpdateInvulnerability();
 
@@ -492,14 +500,25 @@ namespace Framework {
                     isTrapFalling = trapVelocityY < 0.0f; // Threshold for falling
                 }
 
-                // Only damage if trap is falling AND hitting player from above
-                float trapBottom = trapBounds.min.y;
-                float playerTop = playerBounds.max.y;
+				// We are checking if the player is getting crushed by the trap, so we need to check the amount of overlap to prevent false positives when the player is just touching the side of the trap. 
+                // A crushing hit should have more horizontal overlap than vertical penetration.
+                // Calculate the actual overlap dimensions
+                float overlapMinX = std::max(playerBounds.min.x, trapBounds.min.x);
+                float overlapMaxX = std::min(playerBounds.max.x, trapBounds.max.x);
+                float overlapMinY = std::max(playerBounds.min.y, trapBounds.min.y);
+                float overlapMaxY = std::min(playerBounds.max.y, trapBounds.max.y);
 
-				// Small tolerance to ensure "from above"
-                bool isHittingFromAbove = (trapBottom <= playerTop + 20.0f);
+                float overlapWidth = std::max(0.0f, overlapMaxX - overlapMinX);
+                float overlapHeight = std::max(0.0f, overlapMaxY - overlapMinY);
 
-                if (isTrapFalling && isHittingFromAbove) {
+                // A crushing hit is mostly horizontal surface contact (Vertical Penetration < Horizontal Width)
+                bool isVerticalHit = overlapHeight < overlapWidth;
+
+                // Ensure the trap is physically above the player
+                bool isTrapAbove = trapPos.y > playerPos.y;
+
+                // Only damage if the trap is falling, it's a vertical hit, and the trap is above
+                if (isTrapFalling && isVerticalHit && isTrapAbove) {
                     DamagePlayer(playerEntity, "falling trap platform", trapPos);
                     break;
                 }
@@ -559,6 +578,8 @@ namespace Framework {
     }
 
     void PlayerSystem::DamagePlayer(Entity playerEntity, const std::string& damageSource, const Vector2D& sourcePos) {
+        if (m_cheatGodMode) return;
+
         EntityManager entityMgr(GameManager::GetInstance().GetECS());
 
         if (!entityMgr.HasComponent(playerEntity, PlayerStateType)) return;
@@ -626,6 +647,8 @@ namespace Framework {
     }
 
     void PlayerSystem::KillPlayer(Entity playerEntity, const std::string& killerType) {
+        if (m_cheatGodMode) return;
+
         EntityManager entityMgr(GameManager::GetInstance().GetECS());
 
         if (!entityMgr.HasComponent(playerEntity, PlayerStateType)) {

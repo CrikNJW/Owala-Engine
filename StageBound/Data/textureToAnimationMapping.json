@@ -34,6 +34,18 @@
         },
         {
             "texture_keys": [
+                "SB_Button_LeftArrow_Spritesheet.png"
+            ],
+            "animation_path": "Data/AnimationData/leftArrowButtonHoverAnimation.json"
+        },
+        {
+            "texture_keys": [
+                "SB_Button_RightArrow_Spritesheet.png"
+            ],
+            "animation_path": "Data/AnimationData/rightArrowButtonHoverAnimation.json"
+        },
+        {
+            "texture_keys": [
                 "SB_HoverButton_SpriteSheet.png"
             ],
             "animation_path": "Data/AnimationData/buttonHoverAnimation.json"
@@ -100,7 +112,10 @@
                 "SB_CutScene_01_Spritesheet04.png",
                 "SB_CutScene_01_Spritesheet05.png",
                 "SB_CutScene_01_Spritesheet06.png",
-                "SB_CutScene_01_Spritesheet07.png"
+                "SB_CutScene_01_Spritesheet07.png",
+                "SB_CutScene_01_Spritesheet08.png",
+                "SB_CutScene_01_Spritesheet09.png",
+                "SB_CutScene_01_Spritesheet10.png"
             ],
             "animation_path": "Data/AnimationData/cutscene1Anim.json"
         },
@@ -111,7 +126,11 @@
                 "SB_CutScene_02_Spritesheet03.png",
                 "SB_CutScene_02_Spritesheet04.png",
                 "SB_CutScene_02_Spritesheet05.png",
-                "SB_CutScene_02_Spritesheet06.png"
+                "SB_CutScene_02_Spritesheet06.png",
+                "SB_CutScene_02_Spritesheet07.png",
+                "SB_CutScene_02_Spritesheet08.png",
+                "SB_CutScene_02_Spritesheet09.png",
+                "SB_CutScene_02_Spritesheet10.png"
             ],
             "animation_path": "Data/AnimationData/cutscene2Anim.json"
         },
@@ -128,7 +147,8 @@
                 "Cut_Scene_3_Spritesheet_09.png",
                 "Cut_Scene_3_Spritesheet_10.png",
                 "Cut_Scene_3_Spritesheet_11.png",
-                "Cut_Scene_3_Spritesheet_12.png"
+                "Cut_Scene_3_Spritesheet_12.png",
+                "Cut_Scene_3_Spritesheet_13.png"
             ],
             "animation_path": "Data/AnimationData/cutscene3Anim.json"
         },
@@ -142,7 +162,9 @@
                 "Cut_Scene_4_Spritesheet_06.png",
                 "Cut_Scene_4_Spritesheet_07.png",
                 "Cut_Scene_4_Spritesheet_08.png",
-                "Cut_Scene_4_Spritesheet_09.png"
+                "Cut_Scene_4_Spritesheet_09.png",
+                "Cut_Scene_4_Spritesheet_10.png",
+                "Cut_Scene_4_Spritesheet_11.png"
             ],
             "animation_path": "Data/AnimationData/cutscene4Anim.json"
         },
@@ -163,6 +185,12 @@
                 "SB_FallingDust_Spritesheet.png"
             ],
             "animation_path": "Data/AnimationData/fallingDustAnimation.json"
+        },
+        {
+            "texture_keys": [
+                "SB_HeartPoof_Spritesheet.png"
+            ],
+            "animation_path": "Data/AnimationData/heartPoofAnimation.json"
         },
         {
             "texture_keys": [
@@ -228,6 +256,12 @@
                 "Eli_Falling_Spritesheet.png"
             ],
             "animation_path": "Data/AnimationData/playerFallingAnimation.json"
+        },
+        {
+            "texture_keys": [
+                "SB_HitImpact_VFX.png"
+            ],
+            "animation_path": "Data/AnimationData/playerHitImpactEffect.json"
         },
         {
             "texture_keys": [
@@ -297,6 +331,18 @@
         },
         {
             "texture_keys": [
+                "SB_Witch_Alert_Spritesheet_1.png",
+                "SB_Witch_Alert_Spritesheet_2.png",
+                "SB_Witch_Alert_Spritesheet_3.png",
+                "SB_Witch_Alert_Spritesheet_4.png",
+                "SB_Witch_Alert_Spritesheet_5.png",
+                "SB_Witch_Alert_Spritesheet_6.png",
+                "SB_Witch_Alert_Spritesheet_7.png"
+            ],
+            "animation_path": "Data/AnimationData/witchAlertAnimation.json"
+        },
+        {
+            "texture_keys": [
                 "SB_Witch_Attack_Spritesheet_1.png",
                 "SB_Witch_Attack_Spritesheet_2.png",
                 "SB_Witch_Attack_Spritesheet_3.png"
@@ -350,12 +396,6 @@
                 "SB_Witch_Teleport_Spin_Spritesheet_8.png"
             ],
             "animation_path": "Data/AnimationData/witchTeleportSpinAnimation.json"
-        },
-        {
-            "texture_keys": [
-                "SB_HitImpact_VFX.png"
-            ],
-            "animation_path": "Data/AnimationData/playerHitImpactEffect.json"
         }
     ]
 }

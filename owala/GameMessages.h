@@ -108,6 +108,9 @@ namespace Framework {
 		Vector2D size = { 0.1f, 0.1f };
 		bool isScreenSpace = false;
 
+		bool isUIVFX = false;
+		int customRenderOrder = 0;
+
 		EmissionStyle style = EmissionStyle::FROM_POINT;
 		float radius = 0.5f; // Used if style is FROM_RADIUS or CIRCLE_EDGE
 		Vector2D offset = { 0.0f, 0.0f };
@@ -143,6 +146,19 @@ namespace Framework {
 		Entity playerEntity;
 		int livesRemaining;
 	};
+
+	/*!
+	 * \brief Published by any enemy/hazard that wants to damage the player.
+	 *        PlayerSystem subscribes and routes this through DamagePlayer()
+	 *        so that knockback, invulnerability, VFX, and audio are applied
+	 *        consistently regardless of which system triggers the damage.
+	 */
+	struct PlayerDamageRequestEvent {
+		Entity      playerEntity;   /*!< Entity to damage */
+		Vector2D    sourcePos;      /*!< World position of the damage source (used for knockback direction) */
+		std::string damageSource;   /*!< Human-readable label, e.g. "witch attack" */
+	};
+
 	struct PlayerLandEvent {};
 	struct CurtainsOpenEvent {};
 	struct CurtainsCloseEvent {};

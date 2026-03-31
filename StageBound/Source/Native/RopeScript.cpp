@@ -24,17 +24,21 @@
 REGISTER_SCRIPT(RopeScript, "RopeScript")
 namespace {
     struct RopePrefabData {
-        std::string textureKey = "SB_PlatformRope.png";
-        float halfWidth = 100.0f;
-        int collisionLayer = static_cast<int>(CollisionLayer::Default);
-        int renderLayer = static_cast<int>(RenderLayer::Platform);
+        std::string textureKey{};
+        float halfWidth = 0.0f;
+        float selectionHalfWidth = 0.0f;
+        std::string collisionLayerName{};
+        std::string renderLayerName{};
+        int collisionLayer = -1;
+        int renderOrder = 0;
+        bool isLoaded = false;
     };
 
     const RopePrefabData& GetRopePrefabData() {
         static RopePrefabData data;
-        static bool loaded = false;
-        if (loaded) return data;
-        loaded = true;
+        static bool attemptedLoad = false;
+        if (attemptedLoad) return data;
+        attemptedLoad = true;
 
         rapidjson::Document doc;
         const char* paths[] = {
@@ -47,30 +51,102 @@ namespace {
                 continue;
             }
 
+            RopePrefabData loadedData;
+
             if (doc.HasMember("components") && doc["components"].IsObject()) {
                 const auto& comps = doc["components"];
 
                 if (comps.HasMember("TextureComponent") && comps["TextureComponent"].IsObject()) {
                     const auto& tex = comps["TextureComponent"];
                     if (tex.HasMember("texture_key") && tex["texture_key"].IsString()) {
-                        data.textureKey = tex["texture_key"].GetString();
+                        loadedData.textureKey = tex["texture_key"].GetString();
                     }
                     if (tex.HasMember("half_size") && tex["half_size"].IsObject()) {
                         const auto& hs = tex["half_size"];
                         if (hs.HasMember("x") && hs["x"].IsNumber()) {
-                            data.halfWidth = hs["x"].GetFloat();
+                            loadedData.halfWidth = hs["x"].GetFloat();
                         }
+                    }
+                }
+
+                if (comps.HasMember("AABBCollider") && comps["AABBCollider"].IsObject()) {
+                    const auto& collider = comps["AABBCollider"];
+                    if (collider.HasMember("half_width") && collider["half_width"].IsNumber()) {
+                        loadedData.selectionHalfWidth = collider["half_width"].GetFloat();
                     }
                 }
             }
 
             if (doc.HasMember("layer") && doc["layer"].IsInt()) {
-                data.collisionLayer = doc["layer"].GetInt();
+                loadedData.collisionLayer = doc["layer"].GetInt();
             }
-            if (doc.HasMember("render_layer") && doc["render_layer"].IsInt()) {
-                data.renderLayer = doc["render_layer"].GetInt();
+            if (doc.HasMember("layer_collision_name") && doc["layer_collision_name"].IsString()) {
+                loadedData.collisionLayerName = doc["layer_collision_name"].GetString();
             }
+            if (doc.HasMember("custom_render_order") && doc["custom_render_order"].IsInt()) {
+                loadedData.renderOrder = doc["custom_render_order"].GetInt();
+            }
+            if (doc.HasMember("layer_render_name") && doc["layer_render_name"].IsString()) {
+                loadedData.renderLayerName = doc["layer_render_name"].GetString();
+            }
+
+            if (loadedData.selectionHalfWidth <= 0.0f && loadedData.halfWidth > 0.0f) {
+                loadedData.selectionHalfWidth = loadedData.halfWidth;
+            }
+
+            rapidjson::Document layerDoc;
+            const char* layerPaths[] = {
+                "StageBound/Data/LayerConfig.json",
+                "Data/LayerConfig.json"
+            };
+
+            for (const char* layerPath : layerPaths) {
+                if (!FileIOSystem::ReadFile(layerPath, layerDoc) || !layerDoc.IsObject()) {
+                    continue;
+                }
+
+                if (layerDoc.HasMember("CollisionLayers") && layerDoc["CollisionLayers"].IsArray()) {
+                    for (const auto& layer : layerDoc["CollisionLayers"].GetArray()) {
+                        if (!layer.IsObject()) continue;
+                        if (!layer.HasMember("name") || !layer["name"].IsString()) continue;
+                        if (!layer.HasMember("id") || !layer["id"].IsInt()) continue;
+
+                        if (loadedData.collisionLayerName == layer["name"].GetString()) {
+                            loadedData.collisionLayer = layer["id"].GetInt();
+                            break;
+                        }
+                    }
+                }
+
+                if (layerDoc.HasMember("RenderLayers") && layerDoc["RenderLayers"].IsArray()) {
+                    for (const auto& layer : layerDoc["RenderLayers"].GetArray()) {
+                        if (!layer.IsObject()) continue;
+                        if (!layer.HasMember("name") || !layer["name"].IsString()) continue;
+                        if (!layer.HasMember("renderOrder") || !layer["renderOrder"].IsInt()) continue;
+
+                        if (loadedData.renderLayerName == layer["name"].GetString()) {
+                            loadedData.renderOrder = layer["renderOrder"].GetInt();
+                            break;
+                        }
+                    }
+                }
+                break;
+            }
+
+            loadedData.isLoaded =
+                !loadedData.textureKey.empty() &&
+                loadedData.halfWidth > 0.0f &&
+                loadedData.selectionHalfWidth > 0.0f &&
+                loadedData.collisionLayer >= 0;
+
+            data = loadedData;
             break;
+        }
+
+        if (!data.isLoaded) {
+            Logger::Get().Error(DebugType::Unknown)
+                << "RopeScript: Failed to load complete rope prefab data from PlatformRope.json."
+                << std::endl;
         }
 
         return data;
@@ -119,13 +195,6 @@ void RopeScript::OnCreate() {
         trapComp.originalPosition = originalPosition_;
     }
 
-    // Handle collider rotation swapping
-    float colAngle = transform.rotation.colliderAngle;
-    float absRot = std::fmod(std::abs(colAngle), 3.14159265f);
-    if (absRot > 3.14159265f * 0.25f && absRot < 3.14159265f * 0.75f) {
-        std::swap(originalHalfWidth_, originalHalfHeight_);
-    }
-
     // Initialize ropes for this platform
     InitializeRopesForPlatform();
     hasInitialized_ = true;
@@ -155,7 +224,28 @@ void RopeScript::OnUpdate() {
             it = ropeEntities_.erase(it);
         }
         else {
-            ++it;
+            auto runtimeIt = ropeRuntimeData_.find(rope);
+            const bool missingRuntime = runtimeIt == ropeRuntimeData_.end();
+            const bool missingRenderEntity = !missingRuntime &&
+                runtimeIt->second.renderEntity != 0 &&
+                !entityMgr->ValidateEntity(runtimeIt->second.renderEntity);
+
+            if (missingRuntime || missingRenderEntity) {
+                if (!missingRuntime && runtimeIt->second.renderEntity != 0 &&
+                    entityMgr->ValidateEntity(runtimeIt->second.renderEntity)) {
+                    entityMgr->DestroyEntity(runtimeIt->second.renderEntity);
+                }
+
+                if (entityMgr->ValidateEntity(rope)) {
+                    entityMgr->DestroyEntity(rope);
+                }
+
+                ropeRuntimeData_.erase(rope);
+                it = ropeEntities_.erase(it);
+            }
+            else {
+                ++it;
+            }
         }
     }
 
@@ -172,7 +262,6 @@ void RopeScript::OnUpdate() {
 }
 
 void RopeScript::OnDestroy() {
-    Logger::Get().Info(DebugType::Unknown) << "RopeScript::OnDestroy for platform" << std::endl;
     RemoveAllRopes();
 }
 
@@ -182,12 +271,8 @@ void RopeScript::OnDestroy() {
 EntityManager* RopeScript::GetEntityManager() const {
     if (!GameManager::Exists()) return nullptr;
 
-    // Obtain reference to current EntityStorage from GameManager
     EntityStorage& ecs = GameManager::GetInstance().GetECS();
 
-    // Cache an EntityManager that wraps the current ECS reference. If the underlying
-    // ECS instance changes (e.g. editor play/stop swapping storages), recreate the
-    // cached EntityManager to point to the new storage.
     static EntityStorage* cachedEcs = nullptr;
     static std::unique_ptr<EntityManager> cachedManager;
 
@@ -214,6 +299,62 @@ bool RopeScript::IsValidRopePlatform() const {
 
 bool RopeScript::FallsVertically() const {
     return platformType_.find("Vertical") != std::string::npos;
+}
+
+bool RopeScript::UsesCeilingTopRope(EntityManager& entityMgr) const {
+    if (FallsVertically()) {
+        return true;
+    }
+
+    if (!entityMgr.HasComponent(platformEntity_, TextureComponentType)) {
+        return false;
+    }
+
+    const TextureComponent& tex = entityMgr.GetComponent<TextureComponent>(platformEntity_);
+    return tex.textureKey == "SB_MovableBox_02.png";
+}
+
+Vector2D RopeScript::CalculateTopColliderAttachment(EntityManager& entityMgr, int ropeIndex) const {
+    const Transform& platformTf = entityMgr.GetComponent<Transform>(platformEntity_);
+
+    float halfWidth = originalHalfWidth_;
+    float halfHeight = originalHalfHeight_;
+
+    const float colAngle = platformTf.rotation.colliderAngle;
+    const float absRot = std::fmod(std::abs(colAngle), 3.14159265f);
+    if (absRot > 3.14159265f * 0.25f && absRot < 3.14159265f * 0.75f) {
+        std::swap(halfWidth, halfHeight);
+    }
+
+    Vector2D localEdge = Vector2D::Zero();
+    const bool twoRopes = HasTwoRopes(entityMgr);
+    if (FallsVertically()) {
+        localEdge.x = twoRopes ? ((ropeIndex == 0) ? -halfWidth : halfWidth) : 0.0f;
+        localEdge.y = halfHeight;
+    }
+    else {
+        localEdge.x = -halfWidth;
+        localEdge.y = 0.0f;
+    }
+
+    if (entityMgr.HasComponent(platformEntity_, AABBColliderType)) {
+        const AABBCollider& col = entityMgr.GetComponent<AABBCollider>(platformEntity_);
+        const float cosA = std::cos(colAngle);
+        const float sinA = std::sin(colAngle);
+        localEdge.x += col.Offset.x * cosA - col.Offset.y * sinA;
+        localEdge.y += col.Offset.x * sinA + col.Offset.y * cosA;
+    }
+
+    float worldRotDeg = 0.0f;
+    if (entityMgr.HasComponent(platformEntity_, RotationFlagType)) {
+        worldRotDeg = entityMgr.GetComponent<RotationFlag>(platformEntity_).currentRotation;
+    }
+
+    const float worldRotRad = worldRotDeg * (3.14159265f / 180.0f);
+    const float cosR = std::cos(worldRotRad);
+    const float sinR = std::sin(worldRotRad);
+    const Vector2D worldEdge(localEdge.x * cosR - localEdge.y * sinR, localEdge.x * sinR + localEdge.y * cosR);
+    return platformTf.position + worldEdge;
 }
 
 void RopeScript::InitializeRopesForPlatform() {
@@ -276,35 +417,22 @@ void RopeScript::CreateSingleRope(int ropeIndex) {
     const float worldRotRad = worldRotDeg * (3.14159265f / 180.0f);
     const float cosR = std::cos(worldRotRad);
     const float sinR = std::sin(worldRotRad);
+    const bool useSpecialPlatformAttachment = UsesCeilingTopRope(*entityMgr);
+    const bool useCeilingAnchor = FallsVertically();
 
-    Vector2D localEdge;
-    if (FallsVertically()) {
-        bool twoRopes = HasTwoRopes(*entityMgr);
-        localEdge.x = twoRopes ? ((ropeIndex == 0) ? -halfWidth : halfWidth) : 0.0f;
-        localEdge.y = halfHeight;
-
-        if (entityMgr->HasComponent(platformEntity_, AABBColliderType)) {
-            const AABBCollider& col = entityMgr->GetComponent<AABBCollider>(platformEntity_);
-            float colAngle = entityMgr->GetComponent<Transform>(platformEntity_).rotation.colliderAngle;
-            float cosA = std::cos(colAngle);
-            float sinA = std::sin(colAngle);
-            localEdge.x += col.Offset.x * cosA - col.Offset.y * sinA;
-            localEdge.y += col.Offset.x * sinA + col.Offset.y * cosA;
-        }
-    }
-    else {
+    Vector2D localEdge = Vector2D::Zero();
+    if (!useSpecialPlatformAttachment) {
         localEdge.x = -halfWidth;
         localEdge.y = 0.0f;
     }
 
     // Transform to world space
-    const Vector2D worldEdge(localEdge.x * cosR - localEdge.y * sinR,
-        localEdge.x * sinR + localEdge.y * cosR);
-    Vector2D dynamicAnchor = platformTf.position + worldEdge;
+    const Vector2D worldEdge(localEdge.x * cosR - localEdge.y * sinR, localEdge.x * sinR + localEdge.y * cosR);
+    Vector2D dynamicAnchor = useSpecialPlatformAttachment ? CalculateTopColliderAttachment(*entityMgr, ropeIndex) : platformTf.position + worldEdge;
 
     // Calculate fixed anchor
     Vector2D fixedAnchor;
-    if (FallsVertically()) {
+    if (useCeilingAnchor) {
         float attachX = dynamicAnchor.x;
         float attachTopY = dynamicAnchor.y;
         float fallbackCeilY = attachTopY + ROPE_OVERHEAD;
@@ -326,18 +454,31 @@ void RopeScript::CreateSingleRope(int ropeIndex) {
         length = MIN_ROPE_LENGTH;
     }
 
+    // Set properties from PlatformRope prefab data
+    const RopePrefabData& ropePrefab = GetRopePrefabData();
+    if (!ropePrefab.isLoaded) {
+        return;
+    }
+
     // Create rope entity
     Entity rope = entityMgr->CreateEntity();
     Logger::Get().Info(DebugType::Unknown) << "Created rope entity ID: " << rope << std::endl;
 
-    // Set properties from PlatformRope prefab data
-    const RopePrefabData& ropePrefab = GetRopePrefabData();
+    const std::string ropeName = platformType_ + "_" + std::to_string(platformEntity_) +
+        (ropeIndex == 0 ? "_RopeL" : "_RopeR");
 
-    EntityProperties& props = entityMgr->GetProperties(rope);
-    props.name = platformType_ + "_" + std::to_string(platformEntity_) + (ropeIndex == 0 ? "_RopeL" : "_RopeR");
-    props.renderLayer = static_cast<RenderLayer>(ropePrefab.renderLayer);
-    props.layer = static_cast<CollisionLayer>(ropePrefab.collisionLayer);
-    props.isActive = true;
+    auto ApplyRopeProperties = [&](Entity entity, const std::string& name) {
+        EntityProperties& props = entityMgr->GetProperties(entity);
+        props.name = name;
+        props.renderLayer = RenderLayer::Custom;
+        props.customRenderOrder = ropePrefab.renderOrder;
+        props.renderLayerName = ropePrefab.renderLayerName;
+        props.layer = static_cast<CollisionLayer>(ropePrefab.collisionLayer);
+        props.collisionLayerName = ropePrefab.collisionLayerName;
+        props.isActive = true;
+        };
+
+    ApplyRopeProperties(rope, ropeName);
 
     entityMgr->AddComponent(rope, LoadedTag{});
 
@@ -352,6 +493,7 @@ void RopeScript::CreateSingleRope(int ropeIndex) {
     rc.isActive = true;
     rc.segmentHeight = 20.0f;
     rc.ropeWidth = ropePrefab.halfWidth * 2.0f;
+    rc.selectionHalfWidth = ropePrefab.selectionHalfWidth > 0.0f ? std::min(ropePrefab.selectionHalfWidth, ropePrefab.halfWidth) : ropePrefab.halfWidth;
     rc.ropeIndex = ropeIndex;
     rc.ceilingAttachmentPoint = fixedAnchor;
     rc.platformAttachmentPoint = dynamicAnchor;
@@ -360,22 +502,28 @@ void RopeScript::CreateSingleRope(int ropeIndex) {
     rc.hasFoundCeiling = true;
     rc.lastWorldRotationDeg = worldRotDeg;
 
-    ropeRuntimeData_[rope] = rc;
-
     // Transform
+    const float angleRad = atan2(delta.x, -delta.y);
+    const float angleDeg = angleRad * (180.0f / 3.14159265f);
+    const float absCos = std::abs(std::cos(angleRad));
+    const float absSin = std::abs(std::sin(angleRad));
+    const float selectionHalfHeight = length * 0.5f;
+
     Transform ropeTf;
     ropeTf.position = (fixedAnchor + dynamicAnchor) * 0.5f;
-    float angleRad = atan2(delta.x, -delta.y);
-    ropeTf.rotation.angle = angleRad * (180.0f / 3.14159265f);
-    ropeTf.rotation.textureAngle = angleRad;
+    ropeTf.rotation.angle = 0.0f;
+    ropeTf.rotation.textureAngle = 0.0f;
     entityMgr->AddComponent(rope, ropeTf);
 
     // Texture component
     TextureComponent texComp;
     texComp.textureKey = rc.textureKey;
-    texComp.HalfSize = Vector2D(rc.ropeWidth * 0.5f, length * 0.5f);
+    texComp.HalfSize = Vector2D(
+        rc.selectionHalfWidth * absCos + selectionHalfHeight * absSin,
+        rc.selectionHalfWidth * absSin + selectionHalfHeight * absCos
+    );
     texComp.flipHorizontal = false;
-    texComp.alpha = 1.0f;
+    texComp.alpha = 0.0f;
     entityMgr->AddComponent(rope, texComp);
 
     // Rotation flag
@@ -384,6 +532,29 @@ void RopeScript::CreateSingleRope(int ropeIndex) {
     ropeRotFlag.currentRotation = 0.0f;
     ropeRotFlag.targetRotation = 0.0f;
     entityMgr->AddComponent(rope, ropeRotFlag);
+
+    Entity renderRope = entityMgr->CreateEntity();
+    ApplyRopeProperties(renderRope, ropeName + "_Render");
+    entityMgr->AddComponent(renderRope, LoadedTag{});
+
+    Transform renderTf = ropeTf;
+    renderTf.rotation.angle = angleDeg;
+    renderTf.rotation.textureAngle = 0.0f;
+    entityMgr->AddComponent(renderRope, renderTf);
+
+    TextureComponent renderTexComp;
+    renderTexComp.textureKey = rc.textureKey;
+    renderTexComp.HalfSize = Vector2D(rc.ropeWidth * 0.5f, length * 0.5f);
+    renderTexComp.flipHorizontal = false;
+    renderTexComp.alpha = 1.0f;
+    entityMgr->AddComponent(renderRope, renderTexComp);
+
+    RotationFlag renderRopeRotFlag = ropeRotFlag;
+    renderRopeRotFlag.currentRotation = angleDeg;
+    entityMgr->AddComponent(renderRope, renderRopeRotFlag);
+
+    rc.renderEntity = renderRope;
+    ropeRuntimeData_[rope] = rc;
 
     // Store rope entity
     ropeEntities_.push_back(rope);
@@ -422,6 +593,8 @@ void RopeScript::UpdateRopeTransform(Entity rope) const {
     const float worldRotRad = worldRotDeg * (3.14159265f / 180.0f);
     const float cosR = std::cos(worldRotRad);
     const float sinR = std::sin(worldRotRad);
+    const bool useSpecialPlatformAttachment = UsesCeilingTopRope(*entityMgr);
+    const bool useCeilingAnchor = FallsVertically();
 
     float rotDeltaDeg = worldRotDeg - rc.lastWorldRotationDeg;
     while (rotDeltaDeg > 180.0f) rotDeltaDeg -= 360.0f;
@@ -447,18 +620,22 @@ void RopeScript::UpdateRopeTransform(Entity rope) const {
 
     // Recalculate ceiling if needed
     if (!rc.hasFoundCeiling) {
-        if (FallsVertically()) {
-            float attachX = platformTf.position.x + ((rc.ropeIndex == 0) ? -halfWidth : halfWidth);
-            float platformTopY = platformTf.position.y + halfHeight;
+        if (useCeilingAnchor) {
+            Vector2D attachPoint = useSpecialPlatformAttachment ? CalculateTopColliderAttachment(*entityMgr, rc.ropeIndex)
+                : Vector2D(platformTf.position.x + ((rc.ropeIndex == 0) ? -halfWidth : halfWidth), platformTf.position.y + halfHeight);
+            float attachX = attachPoint.x;
+            float platformTopY = attachPoint.y;
             float fallbackCeilY = platformTopY + ROPE_OVERHEAD;
             rc.ceilingAttachmentPoint.x = attachX;
             rc.ceilingAttachmentPoint.y = FindCeilingAnchorY(*entityMgr, attachX, platformTopY, fallbackCeilY);
         }
         else {
-            float attachY = platformTf.position.y;
-            float platformLeftX = platformTf.position.x - halfWidth;
-            float fallbackWallX = platformLeftX - HORIZONTAL_FALLBACK_LENGTH;
-            rc.ceilingAttachmentPoint.x = FindWallAnchorX(*entityMgr, attachY, platformLeftX, fallbackWallX);
+            Vector2D attachPoint = useSpecialPlatformAttachment ? CalculateTopColliderAttachment(*entityMgr, rc.ropeIndex)
+                : Vector2D(platformTf.position.x - halfWidth, platformTf.position.y);
+            float attachX = attachPoint.x;
+            float attachY = attachPoint.y;
+            float fallbackWallX = attachX - HORIZONTAL_FALLBACK_LENGTH;
+            rc.ceilingAttachmentPoint.x = FindWallAnchorX(*entityMgr, attachY, attachX, fallbackWallX);
             rc.ceilingAttachmentPoint.y = attachY;
         }
 
@@ -466,29 +643,16 @@ void RopeScript::UpdateRopeTransform(Entity rope) const {
     }
 
     // Calculate attachment point in local space
-    Vector2D localEdge;
-    if (FallsVertically()) {
-        bool twoRopes = HasTwoRopes(*entityMgr);
-        localEdge.x = twoRopes ? ((rc.ropeIndex == 0) ? -halfWidth : halfWidth) : 0.0f;
-        localEdge.y = halfHeight;
-
-        if (entityMgr->HasComponent(platformEntity_, AABBColliderType)) {
-            const AABBCollider& col = entityMgr->GetComponent<AABBCollider>(platformEntity_);
-            float colAngle = entityMgr->GetComponent<Transform>(platformEntity_).rotation.colliderAngle;
-            float cosA = std::cos(colAngle);
-            float sinA = std::sin(colAngle);
-            localEdge.x += col.Offset.x * cosA - col.Offset.y * sinA;
-            localEdge.y += col.Offset.x * sinA + col.Offset.y * cosA;
-        }
-    }
-    else {
+    Vector2D localEdge = Vector2D::Zero();
+    if (!useSpecialPlatformAttachment) {
         localEdge.x = -halfWidth;
         localEdge.y = 0.0f;
     }
 
     // Transform to world space
     const Vector2D worldEdge(localEdge.x * cosR - localEdge.y * sinR, localEdge.x * sinR + localEdge.y * cosR);
-    rc.platformAttachmentPoint = platformTf.position + worldEdge;
+    rc.platformAttachmentPoint = useSpecialPlatformAttachment ? CalculateTopColliderAttachment(*entityMgr, rc.ropeIndex)
+        : platformTf.position + worldEdge;
 
     // Update rope length
     const Vector2D& worldCeiling = rc.ceilingAttachmentPoint;
@@ -500,26 +664,56 @@ void RopeScript::UpdateRopeTransform(Entity rope) const {
     }
 
     // Update rope transform
-    ropeTf.position = (worldCeiling + rc.platformAttachmentPoint) * 0.5f;
-
     const float angleRad = std::atan2(delta.x, -delta.y);
     const float angleDeg = angleRad * (180.0f / 3.14159265f);
+    const float absCos = std::abs(std::cos(angleRad));
+    const float absSin = std::abs(std::sin(angleRad));
+    const float selectionHalfHeight = rc.currentLength * 0.5f;
 
+    ropeTf.position = (worldCeiling + rc.platformAttachmentPoint) * 0.5f;
     ropeTf.rotation.textureAngle = 0.0f;
-    ropeTf.rotation.angle = angleDeg;
+    ropeTf.rotation.angle = 0.0f;
 
     if (entityMgr->HasComponent(rope, RotationFlagType)) {
-        entityMgr->GetComponent<RotationFlag>(rope).currentRotation = angleDeg;
+        entityMgr->GetComponent<RotationFlag>(rope).currentRotation = 0.0f;
     }
 
     // Update texture size
-    texComp.HalfSize.x = rc.ropeWidth * 0.5f;
-    texComp.HalfSize.y = rc.currentLength * 0.5f;
+    texComp.textureKey = rc.textureKey;
+    texComp.HalfSize.x = rc.selectionHalfWidth * absCos + selectionHalfHeight * absSin;
+    texComp.HalfSize.y = rc.selectionHalfWidth * absSin + selectionHalfHeight * absCos;
+    texComp.alpha = 0.0f;
     ropeTf.scale = Vector2D(1.0f, 1.0f);
+
+    if (rc.renderEntity != 0 &&
+        entityMgr->ValidateEntity(rc.renderEntity) &&
+        entityMgr->HasComponent(rc.renderEntity, TransformType) &&
+        entityMgr->HasComponent(rc.renderEntity, TextureComponentType)) {
+        Transform& renderTf = entityMgr->GetComponent<Transform>(rc.renderEntity);
+        TextureComponent& renderTexComp = entityMgr->GetComponent<TextureComponent>(rc.renderEntity);
+
+        renderTf.position = ropeTf.position;
+        renderTf.rotation = ropeTf.rotation;
+        renderTf.rotation.textureAngle = 0.0f;
+        renderTf.scale = ropeTf.scale;
+
+        renderTexComp.textureKey = rc.textureKey;
+        renderTexComp.HalfSize.x = rc.ropeWidth * 0.5f;
+        renderTexComp.HalfSize.y = rc.currentLength * 0.5f;
+        renderTexComp.flipHorizontal = false;
+        renderTexComp.alpha = 1.0f;
+
+        if (entityMgr->HasComponent(rc.renderEntity, RotationFlagType)) {
+            entityMgr->GetComponent<RotationFlag>(rc.renderEntity).currentRotation = angleDeg;
+        }
+    }
 
     // Update transformation system
     if (GameManager::Exists() && GameManager::GetInstance().GetSystems().transformation_) {
         GameManager::GetInstance().GetSystems().transformation_->UpdateEntityTransform(rope);
+        if (rc.renderEntity != 0 && entityMgr->ValidateEntity(rc.renderEntity)) {
+            GameManager::GetInstance().GetSystems().transformation_->UpdateEntityTransform(rc.renderEntity);
+        }
     }
 }
 

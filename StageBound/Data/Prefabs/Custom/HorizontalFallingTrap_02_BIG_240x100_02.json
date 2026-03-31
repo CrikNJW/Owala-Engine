@@ -12,7 +12,7 @@
             },
             "Rotation": {
                 "angle": 0.0,
-                "texture_angle": 0.0,
+                "texture_angle": 1.5707963705062866,
                 "collider_angle": 0.0,
                 "texture_matrix": [
                     240.0,
@@ -56,10 +56,10 @@
             }
         },
         "AABBCollider": {
-            "half_width": 200.0,
-            "half_height": 45.0,
-            "offset_x": 0.0,
-            "offset_y": 0.0
+            "half_width": 216.0,
+            "half_height": 48.0,
+            "offset_x": 4.0,
+            "offset_y": -6.0
         },
         "RotationFlag": {
             "is_rotating": false,
@@ -80,8 +80,8 @@
         "TextureComponent": {
             "texture_key": "SB_MovableBox_03.png",
             "half_size": {
-                "x": 200.0,
-                "y": 100.0
+                "x": 100.0,
+                "y": 250.0
             },
             "flip_x": false
         },
