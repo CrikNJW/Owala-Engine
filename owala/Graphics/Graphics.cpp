@@ -592,7 +592,7 @@ namespace Framework {
 
         float aspectCorrection = (float)screenHeight / (float)screenWidth;
         //float halfW = (float)screenWidth * 0.5f;
-        float halfH = (float)screenHeight * 0.5f;
+        //float halfH = (float)screenHeight * 0.5f;
         // Add a microscopic half-pixel expansion to hide floating-point tearing
         // Since 'hx' and 'hy' are in vertical NDC space before aspect correction,
         // 0.5f / halfH represents exactly half a pixel on the screen.
