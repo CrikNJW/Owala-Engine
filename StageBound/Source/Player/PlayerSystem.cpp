@@ -525,11 +525,11 @@ namespace Framework {
                 // Calculate the actual overlap dimensions
                 float overlapMinX = std::max(playerBounds.min.x, trapBounds.min.x);
                 float overlapMaxX = std::min(playerBounds.max.x, trapBounds.max.x);
-                float overlapMinY = std::max(playerBounds.min.y, trapBounds.min.y);
-                float overlapMaxY = std::min(playerBounds.max.y, trapBounds.max.y);
+             //   float overlapMinY = std::max(playerBounds.min.y, trapBounds.min.y);
+             //   float overlapMaxY = std::min(playerBounds.max.y, trapBounds.max.y);
 
                 float overlapWidth = std::max(0.0f, overlapMaxX - overlapMinX);
-                float overlapHeight = std::max(0.0f, overlapMaxY - overlapMinY);
+             //   float overlapHeight = std::max(0.0f, overlapMaxY - overlapMinY);
 
                 const float playerWidth = playerBounds.max.x - playerBounds.min.x;
                 const float trapWidth = trapBounds.max.x - trapBounds.min.x;
