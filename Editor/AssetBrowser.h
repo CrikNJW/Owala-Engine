@@ -37,49 +37,130 @@ struct AssetEntry
 
 class AssetBrowser {
 public:
-    // Starts the browser from the current working directory.
-    // Useful as a safe default before a project is explicitly loaded.
+    /*********************************************************************//**
+     * \brief   Starts the browser from the current working directory.
+     *          Useful as a safe default before a project is explicitly loaded.
+     * 
+     * \param   rcm 
+     *********************************************************************/
     AssetBrowser(ResourceManager& rcm) : resourceManager_(&rcm), rootPath_(fs::current_path()), currentPath_(fs::current_path()) {
         if (fs::exists(currentPath_))
             ScanDirectory(currentPath_);
     }
 
-	// Sets the project root and prepares local/repo sync paths.
+    /*********************************************************************//**
+     * \brief   Sets the project root and prepares local/repo sync paths.
+     * 
+     * \param   rootPath 
+     *********************************************************************/
     void Initialize(const fs::path& rootPath);
 
-    // Rebuilds the current asset list from a directory on disk.
+    /*********************************************************************//**
+     * \brief   Rebuilds the current asset list from a directory on disk.
+     * 
+     * \param   directoryPath 
+     *********************************************************************/
     void ScanDirectory(const fs::path& directoryPath);
-	// Enters a folder or selects a file.
+
+    /*********************************************************************//**
+     * \brief   Enters a folder or selects a file based on the target path.
+     * 
+     * \param   target 
+     *********************************************************************/
     void NavigateTo(const fs::path& target);
-	// Moves up one folder (clamped to rootPath_).
+
+    /*********************************************************************//**
+     * \brief   Moves up one folder level, clamped so it does not browse 
+     *          outside the intended root path.
+     *********************************************************************/
     void NavigateUp();
-	// Draws the left-hand folder tree recursively.
+
+    /*********************************************************************//**
+     * \brief   Draws the left-hand folder tree recursively in ImGui.
+     * 
+     * \param   path 
+     *********************************************************************/
     void ShowFolderTree(const fs::path& path);
-    // Draws Project Explorer + Asset Viewer windows.
+
+    /*********************************************************************//**
+     * \brief   Draws the Project Explorer and Asset Viewer windows.
+     * 
+     * \param   droppedFiles 
+     *********************************************************************/
     void RenderUI(std::vector<fs::path>& droppedFiles);
-	// Draws the right-hand Asset Editor panel.
+
+    /*********************************************************************//**
+     * \brief   Draws the right-hand Asset Editor panel in ImGui.
+     * 
+     * \param   droppedFiles 
+     *********************************************************************/
     void RenderAssetEditor(std::vector<fs::path>& droppedFiles);
 
-	// Queues files dropped from OS/file explorer into the viewer.
+    /*********************************************************************//**
+     * \brief   Queues files dropped from the OS/file explorer into the viewer.
+     * 
+     * \param   droppedFiles 
+     *********************************************************************/
     void HandleDroppedFiles(const std::vector<fs::path>& droppedFiles);
-	// Handles replacement mode drops (same extension guard).
+
+    /*********************************************************************//**
+     * \brief   Handles replacement mode drops, including same-extension checking.
+     * 
+     * \param   droppedFiles 
+     *********************************************************************/
     void HandleReplaceFile(const std::vector<fs::path>& droppedFiles);
 
-	// Getters
+    /*********************************************************************//**
+     * \brief   Gets the current list of asset entries in the viewed directory.
+     * 
+     * \return  A constant reference to an array of AssetEntry objects.
+     *********************************************************************/
     const std::vector<AssetEntry>& GetCurrentAssets() const { return currentAssets_; }
-	// Get current path
+
+    /*********************************************************************//**
+     * \brief   Gets the absolute path of the currently viewed directory.
+     * 
+     * \return  A constant reference to the current filesystem path.
+     *********************************************************************/
     const fs::path& GetCurrentPath() const { return currentPath_; }
 
 private:
-    // Loads and caches viewer icon textures once per session.
+    /*********************************************************************//**
+     * \brief   Loads and caches viewer icon textures once per session.
+     *********************************************************************/
     void EnsureIconTexturesLoaded();
-    // Initializes a batch upload state for dropped files.
+
+    /*********************************************************************//**
+     * \brief   Initializes a batch upload state for dropped files, preparing 
+     *          them for processing over multiple frames.
+     * 
+     * \param   droppedFiles 
+     *********************************************************************/
     void StartUploadQueue(const std::vector<fs::path>& droppedFiles);
-    // Processes one queued upload item per frame.
+
+    /*********************************************************************//**
+     * \brief   Processes one queued upload file item per frame.
+     *********************************************************************/
     void ProcessUploadQueue();
-    // Copies one dropped file to local output and optional repo mirror.
+
+    /*********************************************************************//**
+     * \brief   Copies one dropped file to the default local path and 
+     *          optionally to the repository mirror.
+     * 
+     * \param   sourcePath 
+     * \return  True if the file was successfully copied, otherwise false.
+     *********************************************************************/
     bool CopyDroppedFile(const fs::path& sourcePath);
-    // Shortens a label to fit the tile width, using "..." when needed.
+
+    /*********************************************************************//**
+     * \brief   Shortens a text label to fit a designated width by appending
+     *          ellipses if the text exceeds the boundary.
+     * 
+     * \param   text 
+     * \param   maxWidth 
+     * \param   wasTruncated 
+     * \return  The resulting string, truncated if necessary.
+     *********************************************************************/
     std::string TruncateLabelToFit(const std::string& text, float maxWidth, bool& wasTruncated) const;
 
     // Browser navigation state

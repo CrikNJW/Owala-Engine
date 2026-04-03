@@ -56,7 +56,6 @@ namespace Framework {
 	class CoreEngine; // Forward Declaration
 	class CameraSystem;
 	struct SystemTime; // Forward Declaration
-	//class PhysicsSystem; // forward Declaration
 }
 
 namespace Editor {
@@ -64,6 +63,10 @@ namespace Editor {
 	std::string ComponentToString(Framework::ComponentType componentType);
 
 
+	/*********************************************************************//**
+	 * \brief   Configuration structure defining the visual layout and active
+	 *          windows for the Editor interface.
+	 *********************************************************************/
 	struct EditorSettings {
 		int windowWidth = 1920;
 		int windowHeight = 1080;
@@ -82,7 +85,10 @@ namespace Editor {
 		bool showAnimationEditor = false;
 	};
 
-	// enum to represent the different types of objects we can create
+	/*********************************************************************//**
+	 * \brief   Enumeration defining the different categories of prefabs
+	 *          available for instantiation in the editor.
+	 *********************************************************************/
 	enum class PrefabType {
 		None,
 		Eraser,
@@ -91,7 +97,10 @@ namespace Editor {
 		Tile
 	};
 
-	// Structure to hold info about a draggable prefab for the palette
+	/*********************************************************************//**
+	 * \brief   Structure holding information about an interactive prefab
+	 *          item used within the editor's drag-and-drop palette system.
+	 *********************************************************************/
 	struct DraggablePrefabInfo {
 		std::string name;
 		PrefabType type = PrefabType::None;
@@ -101,14 +110,19 @@ namespace Editor {
 		ImVec2 uv1{ 1.0f, 1.0f };
 	};
 
-	// Helper Struct for Tile Data
+	/*********************************************************************//**
+	 * \brief   Helper structure utilized to link a tile name with its
+	 *          associated texture ID string.
+	 *********************************************************************/
 	struct TileData {
 		std::string name;
 		std::string textureID;
 	};
 
-	
-	// struct for draggable fsm items (enemys)
+	/*********************************************************************//**
+	 * \brief   Structure holding configuration for Finite State Machine (FSM)
+	 *          templates that can be dragged and dropped into the scene.
+	 *********************************************************************/
 	struct DraggableFSMInfo {
 		std::string name;
 		std::string fsmPath;
@@ -119,7 +133,11 @@ namespace Editor {
 		ImVec2 halfSize{ 25.0f, 25.0f };
 	};
 
-	// Struct for handling Editing Session of the Inspector Window for the HistoryManager.
+	/*********************************************************************//**
+	 * \brief   Manages an active editing state on a specific component,
+	 *          capturing initial and final JSON representations for the
+	 *          undo/redo history tracking system.
+	 *********************************************************************/
 	struct EditSession {
 		bool active = false;
 		bool wasItemActive = false;
@@ -135,6 +153,12 @@ namespace Editor {
 		void Flush();
 	};
 
+	/*********************************************************************//**
+	 * \class   Editor
+	 * \brief   The main level editor system. Integrates with Dear ImGui to
+	 *          provide tools for scene construction, entity manipulation,
+	 *          asset management, and real-time debugging.
+	 *********************************************************************/
 	class Editor : public Framework::ISystem {
 	private:
 		// --- System Pointers ---
@@ -281,73 +305,218 @@ namespace Editor {
 		std::string projectFeedbackMsg_ = "";  // Feedback message shown inside the modal after an action
 		bool projectActionSucceeded_ = false; // Whether the last project action succeeded (colours the message)
 
-		// Renders the "Create New Project" modal pop-up.
+		/*********************************************************************//**
+		 * \brief   Renders the "Create New Project" modal pop-up.
+		 *********************************************************************/
 		void ShowNewProjectDialog();
 
-		// Renders the "Import Existing Project" modal pop-up.
+		/*********************************************************************//**
+		 * \brief   Renders the "Import Existing Project" modal pop-up.
+		 *********************************************************************/
 		void ShowImportProjectDialog();
 		// -------------------------------------------------------
+
+		/*********************************************************************//**
+		 * \brief   Resets the editor camera to its standard initial configurations.
+		 *********************************************************************/
 		void ResetEditorCamera();
+
+		/*********************************************************************//**
+		 * \brief   Saves the current position and zoom state of the editor camera.
+		 *********************************************************************/
 		void SaveEditorCameraState();
+
+		/*********************************************************************//**
+		 * \brief   Restores the previously saved position and zoom state of the
+		 *          editor camera.
+		 *********************************************************************/
 		void RestoreEditorCameraState();
 
 		// --- Private Helper Functions ---
 
-		// Internal Checkers
+		/*********************************************************************//**
+		 * \brief   Validates the state of the editor dependencies.
+		 *********************************************************************/
 		void SanityCheck();
 
-		// Editor Configuration
+		/*********************************************************************//**
+		 * \brief   Loads the editor configurations.
+		 *********************************************************************/
 		void LoadEditorConfig();
+
+		/*********************************************************************//**
+		 * \brief   Serializes and saves current editor configurations.
+		 *********************************************************************/
 		void SaveEditorConfig();
 
-		// Handles placing the dragged prefab when the mouse is released.
-		void HandleDragDropPlacement(); // Renamed from HandleTilePlacement	
+		/*********************************************************************//**
+		 * \brief   Handles placing the dragged prefab when the mouse is released.
+		 *********************************************************************/
+		void HandleDragDropPlacement();
 
-		//  Renders a preview of the tile being dragged.
+		/*********************************************************************//**
+		 * \brief   Renders a visual preview of the prefab being dragged.
+		 *
+		 * \param   drawList
+		 *********************************************************************/
 		void DrawDragDropPreview(ImDrawList* drawList);
 
-		// Handles logic for erasing a tile from the grid.
+		/*********************************************************************//**
+		 * \brief   Handles erasing entities from the grid when the eraser tool
+		 *          is active in Brush Mode.
+		 *********************************************************************/
 		void HandleTileErasing();
 
-		//  Handles the logic for spawning a selected prefab at the mouse cursor position.
+		/*********************************************************************//**
+		 * \brief   Handles the instantiation logic for spawning a selected
+		 *          prefab at the mouse cursor position.
+		 *********************************************************************/
 		void HandleSpawning();
-		
-		// Handles the logic for selecting an entity by clicking on it in the game world.
+
+		/*********************************************************************//**
+		 * \brief   Handles logic for selecting an entity by clicking on it
+		 *          in the game world or using Marquee selection.
+		 *********************************************************************/
 		void HandleSelection();
 
-		// Handles the logic for deleting an entity by clicking on it in the game world.
+		/*********************************************************************//**
+		 * \brief   Handles logic for deleting selected entities when the
+		 *          Delete key is pressed.
+		 *********************************************************************/
 		void HandleDeletion();
 
-		// Handle input keys when game viewport is active
+		/*********************************************************************//**
+		 * \brief   Handles input specifics when the game viewport is focused.
+		 *********************************************************************/
 		void HandleGameViewportInput();
 
 		/* Entity Copy & Pasting APIs */
+
+		/*********************************************************************//**
+		 * \brief   Copies a single entity's JSON representation to the clipboard.
+		 *
+		 * \param   entity
+		 *********************************************************************/
 		void CopyEntityToClipboard(const Entity entity);
-		void CopyEntitiesToClipboard(const std::vector<Entity>& entities);  // New: Multiple entities
+
+		/*********************************************************************//**
+		 * \brief   Copies a vector of entities to the clipboard.
+		 *
+		 * \param   entities
+		 *********************************************************************/
+		void CopyEntitiesToClipboard(const std::vector<Entity>& entities);
+
+		/*********************************************************************//**
+		 * \brief   Pastes an entity from the clipboard data into the scene.
+		 *********************************************************************/
 		void PasteEntityFromClipboard();
-		void PasteEntitiesFromClipboard();  // New: Multiple entities
+
+		/*********************************************************************//**
+		 * \brief   Pastes multiple entities from the clipboard into the scene.
+		 *********************************************************************/
+		void PasteEntitiesFromClipboard();
+
+		/*********************************************************************//**
+		 * \brief   Serializes an entity to a string format.
+		 *
+		 * \param   entity
+		 * \return  A JSON string representation of the entity.
+		 *********************************************************************/
 		std::string SerializeEntityToString(const Entity entity);
 
 		// --- GUI Panel Functions ---
+
+		/*********************************************************************//**
+		 * \brief   Renders the Performance Profiler panel.
+		 *********************************************************************/
 		void ShowPerformanceProfile();
+
+		/*********************************************************************//**
+		 * \brief   Renders the main Level Editor controls panel.
+		 *********************************************************************/
 		void ShowLevelEditor();
-		void SaveAndLoadSection(); // within LevelEditor panel
+
+		/*********************************************************************//**
+		 * \brief   Renders the Save and Load UI section within the Level Editor.
+		 *********************************************************************/
+		void SaveAndLoadSection();
+
+		/*********************************************************************//**
+		 * \brief   Renders the Scene Hierarchy panel.
+		 *********************************************************************/
 		void ShowHierarchy();
+
+		/*********************************************************************//**
+		 * \brief   Renders the Entity Inspector panel to edit components.
+		 *********************************************************************/
 		void ShowInspector();
+
+		/*********************************************************************//**
+		 * \brief   Renders the specific data block for a selected component.
+		 *
+		 * \param   selectedEntity
+		 * \param   selectedComponent
+		 *********************************************************************/
 		void ShowComponentSections(const Entity& selectedEntity, const Framework::ComponentType& selectedComponent);
+
+		/*********************************************************************//**
+		 * \brief   Renders the Tilemap Editor panel.
+		 *********************************************************************/
 		void ShowTilemapEditor();
+
+		/*********************************************************************//**
+		 * \brief   Renders the Asset Browser panel.
+		 *
+		 * \param   droppedFiles
+		 *********************************************************************/
 		void ShowAssetBrowser(std::vector<std::filesystem::path>& droppedFiles);
+
+		/*********************************************************************//**
+		 * \brief   Renders the Game Viewport panel.
+		 *********************************************************************/
 		void ShowGameViewport();
+
+		/*********************************************************************//**
+		 * \brief   Renders the top application Menu Bar.
+		 *********************************************************************/
 		void ShowMenuBar();
+
+		/*********************************************************************//**
+		 * \brief   Renders the Toolbar panel for quick actions.
+		 *********************************************************************/
 		void ShowToolbar();
+
+		/*********************************************************************//**
+		 * \brief   Renders the Preferences modal window.
+		 *********************************************************************/
 		void ShowPreferencesWindow();
+
+		/*********************************************************************//**
+		 * \brief   Renders the Project Settings modal window.
+		 *********************************************************************/
 		void ShowProjectSettingsWindow();
+
+		/*********************************************************************//**
+		 * \brief   Renders the Debug Visualization overlay panel.
+		 *********************************************************************/
 		void ShowDebugVisualizationPanel();
+
+		/*********************************************************************//**
+		 * \brief   Renders the Prefab Editor panel.
+		 *********************************************************************/
 		void ShowPrefabEditor();
+
+		/*********************************************************************//**
+		 * \brief   Renders the Tile Palette selector panel.
+		 *********************************************************************/
 		void ShowTilePalette();
-		//void ShowRestartMenu(); //when player dies
+
+		/*********************************************************************//**
+		 * \brief   Renders the Layer Manager panel for editing layers.
+		 *********************************************************************/
 		void ShowLayerManager();
 
+		// Component-specific inspector sub-panels
 		void DrawTransformInspector(Entity entity);
 		void DrawRigidBodyInspector(Entity entity);
 		void DrawTextureInspector(Entity entity);
@@ -360,16 +529,37 @@ namespace Editor {
 		std::string popupMsg;
 
 		// --- Grid Helper Functions ---
-		void DrawEditorGrid(ImDrawList* drawList); //uses imgui drawlist to draw onto screen
-		//void ResetPlayerToDefaultPosition();
+
+		/*********************************************************************//**
+		 * \brief   Draws the world grid when the tile editor is active.
+		 *
+		 * \param   drawList
+		 *********************************************************************/
+		void DrawEditorGrid(ImDrawList* drawList);
 
 		std::string selectedPrefabForEditing_;
 		PrefabType selectedPrefabTypeForEditing_ = PrefabType::None;
 		bool isPrefabEditorOpen_ = false;
 
 		// Helper functions for prefabs 
+
+		/*********************************************************************//**
+		 * \brief   Applies modified prefab configurations to active instances.
+		 *
+		 * \param   prefabName
+		 *********************************************************************/
 		void ApplyPrefabChangesToEntities(const std::string& prefabName);
+
+		/*********************************************************************//**
+		 * \brief   Serializes and saves prefab changes to the disk.
+		 *
+		 * \param   prefabName
+		 *********************************************************************/
 		void SavePrefabToFile(const std::string& prefabName);
+
+		/*********************************************************************//**
+		 * \brief   Iterates the active scene and updates all recognized prefabs.
+		 *********************************************************************/
 		void ApplyAllPrefabChangesToCurrentScene();
 
 		// Animation Editor Helper functions
@@ -381,34 +571,67 @@ namespace Editor {
 		void RefreshAnimationInResourceManager(const std::string& animationName);
 
 		// Scene Management Helper functions
+
+		/*********************************************************************//**
+		 * \brief   Serializes and saves the active scene to disk.
+		 *********************************************************************/
 		void SaveScene();
+
+		/*********************************************************************//**
+		 * \brief   Renders the Scene Asset Preload section for textures.
+		 *********************************************************************/
 		void DrawScenePreloadTexturesUI(const Framework::SceneAsset& currentScene);
 
-		// Returns entity at current mouse position in the game world, 0 if not found.
+		/*********************************************************************//**
+		 * \brief   Determines the object located under the current mouse position.
+		 *
+		 * \return  The entity ID at the mouse coordinate, or 0 if none.
+		 *********************************************************************/
 		Entity GetObjAtMousePos();
 
-		// Loads textures and prepares palette items.
+		/*********************************************************************//**
+		 * \brief   Prepares texture resources for general palette platform items.
+		 *********************************************************************/
 		void PreparePaletteItems();
 
-		//void LoadTilesFromFile();
+		/*********************************************************************//**
+		 * \brief   Prepares texture resources specifically for tile items.
+		 *********************************************************************/
 		void PrepareTilePaletteItems();
 
-		// Function for placing items in world
+		/*********************************************************************//**
+		 * \brief   Instantiates the dragged object into the active scene.
+		 *
+		 * \param   info
+		 * \param   position
+		 *********************************************************************/
 		void PlaceObjectInWorld(const DraggablePrefabInfo& info, Vector2D position);
 
-		// Helper to get the HalfSize of a prefab or tile BEFORE creating it
+		/*********************************************************************//**
+		 * \brief   Calculates the half-size extent of a given prefab.
+		 *
+		 * \param   name
+		 * \param   type
+		 * \return  A vector holding the X and Y half size extents.
+		 *********************************************************************/
 		Vector2D GetPrefabHalfSize(const std::string& name, PrefabType type);
 
-		// Handle the continuous clicking input
+		/*********************************************************************//**
+		 * \brief   Handles painting placement input behavior for brushes.
+		 *********************************************************************/
 		void HandleBrushInput();
 
-		//ImVec2 WorldToImGuiScreen_Absolute(const Vector2D& worldPos);
-
-		// Caches the game viewport's position and size
+		/*********************************************************************//**
+		 * \brief   Updates positional state of the Game Viewport within ImGui.
+		 *********************************************************************/
 		void UpdateViewportData();
 
-
-		// Sort a list of entities by descending render layer
+		/*********************************************************************//**
+		 * \brief   Sorts vector of entities to accurately determine rendering priority.
+		 *
+		 * \param   entities
+		 * \param   entityMgr
+		 *********************************************************************/
 		void SortEntitiesByRenderLayer(std::vector<Entity>& entities, Framework::EntityManager& entityMgr);
 
 
@@ -450,7 +673,9 @@ namespace Editor {
 		char newPrefabNameBuffer_[256] = "";
 		Entity entityForPrefabCreation_ = 0;
 
-		// Helper function
+		/*********************************************************************//**
+		 * \brief   Helper prompt providing dialog for creating new prefabs.
+		 *********************************************************************/
 		void ShowCreatePrefabDialog();
 
 	public:
@@ -475,29 +700,63 @@ namespace Editor {
 		const ImVec2 GetGameViewportSize() const { return gameViewportSize_; }
 		const ImVec2 GetGameViewportPos() const { return gameViewportPos_; }
 
+		/*********************************************************************//**
+		 * \brief   Snaps a given continuous position stringently to the Editor Grid.
+		 *
+		 * \param   worldPos
+		 * \param   normalized
+		 * \return  The floored/snapped vector location.
+		 *********************************************************************/
 		Vector2D SnapToGrid(const Vector2D& worldPos, bool normalized = false) const;
 
-		
-		//Converts the current mouse position from screen coordinates to world coordinates.
-		Vector2D GetMouseWorldPosition(); // maybe can be in inputsystem.h in the future
+		/*********************************************************************//**
+		 * \brief   Converts internal screen coordinates into the true continuous
+		 *          mouse game-space position representing the camera viewport.
+		 * \return  World units position inside the game world.
+		 *********************************************************************/
+		Vector2D GetMouseWorldPosition();
 
+		/*********************************************************************//**
+		 * \brief   Retrieves the current mouse position in Normalized Device Coordinates (NDC) relative to the game viewport limits.
+		 * \return  A Vector2D representing normalized bounds.
+		 *********************************************************************/
 		Vector2D GetNormalizedMousePos() const;
 
-		// Converts world - space coordinates to ImGui screen - space
-		// function that accepts a specific camera ID for movement
+		/*********************************************************************//**
+		 * \brief   Converts world-space to ImGui screen positions with a cam ID.
+		 *
+		 * \param   worldPos
+		 * \param   cameraID
+		 * \return  The coordinate vector matching the ImGui drawing context window.
+		 *********************************************************************/
 		ImVec2 WorldToImGuiScreen(const Vector2D& worldPos, Entity cameraID);
 
-		// Converts world-space coordinates to ImGui screen-space
+		/*********************************************************************//**
+		 * \brief   Converts world-space to ImGui screen positions via default editor camera.
+		 *
+		 * \param   worldPos
+		 * \return  The translated ImGui window drawing offset.
+		 *********************************************************************/
 		ImVec2 WorldToImGuiScreen(const Vector2D& worldPos);
-		// Converts normalized coordinates to ImGui screen-space
+
+		/*********************************************************************//**
+		 * \brief   Converts normalized coordinates to ImGui screen-space.
+		 *
+		 * \param   normalizedPos
+		 * \return  The absolute screen X/Y.
+		 *********************************************************************/
 		ImVec2 NormalizedToImGuiScreen(const Vector2D& normalizedPos) const;
 
-		// Setter for GizmosSystem
+		/*********************************************************************//**
+		 * \brief   Setter for active target Gizmos tracking controller system reference.
+		 *********************************************************************/
 		void SetGizmoSystem(GizmoSystem* gizmo) {
 			gizmoSystem_ = gizmo;
 		}
 
-		// Getter for historyManager_
+		/*********************************************************************//**
+		 * \brief   Getter for the editor operational undo/redo tracker log.
+		 *********************************************************************/
 		HistoryManager* GetHistoryMgr() { return &historyManager_; }
 	};
 }

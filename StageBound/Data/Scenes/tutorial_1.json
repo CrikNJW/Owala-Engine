@@ -748,15 +748,6 @@
                     "start_delay": 0.0,
                     "start_delay_range": 0.0
                 },
-                "NativeScripts": {
-                    "scripts": [
-                        {
-                            "type": "PrintEntityName",
-                            "enabled": true,
-                            "execute_in_edit": false
-                        }
-                    ]
-                },
                 "SceneOwned": {
                     "scene_id": 7,
                     "sceneName": "Tutorial 1"

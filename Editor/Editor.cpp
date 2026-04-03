@@ -54,6 +54,12 @@
 namespace Editor {
 	using namespace Framework;
 
+	/*********************************************************************//**
+	 * \brief   Converts a ComponentType enum value into a readable string.
+	 *
+	 * \param   componentType
+	 * \return  A string representation of the component type.
+	 *********************************************************************/
 	std::string ComponentToString(ComponentType componentType) {
 		switch (componentType)
 		{
@@ -93,7 +99,12 @@ namespace Editor {
 		}
 	}
 
-	// Helper to convert a CollisionLayer enum to its string representation.
+	/*********************************************************************//**
+	 * \brief   Converts a CollisionLayer enum into its string representation.
+	 *
+	 * \param   layer
+	 * \return  A string representation of the layer.
+	 *********************************************************************/
 	char const* LayerToString(CollisionLayer layer) {
 		switch (layer) {
 		case CollisionLayer::Default:   return "Default";
@@ -107,6 +118,13 @@ namespace Editor {
 }
 
 namespace Editor {
+	/*********************************************************************//**
+	 * \brief   Begins an editing session for a specific component, saving
+	 *          the pre-edit JSON state to the history manager.
+	 *
+	 * \param   entity
+	 * \param   compType
+	 *********************************************************************/
 	void EditSession::Begin(Entity entity, Framework::ComponentType compType) {
 		using namespace Framework;
 		EntityStorage* ecs = GameManager::GetInstance().GetSystems().ecs_;
@@ -118,6 +136,15 @@ namespace Editor {
 		beforeJSON = EntitySerializer::SerializeComponentToString(entity, compType, *ecs);
 	}
 
+	/*********************************************************************//**
+	 * \brief   Ends an editing session, logging the changes into the undo/redo
+	 *          stack if a modification occurred.
+	 *
+	 * \param   entity
+	 * \param   compType
+	 * \param   description
+	 * \param   historyManager_
+	 *********************************************************************/
 	void EditSession::End(Entity entity, Framework::ComponentType compType, const std::string& description, HistoryManager& historyManager_) {
 		if (active && entityInEdit == entity && compInEdit == compType) {
 			EntityStorage* ecs = GameManager::GetInstance().GetSystems().ecs_;
@@ -133,6 +160,10 @@ namespace Editor {
 		}
 	}
 
+	/*********************************************************************//**
+	 * \brief   Flushes the current active editing session, prematurely
+	 *          ending it and logging changes if any valid entity remains.
+	 *********************************************************************/
 	void EditSession::Flush() {
 		using namespace Framework;
 
@@ -151,10 +182,14 @@ namespace Editor {
 		End(entityInEdit, compInEdit, ss.str(), *GameManager::GetInstance().GetEditor()->GetHistoryMgr());
 	}
 
-	// Add these member variable definitions at the top of your Editor class implementation
-	// (or wherever you have other member variable initializations)
-
-	// In the constructor, initialize the camera state:
+	/*********************************************************************//**
+	 * \brief   Initializes the comprehensive Editor system states, including
+	 *          linking up necessary dependency systems.
+	 *
+	 * \param   engine
+	 * \param   gameManager 
+	 * \param   rcm 
+	 *********************************************************************/
 	Editor::Editor(Framework::CoreEngine& engine, Framework::GameManager& gameManager, Framework::ResourceManager& rcm)
 		: engine_(&engine), gameManager_(&gameManager), resourceManager_(&rcm), assetBrowser(rcm),
 		cameraSystem_(gameManager_->GetSystems().camera_),
@@ -166,8 +201,10 @@ namespace Editor {
 		historyManager_() {
 	};
 
-	// Add these implementations to your Editor.cpp file
-
+	/*********************************************************************//**
+	 * \brief   Resets the editor camera to its standard initial configurations
+	 *          for unified previewing.
+	 *********************************************************************/
 	void Editor::ResetEditorCamera() {
 		if (editorCamera_ != 0) {
 			Framework::Camera& cam = cameraSystem_->GetCamera(editorCamera_);
@@ -186,6 +223,11 @@ namespace Editor {
 		}
 	}
 
+	/*********************************************************************//**
+	 * \brief   Saves the current position and zoom state of the editor camera.
+	 *          This allows the editor to restore the camera's view after switching
+	 *          modes or performing temporary camera manipulations.
+	 *********************************************************************/
 	void Editor::SaveEditorCameraState() {
 		if (editorCamera_ != 0) {
 			Framework::Camera& cam = cameraSystem_->GetCamera(editorCamera_);
@@ -195,6 +237,10 @@ namespace Editor {
 		}
 	}
 
+	/*********************************************************************//**
+	 * \brief   Restores the previously saved position and zoom state of the
+	 *          editor camera.
+	 *********************************************************************/
 	void Editor::RestoreEditorCameraState() {
 		if (editorCamera_ != 0) {
 			Framework::Camera& cam = cameraSystem_->GetCamera(editorCamera_);
@@ -205,6 +251,11 @@ namespace Editor {
 		}
 	}
 
+	/*********************************************************************//**
+	 * \brief   Validates the state of the editor by ensuring all core systems,
+	 *          dependencies, and managers are properly registered and loaded.
+	 *          Throws a GameException if any critical component is missing.
+	 *********************************************************************/
 	void Editor::SanityCheck() {
 		using namespace Framework;
 
@@ -236,6 +287,11 @@ namespace Editor {
 	// ----------------------------------------------------------------------------
 	// Edtior Configuration
 	// ----------------------------------------------------------------------------
+
+	/*********************************************************************//**
+	 * \brief   Loads the editor configurations (such as the undo stack limit)
+	 *          from the predefined configuration JSON file and applies them.
+	 *********************************************************************/
 	void Editor::LoadEditorConfig() {
 		rapidjson::Document doc;
 		if (Framework::FileIOSystem::ReadFile(FileIOKeys::EDITOR_CFG_PATH, doc)) {
@@ -245,6 +301,10 @@ namespace Editor {
 		}
 	}
 
+	/*********************************************************************//**
+	 * \brief   Serializes current editor configurations and saves them to
+	 *          the local configuration file for persistence across sessions.
+	 *********************************************************************/
 	void Editor::SaveEditorConfig() {
 		rapidjson::Document doc;
 		doc.SetObject();
@@ -257,10 +317,10 @@ namespace Editor {
 		}
 	}
 
-	// ----------------------------------------------------------------------------
-	// Initializes the Editor system
-	// Loads prefabs from file and sets up the ImGui context and backends.
-	// ----------------------------------------------------------------------------
+	/*********************************************************************//**
+	* \brief   Initializes the Editor system, setting up the ImGui context,
+	*          backends, loading configurations, prefabs, and layers.
+	*********************************************************************/
 	void Editor::Initialize() {
 		if (initialized || !isEnabled) return; // Skip initialization if Editor is not enabled or has already initialized
 
@@ -446,7 +506,14 @@ namespace Editor {
 	}
 
 
-	// Drag and drop callback function
+	/*********************************************************************//**
+	* \brief   GLFW drag and drop callback function to capture files
+	*          dragged externally into the editor window.
+	*
+	* \param   window 
+	* \param   count 
+	* \param   paths
+	*********************************************************************/
 	void Editor::DropCallback(GLFWwindow* window, int count, const char* paths[])
 	{
 		Editor* editor = static_cast<Editor*>(glfwGetWindowUserPointer(window));
@@ -459,6 +526,12 @@ namespace Editor {
 			}
 		}
 	}
+
+	/*********************************************************************//**
+	 * \brief   The main per-frame update loop for the Editor. Handles core
+	 *          state management, ImGui frame setup, input processing,
+	 *          dockspace layout, and rendering of all editor panels.
+	 *********************************************************************/
 	void Editor::Update() {
 		if (!isEnabled) return;
 
@@ -693,9 +766,10 @@ namespace Editor {
 	}
 
 
-	// ----------------------------------------------------------------------------
-	// Clean up ImGui resources when the application closes.
-	// ----------------------------------------------------------------------------
+	/*********************************************************************//**
+	* \brief   Cleans up and gracefully shuts down the ImGui context
+	*          and its associated backends.
+	*********************************************************************/
 	void Editor::Shutdown() {
 		std::cout << "Freeing IMGUI" << std::endl;
 		ImGui_ImplOpenGL3_Shutdown();
@@ -703,11 +777,15 @@ namespace Editor {
 		ImGui::DestroyContext();
 	}
 
-
 	// --- Private Helper Functions ---
 #pragma region INTERNAL HELPERS
 
-// NEW Helper: Load textures and create palette items
+	/*********************************************************************//**
+	 * \brief   Prepares the list of UI palette items by loading textures
+	 *          and relevant data for platform and trap platform prefabs.
+	 *          These items are used in the tilemap/prefab editor for drag
+	 *          and drop instantiation.
+	 *********************************************************************/
 	void Editor::PreparePaletteItems() {
 		paletteItems_.clear();
 
@@ -772,6 +850,12 @@ namespace Editor {
 		Framework::Logger::Get().Info(DebugType::Editor) << "Prepared " << paletteItems_.size() << " palette items." << std::endl;
 	}
 
+	/*********************************************************************//**
+	 * \brief   Calculates the mouse cursor's current position in active
+	 *          game world coordinates based on the editor camera's view.
+	 *
+	 * \return  A Vector2D representing the mouse's world-space position.
+	 *********************************************************************/
 	Vector2D Editor::GetMouseWorldPosition()
 	{
 		if (!cameraSystem_ || editorCamera_ == 0)
@@ -798,6 +882,13 @@ namespace Editor {
 		return { worldX, worldY };
 	}
 
+	/*********************************************************************//**
+	 * \brief   Retrieves the current mouse position in Normalized Device
+	 *          Coordinates (NDC) relative to the game viewport limits.
+	 *          Returns coordinates typically in the range of [-1, 1].
+	 *
+	 * \return  A Vector2D representing the normalized mouse coordinates.
+	 *********************************************************************/
 	Vector2D Editor::GetNormalizedMousePos() const {
 		ImVec2 absoluteMousePos = ImGui::GetIO().MousePos;
 		double mouseX = static_cast<double>(absoluteMousePos.x - gameViewportPos_.x);
@@ -807,7 +898,11 @@ namespace Editor {
 		return Vector2D(static_cast<float>(mouseX_ndc), static_cast<float>(mouseY_ndc));
 	}
 
-
+	/*********************************************************************//**
+	 * \brief   Handles logic when a prefab is dropped onto the game viewport
+	 *          during a drag and drop operation. Computes the world
+	 *          position and snaps it to the grid before placement.
+	 *********************************************************************/
 	void Editor::HandleDragDropPlacement()
 	{
 		if (!isDraggingPrefab_ || !isMouseOverGameViewport_) {
@@ -830,17 +925,23 @@ namespace Editor {
 		Vector2D worldMousePos = cameraSystem_->ScreenToWorld(screenPos, editorCamera_);
 
 
-		
+
 		Vector2D snappedPos = SnapToGrid(worldMousePos);
 
-		
+
 		PlaceObjectInWorld(dragDropPayload_, snappedPos);
 
 		isDraggingPrefab_ = false;
 
 	}
 
-
+	/*********************************************************************//**
+	 * \brief   Renders the visual preview of a drag and drop operation or brush
+	 *          placement, drawing an image representation of the object attached
+	 *          to the cursor if within the game viewport.
+	 *
+	 * \param   drawList
+	 *********************************************************************/
 	void Editor::DrawDragDropPreview(ImDrawList* drawList)
 	{
 
@@ -852,7 +953,7 @@ namespace Editor {
 		const DraggablePrefabInfo& currentPayload = dragDropPayload_;//isDraggingPrefab_ ? dragDropPayload_ : brushPayload_;
 		if (currentPayload.type == PrefabType::None || currentPayload.type == PrefabType::Eraser) return;
 
-		
+
 		static int debugCounter = 0;
 		if (debugCounter++ % 60 == 0) { // Log once per second at 60fps
 			Framework::Logger::Get().Info(DebugType::Editor)
@@ -862,8 +963,6 @@ namespace Editor {
 				<< " | UV1: (" << currentPayload.uv1.x << "," << currentPayload.uv1.y << ")" << std::endl;
 		}
 
-
-		
 
 		if (!cameraSystem_ || editorCamera_ == 0) return;
 
@@ -876,7 +975,7 @@ namespace Editor {
 		else brushPreviewPos_ = snappedPos;
 
 		// Calculate Screen Rect
-		Vector2D halfSize = { baseGridCellSize_/2, baseGridCellSize_/2 };
+		Vector2D halfSize = { baseGridCellSize_ / 2, baseGridCellSize_ / 2 };
 
 		Vector2D worldMin = { snappedPos.x - halfSize.x, snappedPos.y - halfSize.y };
 		Vector2D worldMax = { snappedPos.x + halfSize.x, snappedPos.y + halfSize.y };
@@ -907,7 +1006,7 @@ namespace Editor {
 
 			if (currentPayload.textureID != 0) {
 				// Cast texture ID properly for ImGui
-		
+
 
 				// Draw the image
 				drawList->AddImage(
@@ -939,9 +1038,18 @@ namespace Editor {
 			//);
 
 		}
-		
+
 	}
 
+	/*********************************************************************//**
+	 * \brief   Extracts the half-size representation of a specified prefab
+	 *          based on its components (e.g. AABBCollider or Texture)
+	 *          to assist with placement previewing and sizing.
+	 *
+	 * \param   name 
+	 * \param   type 
+	 * \return  A Vector2D representing the half dimensions of the prefab.
+	 *********************************************************************/
 	Vector2D Editor::GetPrefabHalfSize(const std::string& name, PrefabType type)
 	{
 		// Default size if nothing is found (e.g. 1 grid cell)
@@ -982,8 +1090,16 @@ namespace Editor {
 		return defaultSize;
 	}
 
-	
 
+
+	/*********************************************************************//**
+	 * \brief   Instantiates a prefab in the game world at the specified
+	 *          position, snapping it to the editor grid, and ensuring
+	 *          there aren't existing overlapping platform placements.
+	 *
+	 * \param   info 
+	 * \param   position 
+	 *********************************************************************/
 	void Editor::PlaceObjectInWorld(const DraggablePrefabInfo& info, Vector2D position)
 	{
 		// Force Snap
@@ -1007,7 +1123,7 @@ namespace Editor {
 
 					// Allow replacing if in Eraser mode, otherwise BLOCK placement
 					if (info.type != PrefabType::Eraser) {
-						return; 
+						return;
 					}
 				}
 			}
@@ -1036,15 +1152,19 @@ namespace Editor {
 		}
 	}
 
+	/*********************************************************************//**
+	 * \brief   Handles brush mode input, allowing for continuous creation or
+	 *          erasing of objects along the grid through click-and-drag.
+	 *********************************************************************/
 	void Editor::HandleBrushInput()
 	{
-		
+
 		if (!isBrushMode_ || isDraggingPrefab_) return;
 
 		//Right Click in viewport or ESC to leave brushmode
 		Framework::InputSystem* input = gameManager_->GetSystems().input_;
 		if (input->MousePressed(Framework::InputSystem::MouseButton::Right) ||
-			input->KeyPressed(Framework::InputSystem::Key::Escape) || !isTileEditorActive_){
+			input->KeyPressed(Framework::InputSystem::Key::Escape) || !isTileEditorActive_) {
 
 			if (historyManager_.IsGroupActive()) {
 				historyManager_.EndGroup();
@@ -1089,7 +1209,11 @@ namespace Editor {
 		}
 	}
 
-
+	/*********************************************************************//**
+	 * \brief   Processes tile erasing logic when the eraser tool is active.
+	 *          Removes platforms or tiles at the grid-snapped cursor position
+	 *          while the left mouse button is held down over the game viewport.
+	 *********************************************************************/
 	void Editor::HandleTileErasing() {
 		auto* input = gameManager_->GetSystems().input_;
 
@@ -1128,6 +1252,11 @@ namespace Editor {
 		}
 	}
 
+	/*********************************************************************//**
+	 * \brief   Handles the instantiation of a selected prefab into the scene.
+	 *          Spawns the new entity at the cursor's world position on
+	 *          left-click or cancels the pending spawn action on right-click.
+	 *********************************************************************/
 	void Editor::HandleSpawning() {
 		auto* input = gameManager_->GetSystems().input_;
 
@@ -1158,6 +1287,12 @@ namespace Editor {
 		}
 	}
 
+	/*********************************************************************//**
+	 * \brief   Manages entity selection via mouse input within the viewport.
+	 *          Supports standard single-click selection acting on the top-most
+	 *          entity, and "marquee" drag selection to select multiple entities
+	 *          within a drawn rectangular GUI bound.
+	 *********************************************************************/
 	void Editor::HandleSelection() {
 		Framework::InputSystem* input = gameManager_->GetSystems().input_;
 
@@ -1345,6 +1480,11 @@ namespace Editor {
 		}
 	}
 
+	/*********************************************************************//**
+	 * \brief   Handles the deletion of currently selected entities within the
+	 *          scene when the designated delete key is pressed, removing them
+	 *          from the ECS and recording the action into the undo history.
+	 *********************************************************************/
 	void Editor::HandleDeletion() {
 		// Check if an entity is selected and if the Delete key was just pressed
 		if (isEntitySelected_ && gameManager_->GetSystems().input_->KeyPressed(Framework::InputSystem::Key::Delete)) {
@@ -1378,6 +1518,12 @@ namespace Editor {
 
 #pragma region COPY AND PASTING APIs
 
+	/*********************************************************************//**
+	 * \brief   Copies the specified entity to the internal editor clipboard by
+	 *          serializing it into a JSON format.
+	 *
+	 * \param   entity 
+	 *********************************************************************/
 	void Editor::CopyEntityToClipboard(const Entity entity) {
 		Framework::EntityStorage* ecs = &GameManager::GetInstance().GetECS();
 		rapidjson::Document doc;
@@ -1395,6 +1541,12 @@ namespace Editor {
 		entitiesClipboard_.push_back(buffer.GetString());
 	}
 
+	/*********************************************************************//**
+	 * \brief   Copies a collection of entities to the internal editor clipboard
+	 *          by serializing each valid entity into a JSON format.
+	 *
+	 * \param   entities 
+	 *********************************************************************/
 	void Editor::CopyEntitiesToClipboard(const std::vector<Entity>& entities) {
 		entitiesClipboard_.clear();
 		Framework::EntityStorage* ecs = &GameManager::GetInstance().GetECS();
@@ -1419,6 +1571,11 @@ namespace Editor {
 		}
 	}
 
+	/*********************************************************************//**
+	 * \brief   Pastes the first available entity from the internal clipboard
+	 *          into the current active scene. Deserializes the JSON data,
+	 *          assigns a new UUID, and records the action into history.
+	 *********************************************************************/
 	void Editor::PasteEntityFromClipboard() {
 		// Check if there is an entity in the clipboard
 		if (entitiesClipboard_.empty()) {
@@ -1443,6 +1600,11 @@ namespace Editor {
 		historyManager_.Record(OpType::Create, pastedEntity, "Pasted Entity");
 	}
 
+	/*********************************************************************//**
+	 * \brief   Pastes all entities currently held in the internal clipboard
+	 *          into the active scene. Each entity is deserialized, assigned
+	 *          a new UUID, and the batch action is recorded for undo/redo.
+	 *********************************************************************/
 	void Editor::PasteEntitiesFromClipboard() {
 		if (entitiesClipboard_.empty()) {
 			Framework::Logger::Get().Error(DebugType::Editor) << "No entities in clipboard to paste!" << std::endl;
@@ -1451,13 +1613,13 @@ namespace Editor {
 
 		Framework::EntityStorage* ecs = &GameManager::GetInstance().GetECS();
 		const SceneAsset& activeScene = Framework::SceneManager::GetInstance().GetActiveScene();
-		
+
 		std::vector<Entity> pastedEntities;
 
 		for (const std::string& entityJson : entitiesClipboard_) {
 			rapidjson::Document doc;
 			doc.Parse(entityJson.c_str());
-			
+
 			if (doc.HasParseError()) {
 				Framework::Logger::Get().Error(DebugType::Editor) << "Failed to parse entity data from clipboard!" << std::endl;
 				continue;
@@ -1477,6 +1639,13 @@ namespace Editor {
 		}
 	}
 
+	/*********************************************************************//**
+	 * \brief   Serializes a specific entity and its components into a
+	 *          JSON-formatted string representation.
+	 *
+	 * \param   entity 
+	 * \return  A string containing the serialized JSON data of the entity.
+	 *********************************************************************/
 	std::string Editor::SerializeEntityToString(const Entity entity) {
 		Framework::EntityStorage* ecs = gameManager_->GetSystems().ecs_;
 		rapidjson::Document doc;
@@ -1493,7 +1662,6 @@ namespace Editor {
 
 		return std::string(buffer.GetString());
 	}
-
 #pragma endregion
 
 #pragma endregion
@@ -1502,6 +1670,12 @@ namespace Editor {
 #pragma region INTERNAL PANELS
 
 #pragma region PERFORMANCE PROFILER PANEL
+	/*********************************************************************//**
+	 * \brief   Renders the Performance Profiler panel within the editor.
+	 *          Displays total frame time, average FPS, and individual system
+	 *          execution times via progress bars. Groups game-specific systems
+	 *          separately and allows the user to adjust the refresh interval.
+	 *********************************************************************/
 	void Editor::ShowPerformanceProfile() {
 
 		ImGui::Begin("Performance Profiler");
@@ -1555,11 +1729,15 @@ namespace Editor {
 		}
 		ImGui::End();
 	}
-
 #pragma endregion
 
 #pragma region LEVEL EDITOR PANEL
 
+	/*********************************************************************//**
+	 * \brief   Renders the Level Editor panel, providing global controls,
+	 *          scene entity management, and entry points to specialized
+	 *          editors like the Tilemap, Prefab, and Animation editors.
+	 *********************************************************************/
 	void Editor::ShowLevelEditor() {
 		using namespace Framework;
 		// --- BUILD IMGUI INTERFACE ---
@@ -1655,6 +1833,12 @@ namespace Editor {
 		ImGui::End(); // End "Level Editor" window
 	}
 
+	/*********************************************************************//**
+	 * \brief   Renders the UI section for managing asynchronously preloaded
+	 *          textures linked to the current scene asset.
+	 *
+	 * \param   currentScene 
+	 *********************************************************************/
 	void Editor::DrawScenePreloadTexturesUI(const SceneAsset& currentScene) {
 		if (!currentScene.IsValid()) return;
 
@@ -1706,7 +1890,11 @@ namespace Editor {
 			}
 		}
 	}
-	
+
+	/*********************************************************************//**
+	 * \brief   Saves the currently active scene to the disk by serializing
+	 *          all its owned entities and relevant scene configurations.
+	 *********************************************************************/
 	void Editor::SaveScene() {
 		SceneManager& sceneMgr = SceneManager::GetInstance();
 		const SceneAsset& currentScene = sceneMgr.GetActiveScene();
@@ -1733,6 +1921,11 @@ namespace Editor {
 		FileIOSystem::SaveSceneAsset(currentScene);
 	}
 
+	/*********************************************************************//**
+	 * \brief   Renders the Scene Management UI section, handling saving,
+	 *          unloading, creating new scenes, and loading existing scene
+	 *          assets from the project directory.
+	 *********************************************************************/
 	void Editor::SaveAndLoadSection() {
 		SceneManager& sceneMgr = SceneManager::GetInstance();
 		const SceneAsset& currentScene = sceneMgr.GetActiveScene();
@@ -1915,8 +2108,11 @@ namespace Editor {
 #pragma endregion
 
 #pragma region TILEMAP EDITOR PANEL
-
-	// TILE PALETTE WINDOW
+	/*********************************************************************//**
+	 * \brief   Renders the Tile Palette window, allowing users to select
+	 *          and place predefined tile prefabs into the scene via
+	 *          drag-and-drop or brush mode (right-click to select).
+	 *********************************************************************/
 	void Editor::ShowTilePalette() {
 		static bool wasTilePaletteOpen = false;
 		if (ImGui::Begin("Tile Palette", &isTileEditorActive_)) {
@@ -2019,12 +2215,12 @@ namespace Editor {
 						<< "Entered Brush Mode with: " << item.name << std::endl;
 				}
 
-				
+
 
 				if (ImGui::IsItemHovered())
 					ImGui::SetTooltip("%s", item.name.c_str());
 
-				
+
 				ImGui::PopID();
 
 				itemsPerRow++;
@@ -2046,54 +2242,14 @@ namespace Editor {
 			showGrid_ = false;
 			isDraggingPrefab_ = false;
 		}
-		
+
 	}
 
-	/*void Editor::LoadTilesFromFile() {
-		using namespace Framework;
-
-		std::ifstream fileIn("Data/tiles.json");
-		if (!fileIn.is_open()) {
-			Logger::Get().Error(DebugType::Editor)
-				<< "Failed to open Data/tiles.json" << std::endl;
-			return;
-		}
-
-		rapidjson::IStreamWrapper isw(fileIn);
-		rapidjson::Document doc;
-		doc.ParseStream(isw);
-		fileIn.close();
-
-		if (!doc.IsObject() || !doc.HasMember("tiles") || !doc["tiles"].IsArray()) {
-			Logger::Get().Error(DebugType::Editor)
-				<< "Invalid tiles.json format" << std::endl;
-			return;
-		}
-
-		tileDataList_.clear();
-		const rapidjson::Value& tilesArray = doc["tiles"];
-
-		for (rapidjson::SizeType i = 0; i < tilesArray.Size(); ++i) {
-			const rapidjson::Value& tileObj = tilesArray[i];
-
-			if (!tileObj.HasMember("name") || !tileObj.HasMember("textureID")) {
-				Logger::Get().Error(DebugType::Editor)
-					<< "Skipping invalid tile entry at index " << i << std::endl;
-				continue;
-			}
-
-			TileData tile;
-			tile.name = tileObj["name"].GetString();
-			tile.textureID = tileObj["textureID"].GetString();
-
-			tileDataList_.push_back(tile);
-		}
-
-		Logger::Get().Info(DebugType::Editor)
-			<< "Loaded " << tileDataList_.size() << " tiles from tiles.json" << std::endl;
-	}*/
-
-
+	/*********************************************************************//**
+	 * \brief   Constructs the list of tile items for the Tile Palette by
+	 *          querying available platform prefabs and associating them
+	 *          with their respective loaded textures.
+	 *********************************************************************/
 	void Editor::PrepareTilePaletteItems() {
 		tilePaletteItems_.clear();
 
@@ -2115,7 +2271,7 @@ namespace Editor {
 					<< "' with key: '" << textureKey << "'" << std::endl;
 
 				if (!resourceManager_) {
-					Framework::Logger::Get().Error(DebugType::Editor)<< "ResourceManager pointer is null in PrepareTilePaletteItems!" << std::endl;
+					Framework::Logger::Get().Error(DebugType::Editor) << "ResourceManager pointer is null in PrepareTilePaletteItems!" << std::endl;
 					return;
 				}
 
@@ -2159,7 +2315,11 @@ namespace Editor {
 			<< "Prepared " << tilePaletteItems_.size() << " tile palette items." << std::endl;
 	}
 
-	// PREFAB PALETTE WINDOW
+	/*********************************************************************//**
+	 * \brief   Renders the main Prefab Palette window (Tilemap Editor).
+	 *          Provides tools for selecting, previewing, and placing
+	 *          general prefabs (platforms, traps) into the game world.
+	 *********************************************************************/
 	void Editor::ShowTilemapEditor()
 	{
 		static bool wasTileEditorOpen = false; // Tracks open/close transition
@@ -2328,11 +2488,15 @@ namespace Editor {
 		}
 	}
 
-
-
 #pragma endregion
 
 #pragma region HIERARCHY PANEL
+	/*********************************************************************//**
+	 * \brief   Renders the Hierarchy panel, displaying all entities currently
+	 *          loaded in the active scenes. Supports entity selection, search
+	 *          filtering, context menus for entity operations (duplicate, delete,
+	 *          copy, paste), and drag-and-drop interactions.
+	 *********************************************************************/
 	void Editor::ShowHierarchy() {
 		using namespace Framework;
 
@@ -2366,7 +2530,7 @@ namespace Editor {
 
 				// Check if this entity is in the selection
 				bool selected = std::find(selectedEntities_.begin(), selectedEntities_.end(), entity) != selectedEntities_.end();
-				
+
 				// Keep backward compatibility with old single selection
 				if (selectedEntityIndex > 0 && selectedEntities_.empty()) {
 					selected = (static_cast<unsigned int>(selectedEntityIndex - 1) == entity);
@@ -2380,16 +2544,17 @@ namespace Editor {
 					// Flush any pending edits before changing selection
 					editSession.Flush();
 					selectedTagIndex = selectedComponentIndex = 0;
-					
+
 					ImGuiIO& io = ImGui::GetIO();
-					
+
 					if (io.KeyCtrl) {
 						// Ctrl+Click: Toggle individual selection
 						auto it = std::find(selectedEntities_.begin(), selectedEntities_.end(), entity);
 						if (it != selectedEntities_.end()) {
 							// Deselect if already selected
 							selectedEntities_.erase(it);
-						} else {
+						}
+						else {
 							// Add to selection
 							selectedEntities_.push_back(entity);
 						}
@@ -2402,7 +2567,7 @@ namespace Editor {
 						if (entityMgr.HasComponent(entity, SceneOwnedType)) {
 							currentSceneID = entityMgr.GetComponent<SceneOwned>(entity).sceneIndex;
 						}
-						
+
 						const std::vector<Entity> allSceneEntities = sceneMgr.GetEntitiesInScene(currentSceneID);
 						std::vector<Entity> sceneEntities;
 						sceneEntities.reserve(allSceneEntities.size());
@@ -2414,33 +2579,33 @@ namespace Editor {
 								std::transform(lowerName.begin(), lowerName.end(), lowerName.begin(), ::tolower);
 								std::string lowerSearch = searchBuffer;
 								std::transform(lowerSearch.begin(), lowerSearch.end(), lowerSearch.begin(), ::tolower);
-								
+
 								if (lowerSearch.empty() || lowerName.find(lowerSearch) != std::string::npos) {
 									sceneEntities.push_back(e);
 								}
 							}
 						}
-						
+
 						// Sort entities alphabetically
 						std::sort(sceneEntities.begin(), sceneEntities.end(),
 							[&](Entity a, Entity b) {
 								return entityMgr.GetProperties(a).name < entityMgr.GetProperties(b).name;
 							});
-						
+
 						// Find indices of last clicked and current entity
 						auto lastIt = std::find(sceneEntities.begin(), sceneEntities.end(), lastClickedEntity_);
 						auto currentIt = std::find(sceneEntities.begin(), sceneEntities.end(), entity);
-						
+
 						if (lastIt != sceneEntities.end() && currentIt != sceneEntities.end()) {
 							// Clear current selection
 							selectedEntities_.clear();
-							
+
 							// Select range
 							const size_t startIdx = static_cast<size_t>(std::min(std::distance(sceneEntities.begin(), lastIt),
 								std::distance(sceneEntities.begin(), currentIt)));
 							const size_t endIdx = static_cast<size_t>(std::max(std::distance(sceneEntities.begin(), lastIt),
 								std::distance(sceneEntities.begin(), currentIt)));
-							
+
 							for (size_t i = startIdx; i <= endIdx; ++i) {
 								selectedEntities_.push_back(sceneEntities[i]);
 							}
@@ -2453,7 +2618,7 @@ namespace Editor {
 						lastClickedEntity_ = entity;
 						selectedEntityIndex = entity + 1;  // Keep for backward compatibility
 					}
-					
+
 					isEntitySelected_ = !selectedEntities_.empty();
 				}
 
@@ -2505,15 +2670,16 @@ namespace Editor {
 						if (ImGui::MenuItem(("Copy (" + std::to_string(selectedEntities_.size()) + " entities)").c_str())) {
 							CopyEntitiesToClipboard(selectedEntities_);
 						}
-					} else {
+					}
+					else {
 						if (ImGui::MenuItem("Copy")) {
 							CopyEntityToClipboard(entity);
 						}
 					}
-					
+
 					// Paste
 					if (!entitiesClipboard_.empty()) {
-						std::string pasteLabel = entitiesClipboard_.size() > 1 ? 
+						std::string pasteLabel = entitiesClipboard_.size() > 1 ?
 							"Paste (" + std::to_string(entitiesClipboard_.size()) + " entities)" : "Paste";
 						if (ImGui::MenuItem(pasteLabel.c_str())) {
 							PasteEntitiesFromClipboard();
@@ -2549,7 +2715,7 @@ namespace Editor {
 							}
 							historyManager_.Record(OpType::Create, validSelection[0], "Duplicated " + std::to_string(validSelection.size()) + " Entities");
 						}
-						
+
 						// Delete multiple entities
 						if (ImGui::MenuItem(("Delete (" + std::to_string(selectedEntities_.size()) + " entities)").c_str())) {
 							for (Entity ent : selectedEntities_) {
@@ -2561,7 +2727,8 @@ namespace Editor {
 							selectedEntityIndex = selectedTagIndex = selectedComponentIndex = 0;
 							isEntitySelected_ = false;
 						}
-					} else {
+					}
+					else {
 						// Single entity operations
 						if (ImGui::MenuItem("Duplicate")) {
 							SceneManagement::SceneGUID ownerSceneID = activeScene.sceneIndex;
@@ -2600,7 +2767,7 @@ namespace Editor {
 				if (ImGui::BeginPopupContextItem("##SceneHeaderContext")) {
 					// Paste
 					if (!entitiesClipboard_.empty()) {
-						std::string pasteLabel = entitiesClipboard_.size() > 1 ? 
+						std::string pasteLabel = entitiesClipboard_.size() > 1 ?
 							"Paste (" + std::to_string(entitiesClipboard_.size()) + " entities)" : "Paste";
 						if (ImGui::MenuItem(pasteLabel.c_str())) {
 							PasteEntitiesFromClipboard();
@@ -2689,7 +2856,7 @@ namespace Editor {
 			if (ImGui::BeginPopupContextItem("##HierarchyEmptyContext")) {
 				// Paste
 				if (!entitiesClipboard_.empty()) {
-					std::string pasteLabel = entitiesClipboard_.size() > 1 ? 
+					std::string pasteLabel = entitiesClipboard_.size() > 1 ?
 						"Paste (" + std::to_string(entitiesClipboard_.size()) + " entities)" : "Paste";
 					if (ImGui::MenuItem(pasteLabel.c_str())) {
 						PasteEntitiesFromClipboard();
@@ -2715,11 +2882,15 @@ namespace Editor {
 		ImGui::EndChild();
 		ImGui::End(); // Hierarchy End
 	}
-
 #pragma endregion
 
 #pragma region INSPECTOR PANEL
 
+	/*********************************************************************//**
+	 * \brief   Renders the Inspector panel, displaying the properties, tags,
+	 *          and components of the currently selected entity. Provides UI
+	 *          controls to modify, add, or remove these elements interactively.
+	 *********************************************************************/
 	void Editor::ShowInspector() {
 		using namespace Framework;
 
@@ -2727,12 +2898,12 @@ namespace Editor {
 		if (isEntitySelected_) {
 			EntityStorage& ecs = *(gameManager_->GetSystems().ecs_);
 			EntityManager entityMgr(ecs);
-			
+
 			// Handle multiple entity selection
 			if (selectedEntities_.size() > 1) {
 				ImGui::TextColored(ImVec4(0.4f, 0.8f, 1.0f, 1.0f), "%zu entities selected", selectedEntities_.size());
 				ImGui::Separator();
-				
+
 				// Show list of selected entities
 				if (ImGui::CollapsingHeader("Selected Entities", ImGuiTreeNodeFlags_DefaultOpen)) {
 					for (size_t i = 0; i < selectedEntities_.size(); ++i) {
@@ -2743,20 +2914,21 @@ namespace Editor {
 						}
 					}
 				}
-				
+
 				ImGui::Spacing();
 				ImGui::TextWrapped("Component editing is disabled when multiple entities are selected.");
 				ImGui::TextWrapped("Select a single entity to edit its components.");
-				
+
 				ImGui::End();
 				return;
 			}
-			
+
 			// Single entity selection - use first entity or legacy selectedEntityIndex
 			Entity selectedEntity;
 			if (!selectedEntities_.empty()) {
 				selectedEntity = selectedEntities_[0];
-			} else {
+			}
+			else {
 				selectedEntity = static_cast<Entity>(selectedEntityIndex - 1);
 			}
 
@@ -2835,7 +3007,7 @@ namespace Editor {
 			entityUUID += std::to_string(entityMgr.GetProperties(selectedEntity).uuid);
 
 			ImGui::TextDisabled(entityUUID.c_str());
-			
+
 			// --- End UUID ---
 
 			// --- Layer Dropdown ---
@@ -3043,6 +3215,14 @@ namespace Editor {
 		ImGui::End(); // End Inspector window
 	}
 
+	/*********************************************************************//**
+	 * \brief   Renders the detailed UI section for a designated component
+	 *          attached to an entity. Handles specific component data fields,
+	 *          user modifications, and delegates history tracking for undo/redo.
+	 *
+	 * \param   selectedEntity 
+	 * \param   selectedComponent 
+	 *********************************************************************/
 	void Editor::ShowComponentSections(const Entity& selectedEntity, const Framework::ComponentType& selectedComponent) {
 		using namespace Framework;
 
@@ -3278,7 +3458,7 @@ namespace Editor {
 		case ComponentType::AnimationComponentType: {
 			DrawAnimationInspector(selectedEntity);
 			break;
-		}		
+		}
 		case ComponentType::TextComponentType: {
 			TextComponent& textComp = entityMgr.GetComponent<TextComponent>(selectedEntity);
 
@@ -3352,7 +3532,7 @@ namespace Editor {
 
 					// Validate extension
 					std::string ext = dropped_file.extension().string();
-					std::transform(ext.begin(), ext.end(), ext.begin(), [](unsigned char c){ return static_cast<char>(::tolower(c)); }); 
+					std::transform(ext.begin(), ext.end(), ext.begin(), [](unsigned char c) { return static_cast<char>(::tolower(c)); });
 
 					if (ext == ".ttf" || ext == ".otf")
 					{
@@ -3512,7 +3692,7 @@ namespace Editor {
 				std::string beforeJSON = EntitySerializer::SerializeComponentToString(selectedEntity, selectedComponent, *ecs);
 				const std::string& pick = names[selectedScriptIndex];
 				std::size_t idx = entityMgr.AttachScriptByName(selectedEntity, pick, true);
-				if (idx == (std::size_t) -1) {
+				if (idx == (std::size_t)-1) {
 					Logger::Get().Error(DebugType::Editor) << "AttachScriptByName failed for '" << pick << "'";
 				}
 				std::string afterJSON = EntitySerializer::SerializeComponentToString(selectedEntity, selectedComponent, *ecs);
@@ -3651,7 +3831,7 @@ namespace Editor {
 
 						if (beforeJSON != afterJSON) {
 							std::stringstream ss;
-							ss << "Removed " << scriptName <<" Native Script from " << entityMgr.GetProperties(selectedEntity).name << std::endl;
+							ss << "Removed " << scriptName << " Native Script from " << entityMgr.GetProperties(selectedEntity).name << std::endl;
 							historyManager_.RecordModifyComponent(selectedEntity, ss.str(), beforeJSON, afterJSON, selectedComponent);
 						}
 						ImGui::PopID();
@@ -3679,43 +3859,43 @@ namespace Editor {
 			// Enemy Type Dropdown - show available FSM definitions
 			if (!availableFSMDefinitions_.empty()) {
 				ImGui::Text("Enemy Type:");
-				
+
 				// Find current selection index
 				int currentIndex = -1;
 				std::vector<const char*> items;
 				items.push_back("-- Select Enemy Type --");
 				items.push_back("Custom (manual path)");
-				
+
 				for (size_t i = 0; i < availableFSMDefinitions_.size(); ++i) {
 					items.push_back(availableFSMDefinitions_[i].c_str());
 					// Check if current path matches this definition
 					if (!fsm.fsmDefinitionPath.empty()) {
 						fs::path currentPath(fsm.fsmDefinitionPath);
 						fs::path defPath(availableFSMDefinitions_[i]);
-						if (fs::equivalent(currentPath, defPath) || 
+						if (fs::equivalent(currentPath, defPath) ||
 							currentPath.filename() == defPath.filename()) {
 							currentIndex = static_cast<int>(i + 2); // +2 for the two header items
 						}
 					}
 				}
-				
+
 				// If path is set but doesn't match any definition, it's custom
 				if (currentIndex == -1 && !fsm.fsmDefinitionPath.empty()) {
 					currentIndex = 1; // "Custom (manual path)"
 				}
-				
+
 				int selectedIndex = currentIndex;
 				if (ImGui::Combo("##EnemyTypeCombo", &selectedIndex, items.data(), static_cast<int>(items.size()))) {
 					if (selectedIndex >= 2 && selectedIndex < static_cast<int>(items.size())) {
 						std::string beforeJSON = EntitySerializer::SerializeComponentToString(selectedEntity, selectedComponent, *ecs);
-						
+
 						// Set the definition path to the selected FSM
 						fs::path selectedPath(availableFSMDefinitions_[selectedIndex - 2]);
 						fsm.fsmDefinitionPath = selectedPath.generic_string();
 						fsm.initialized = false; // Force rebuild
-						
+
 						std::string afterJSON = EntitySerializer::SerializeComponentToString(selectedEntity, selectedComponent, *ecs);
-						
+
 						if (beforeJSON != afterJSON) {
 							std::stringstream ss;
 							ss << "Changed Enemy Type in " << entityMgr.GetProperties(selectedEntity).name << std::endl;
@@ -3903,7 +4083,7 @@ namespace Editor {
 			ImGui::SeparatorText("Emission Mode");
 
 			// Emission Mode Dropdown
-			const char* emissionModeItems[] = { "CONTINUOUS", "BURST", "LOOP_BURST", "RANDOM_BURST"};
+			const char* emissionModeItems[] = { "CONTINUOUS", "BURST", "LOOP_BURST", "RANDOM_BURST" };
 			int currentModeIndex = static_cast<int>(emitter.emissionMode);
 
 			if (ImGui::Combo("Emission Mode##emitter", &currentModeIndex, emissionModeItems, IM_ARRAYSIZE(emissionModeItems))) {
@@ -3983,7 +4163,7 @@ namespace Editor {
 					fs::path dropped_path(dropped_path_c_str);
 
 					std::string ext = dropped_path.extension().string();
-					std::transform(ext.begin(), ext.end(), ext.begin(), [](unsigned char c){ return static_cast<char>(::tolower(c)); }); 
+					std::transform(ext.begin(), ext.end(), ext.begin(), [](unsigned char c) { return static_cast<char>(::tolower(c)); });
 
 					if (ext == ".png" || ext == ".jpg" || ext == ".jpeg") {
 						std::string newKey = dropped_path.filename().string();
@@ -4322,7 +4502,7 @@ namespace Editor {
 						Entity droppedEntity = *static_cast<const Entity*>(payload->Data);
 						std::string beforeJSON = EntitySerializer::SerializeComponentToString(selectedEntity, selectedComponent, *ecs);
 
-						uuid        = entityMgr.GetProperties(droppedEntity).uuid;
+						uuid = entityMgr.GetProperties(droppedEntity).uuid;
 						cachedEntity = droppedEntity;
 						slider.needsResolution = true;
 
@@ -4341,7 +4521,7 @@ namespace Editor {
 				if (ImGui::Button(("Clear##" + std::string(label)).c_str())) {
 					std::string beforeJSON = EntitySerializer::SerializeComponentToString(selectedEntity, selectedComponent, *ecs);
 
-					uuid         = 0;
+					uuid = 0;
 					cachedEntity = 0;
 					slider.needsResolution = true;
 
@@ -4354,7 +4534,7 @@ namespace Editor {
 				}
 				ImGui::SameLine();
 				ImGui::TextDisabled("UUID: %llu", uuid);
-			};
+				};
 
 			ImGui::Text("Handle Entity"); ImGui::SameLine();
 			EntityRefSlot("Handle", slider.handleUUID, slider.handleEntity);
@@ -4396,7 +4576,7 @@ namespace Editor {
 			editSession.wasItemActive = activeNow;
 			break;
 		}
-		
+
 		case ComponentType::PlayerHealthComponentType: {
 			PlayerHealthComponent& healthComp = entityMgr.GetComponent<PlayerHealthComponent>(selectedEntity);
 
@@ -4422,11 +4602,15 @@ namespace Editor {
 		ImGui::Separator();
 		ImGui::PopID();
 	}
-
 #pragma endregion
 
 #pragma region GAME VIEW PANEL
 
+	/*********************************************************************//**
+	 * \brief   Updates the editor's internal state regarding the game
+	 *          viewport's dimensions, position, and whether the mouse is
+	 *          hovering over it based on the ImGui window state.
+	 *********************************************************************/
 	void Editor::UpdateViewportData() {
 		// This function just "peeks" at the "Game" window's state
 		// This ensures our viewport data is up-to-date *before* any logic.
@@ -4461,6 +4645,11 @@ namespace Editor {
 		}
 	}
 
+	/*********************************************************************//**
+	 * \brief   Handles keyboard and mouse inputs specific to the game viewport,
+	 *          including gizmo mode switching, editor camera controls (pan,
+	 *          zoom), and deleting selected entities.
+	 *********************************************************************/
 	void Editor::HandleGameViewportInput() {
 
 		// Handle inputs for gizmos/modes (QTYUI)
@@ -4542,7 +4731,7 @@ namespace Editor {
 		if (isEntitySelected_) {
 			if (ImGui::IsKeyPressed(ImGuiKey_Delete)) {
 				EntityManager entityMgr(*(gameManager_->GetSystems().ecs_));
-				
+
 				// Delete all selected entities
 				if (!selectedEntities_.empty()) {
 					for (Entity entity : selectedEntities_) {
@@ -4569,6 +4758,12 @@ namespace Editor {
 		}
 	}
 
+	/*********************************************************************//**
+	 * \brief   Renders the Game Viewport panel integrating the active engine
+	 *          view. Manages framebuffer binding, camera aspect ratios, scene
+	 *          rendering, and editor-specific overlays like gizmos, grids,
+	 *          and debug visualizations.
+	 *********************************************************************/
 	void Editor::ShowGameViewport() {
 		using namespace Framework;
 
@@ -4686,6 +4881,79 @@ namespace Editor {
 						}
 					}
 				}
+				else if (!ImGui::IsAnyItemActive() && ImGui::IsWindowFocused()) {
+					// --- Play mode keybinds ---
+					if (!engine_->IsEditorMode()) {
+						// Toggle collider visibility with C key
+						if (ImGui::IsKeyPressed(ImGuiKey_C)) {
+							SpriteRenderSystem* spriteRenderer_ = gameManager_->GetSystems().spriteRenderer_;
+							if (spriteRenderer_) spriteRenderer_->ToggleColliders();
+						}
+
+						// --- PHYSICS TOGGLES ---
+						PhysicsSystem* physics = gameManager_->GetSystems().physics_;
+
+						if (ImGui::IsKeyPressed(ImGuiKey_P)) {
+							physics->SetPaused(!physics->IsPaused());
+						}
+						if (ImGui::IsKeyPressed(ImGuiKey_O)) {
+							physics->ToggleStepMode();
+						}
+						if (ImGui::IsKeyPressed(ImGuiKey_I)) {
+							physics->ExecuteNextStep();
+						}
+
+						// --- AUDIO TESTING --- 
+						EntityManager entityMgr(*gameManager_->GetSystems().ecs_);
+						AudioSystem* audio = gameManager_->GetSystems().audio_;
+						ResourceManager* resources = gameManager_->GetSystems().resourceManager_;
+
+						// ---- helper: player position (for 3D audio test) ----
+						auto GetPlayerPos = [&]() -> Vector2D {
+							Vector2D p{ 0.0f, 0.0f };
+							auto players = entityMgr.GetAllEntitiesWithComponent(true, PlayerTagType);
+							if (!players.empty() && entityMgr.HasComponent(players[0], TransformType)) {
+								p = entityMgr.GetComponent<Transform>(players[0]).position;
+							}
+							return p;
+							};
+
+						// =========================
+						// --- AUDIO SPATIAL TEST ---
+						// =========================
+						// Y: play 3D SFX left of player
+						if (ImGui::IsKeyPressed(ImGuiKey_Y)) {
+							if (audio && resources) {
+								try {
+									Vector2D p = GetPlayerPos();
+									FMOD::Sound& sfx = resources->get<FMOD::Sound>("jingle.ogg");
+									audio->play3D(sfx, AudioType::SFX, 1.0f, { p.x - 250.0f, p.y }, 50.0f, 700.0f, false);
+								}
+								catch (...) {}
+							}
+						}
+
+						// U: play 3D SFX right of player
+						if (ImGui::IsKeyPressed(ImGuiKey_U)) {
+							if (audio && resources) {
+								try {
+									Vector2D p = GetPlayerPos();
+									FMOD::Sound& sfx = resources->get<FMOD::Sound>("jingle.ogg");
+									audio->play3D(sfx, AudioType::SFX, 1.0f, { p.x + 250.0f, p.y }, 50.0f, 700.0f, false);
+								}
+								catch (...) {}
+							}
+						}
+
+						// --- MASTER VOLUME QUICK TEST ---
+						if (ImGui::IsKeyPressed(ImGuiKey_L)) {
+							if (audio) audio->setMasterVolume(0.0f);
+						}
+						if (ImGui::IsKeyPressed(ImGuiKey_K)) {
+							if (audio) audio->setMasterVolume(0.35f);
+						}
+					}
+				}
 
 				AISystem* aiSystem = gameManager_->GetSystems().aiSystem_;
 				if (aiSystem && camSystem && aiSystem->debugVisualization) {
@@ -4732,10 +5000,16 @@ namespace Editor {
 
 		ImGui::End();
 	}
-
 #pragma endregion
 
 #pragma region FSM
+	/*********************************************************************//**
+	 * \brief   Scans the specified directory for JSON files containing FSM
+	 *          definitions and populates the internal list of available state
+	 *          machines.
+	 *
+	 * \param   folderPath 
+	 *********************************************************************/
 	void Editor::LoadFSMDefinitionsFromFolder(const std::string& folderPath) {
 		using namespace Framework;
 
@@ -4756,6 +5030,11 @@ namespace Editor {
 		}
 	}
 
+	/*********************************************************************//**
+	 * \brief   Reads the available FSM definition files, extracts metadata
+	 *          (names, preview textures, and sizes), and prepares the visual
+	 *          items used by the FSM Drag and Drop palette.
+	 *********************************************************************/
 	void Editor::PrepareFSMPaletteItems() {
 		using namespace Framework;
 
@@ -4818,6 +5097,11 @@ namespace Editor {
 			<< "Prepared " << fsmPaletteItems_.size() << " FSM palette items." << std::endl;
 	}
 
+	/*********************************************************************//**
+	 * \brief   Renders the FSM Enemy Editor UI panel, displaying the palette
+	 *          of available FSM enemies and handling user interactions like
+	 *          reloading definitions and initiating drag-and-drop actions.
+	 *********************************************************************/
 	void Editor::ShowFSMEditor() {
 		using namespace Framework;
 
@@ -4861,59 +5145,59 @@ namespace Editor {
 			}
 
 			for (const auto& item : fsmPaletteItems_) {
-					ImGui::PushID(item.name.c_str());
-					ImGui::BeginGroup();
+				ImGui::PushID(item.name.c_str());
+				ImGui::BeginGroup();
 
-					// Button with preview image
-					if (ImGui::ImageButton(
-						item.name.c_str(),
-						item.textureID,
-						buttonSize,
-						item.uv0,
-						item.uv1,
-						bgCol,
-						tintCol))
-					{
-						selectedFSMDefinition_ = item.fsmPath;
-						Logger::Get().Info(DebugType::Editor)
-							<< "Selected FSM: " << item.name << std::endl;
-					}
-
-					// Drag and drop source
-					if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
-						fsmDragDropPayload_ = item;
-						ImGui::SetDragDropPayload("FSM_ENEMY_DND",
-							fsmDragDropPayload_.fsmPath.c_str(),
-							fsmDragDropPayload_.fsmPath.size() + 1);
-						ImGui::Text("Placing: %s", item.name.c_str());
-						ImGui::Image(item.textureID, ImVec2(48, 48), item.uv0, item.uv1);
-
-						isDraggingFSM_ = true;
-						ImGui::EndDragDropSource();
-					}
-
-					// Show tooltip
-					if (ImGui::IsItemHovered()) {
-						ImGui::BeginTooltip();
-						ImGui::Text("%s", item.name.c_str());
-						ImGui::TextDisabled("Path: %s", item.fsmPath.c_str());
-						ImGui::EndTooltip();
-					}
-
-					// Display name below button
-					ImGui::Text("%s", item.name.c_str());
-
-					ImGui::EndGroup();
-					ImGui::PopID();
-
-					itemsPerRow++;
-					if (itemsPerRow < maxItemsPerRow) {
-						ImGui::SameLine();
-					}
-					else {
-						itemsPerRow = 0;
-					}
+				// Button with preview image
+				if (ImGui::ImageButton(
+					item.name.c_str(),
+					item.textureID,
+					buttonSize,
+					item.uv0,
+					item.uv1,
+					bgCol,
+					tintCol))
+				{
+					selectedFSMDefinition_ = item.fsmPath;
+					Logger::Get().Info(DebugType::Editor)
+						<< "Selected FSM: " << item.name << std::endl;
 				}
+
+				// Drag and drop source
+				if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
+					fsmDragDropPayload_ = item;
+					ImGui::SetDragDropPayload("FSM_ENEMY_DND",
+						fsmDragDropPayload_.fsmPath.c_str(),
+						fsmDragDropPayload_.fsmPath.size() + 1);
+					ImGui::Text("Placing: %s", item.name.c_str());
+					ImGui::Image(item.textureID, ImVec2(48, 48), item.uv0, item.uv1);
+
+					isDraggingFSM_ = true;
+					ImGui::EndDragDropSource();
+				}
+
+				// Show tooltip
+				if (ImGui::IsItemHovered()) {
+					ImGui::BeginTooltip();
+					ImGui::Text("%s", item.name.c_str());
+					ImGui::TextDisabled("Path: %s", item.fsmPath.c_str());
+					ImGui::EndTooltip();
+				}
+
+				// Display name below button
+				ImGui::Text("%s", item.name.c_str());
+
+				ImGui::EndGroup();
+				ImGui::PopID();
+
+				itemsPerRow++;
+				if (itemsPerRow < maxItemsPerRow) {
+					ImGui::SameLine();
+				}
+				else {
+					itemsPerRow = 0;
+				}
+			}
 
 			if (itemsPerRow != 0) {
 				ImGui::NewLine();
@@ -4939,7 +5223,14 @@ namespace Editor {
 		}
 	}
 
-
+	/*********************************************************************//**
+	 * \brief   Instantiates a new enemy entity populated with an FSM component
+	 *          based on a configured JSON definition at a specific world position.
+	 *
+	 * \param   fsmPath 
+	 * \param   position 
+	 * \return  The generated Entity ID, or 0 if creation failed.
+	 *********************************************************************/
 	Entity Editor::CreateFSMEntityAtPosition(const std::string& fsmPath, const Vector2D& position) {
 		using namespace Framework;
 
@@ -5026,6 +5317,11 @@ namespace Editor {
 		return enemy;
 	}
 
+	/*********************************************************************//**
+	 * \brief   Manages the placement of a dragged FSM enemy into the world,
+	 *          handling position mapping, grid snapping, and recording the
+	 *          creation event internally.
+	 *********************************************************************/
 	void Editor::HandleFSMDragDropPlacement() {
 		if (!isDraggingFSM_ || !isMouseOverGameViewport_) {
 			isDraggingFSM_ = false;
@@ -5051,82 +5347,91 @@ namespace Editor {
 #pragma endregion
 
 #pragma region LAYER
+	/*********************************************************************//**
+	 * \brief   Renders the main Layer Manager panel, providing access to global
+	 *          layer settings, a tracker for scene entity layers, the global
+	 *          collision matrix, and individual selected entity configurations.
+	 *********************************************************************/
 	void Editor::ShowLayerManager() {
 
-		
-	ImGui::Begin("Layer");
 
-	// Add button at the top to open layer configuration
-	if (ImGui::Button("Layer Settings", ImVec2(120, 0))) {
-		showLayerConfigWindow_ = true;
-	}
-	ImGui::SameLine();
-	ImGui::TextDisabled("Configure render and collision layers");
+		ImGui::Begin("Layer");
 
-	ImGui::Separator();
+		// Add button at the top to open layer configuration
+		if (ImGui::Button("Layer Settings", ImVec2(120, 0))) {
+			showLayerConfigWindow_ = true;
+		}
+		ImGui::SameLine();
+		ImGui::TextDisabled("Configure render and collision layers");
 
-	auto* physics = gameManager_->GetSystems().physics_;
-	if (!physics) {
-		ImGui::TextDisabled("Physics system not available");
-		ImGui::End();
-		return;
-	}
+		ImGui::Separator();
 
-	if (ImGui::CollapsingHeader("Scene Entity Layer Tracker", ImGuiTreeNodeFlags_DefaultOpen)) {
-		Framework::EntityManager entityMgr(*(gameManager_->GetSystems().ecs_));
-		ShowSceneEntityTracker(entityMgr);
-	}
+		auto* physics = gameManager_->GetSystems().physics_;
+		if (!physics) {
+			ImGui::TextDisabled("Physics system not available");
+			ImGui::End();
+			return;
+		}
 
-	//collision matrix section
-	if (ImGui::CollapsingHeader("Collision Matrix", ImGuiTreeNodeFlags_DefaultOpen)) {
-		ImGui::TextWrapped("Configure which collision layers can interact:");
+		if (ImGui::CollapsingHeader("Scene Entity Layer Tracker", ImGuiTreeNodeFlags_DefaultOpen)) {
+			Framework::EntityManager entityMgr(*(gameManager_->GetSystems().ecs_));
+			ShowSceneEntityTracker(entityMgr);
+		}
+
+		//collision matrix section
+		if (ImGui::CollapsingHeader("Collision Matrix", ImGuiTreeNodeFlags_DefaultOpen)) {
+			ImGui::TextWrapped("Configure which collision layers can interact:");
+			ImGui::Spacing();
+
+			ShowCollisionMatrix(physics);
+		}
+
+		ImGui::Separator();
 		ImGui::Spacing();
 
-		ShowCollisionMatrix(physics);
-	}
-
-	ImGui::Separator();
-	ImGui::Spacing();
-
-	//entity layer section
-	if (ImGui::CollapsingHeader("Entity Layer Configuration", ImGuiTreeNodeFlags_DefaultOpen)) {
-		if (!isEntitySelected_ || selectedEntityIndex == 0) {
-			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.7f, 0.7f, 0.7f, 1.0f));
-			ImGui::TextWrapped("Select an entity in the Hierarchy panel to configure its layers.");
-			ImGui::PopStyleColor();
-		}
-		else {
-			Framework::EntityManager entityMgr(*(gameManager_->GetSystems().ecs_));
-			Entity selectedEntity = static_cast<Entity>(selectedEntityIndex - 1);
-
-			// Display entity name
-			std::string entityName = entityMgr.GetProperties(selectedEntity).name;
-			ImGui::Text("Entity: %s", entityName.c_str());
-			ImGui::Spacing();
-			ImGui::Separator();
-
-			// COLLISION LAYER SECTION 
-			if (ImGui::TreeNodeEx("Collision Layer", ImGuiTreeNodeFlags_DefaultOpen)) {
-				ShowEntityCollisionLayer(entityMgr, selectedEntity);
-				ImGui::TreePop();
+		//entity layer section
+		if (ImGui::CollapsingHeader("Entity Layer Configuration", ImGuiTreeNodeFlags_DefaultOpen)) {
+			if (!isEntitySelected_ || selectedEntityIndex == 0) {
+				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.7f, 0.7f, 0.7f, 1.0f));
+				ImGui::TextWrapped("Select an entity in the Hierarchy panel to configure its layers.");
+				ImGui::PopStyleColor();
 			}
+			else {
+				Framework::EntityManager entityMgr(*(gameManager_->GetSystems().ecs_));
+				Entity selectedEntity = static_cast<Entity>(selectedEntityIndex - 1);
 
-			ImGui::Spacing();
+				// Display entity name
+				std::string entityName = entityMgr.GetProperties(selectedEntity).name;
+				ImGui::Text("Entity: %s", entityName.c_str());
+				ImGui::Spacing();
+				ImGui::Separator();
 
-			//  RENDER LAYER SECTION
-			if (ImGui::TreeNodeEx("Render Layer", ImGuiTreeNodeFlags_DefaultOpen)) {
-				ShowEntityRenderLayer(entityMgr, selectedEntity);
-				ImGui::TreePop();
+				// COLLISION LAYER SECTION 
+				if (ImGui::TreeNodeEx("Collision Layer", ImGuiTreeNodeFlags_DefaultOpen)) {
+					ShowEntityCollisionLayer(entityMgr, selectedEntity);
+					ImGui::TreePop();
+				}
+
+				ImGui::Spacing();
+
+				//  RENDER LAYER SECTION
+				if (ImGui::TreeNodeEx("Render Layer", ImGuiTreeNodeFlags_DefaultOpen)) {
+					ShowEntityRenderLayer(entityMgr, selectedEntity);
+					ImGui::TreePop();
+				}
 			}
 		}
+
+		ImGui::End();
+
+		ShowLayerConfigWindow();
+
 	}
 
-	ImGui::End();
-
-	ShowLayerConfigWindow();
-	
-	}
-
+	/*********************************************************************//**
+	 * \brief   Renders a separate configuration window specifically for creating,
+	 *          editing, and deleting both rendering and collision layers.
+	 *********************************************************************/
 	void Editor::ShowLayerConfigWindow() {
 		if (!showLayerConfigWindow_) return;
 
@@ -5155,6 +5460,10 @@ namespace Editor {
 		ImGui::End();
 	}
 
+	/*********************************************************************//**
+	 * \brief   Draws the tab for creating, viewing, modifying, and deleting
+	 *          render layers and their internal draw orders.
+	 *********************************************************************/
 	void Editor::ShowRenderLayersTab() {
 		ImGui::TextWrapped("Render layers control the draw order of sprites. Lower values render first (behind).");
 		ImGui::Separator();
@@ -5272,6 +5581,10 @@ namespace Editor {
 		}
 	}
 
+	/*********************************************************************//**
+	 * \brief   Draws the tab for creating, viewing, renaming, and deleting
+	 *          global collision/physics layers in the Editor.
+	 *********************************************************************/
 	void Editor::ShowCollisionLayersTab() {
 		ImGui::TextWrapped("Collision layers control which objects can collide with each other.");
 		ImGui::Separator();
@@ -5386,7 +5699,13 @@ namespace Editor {
 		}
 	}
 
-	// Helper function to show collision matrix
+	/*********************************************************************//**
+	 * \brief   Displays an interactive matrix (grid of checkboxes) allowing
+	 *          the user to precisely dictate which collision layer IDs can
+	 *          interact and register collisions with other layers.
+	 *
+	 * \param   physics 
+	 *********************************************************************/
 	void Editor::ShowCollisionMatrix(PhysicsSystem* physics) {
 
 		// Get actual collision layers from LayerManager instead of hardcoded enum
@@ -5450,10 +5769,16 @@ namespace Editor {
 			}
 			ImGui::NewLine();
 		}
-		
+
 	}
 
-	// Helper function to show entity collision layer
+	/*********************************************************************//**
+	 * \brief   Renders a dropdown and information panel for changing the active
+	 *          collision layer property of a specific entity.
+	 *
+	 * \param   entityMgr 
+	 * \param   selectedEntity 
+	 *********************************************************************/
 	void Editor::ShowEntityCollisionLayer(Framework::EntityManager& entityMgr, Entity selectedEntity) {
 
 		EntityStorage& ecs = GameManager::GetInstance().GetECS();
@@ -5490,7 +5815,7 @@ namespace Editor {
 		if (ImGui::Combo("##CollisionLayer", &currentIdx, layerItems.data(), static_cast<int>(layerItems.size()))) {
 			if (currentIdx >= 0 && currentIdx < static_cast<int>(collisionLayers.size())) {
 				std::string beforeJSON = EntitySerializer::SerializeEntityPropertiesToString(selectedEntity, ecs);
-				
+
 				entityLayer = static_cast<Framework::CollisionLayer>(collisionLayers[currentIdx].id);
 				entityMgr.GetProperties(selectedEntity).collisionLayerName = collisionLayers[currentIdx].name;
 
@@ -5531,10 +5856,16 @@ namespace Editor {
 			ImGui::Unindent();
 			ImGui::TreePop();
 		}
-		
 	}
 
-	// Helper function to show entity render layer
+	/*********************************************************************//**
+	 * \brief   Renders settings allowing developers to specify the sorting
+	 *          render layer of an entity, altering its draw order (Z-index).
+	 *          Also exposes options for fine-tuned custom sorting values.
+	 *
+	 * \param   entityMgr 
+	 * \param   selectedEntity 
+	 *********************************************************************/
 	void Editor::ShowEntityRenderLayer(Framework::EntityManager& entityMgr, Entity selectedEntity) {
 
 		EntityStorage& ecs = GameManager::GetInstance().GetECS();
@@ -5688,7 +6019,12 @@ namespace Editor {
 		}
 	}
 
-	// Helper function to show scene entity layer tracker
+	/*********************************************************************//**
+	 * \brief   Renders an interactive data table of all current scene entities,
+	 *          arranged by rendering layer order from highest to lowest visibility.
+	 *
+	 * \param   entityMgr 
+	 *********************************************************************/
 	void Editor::ShowSceneEntityTracker(Framework::EntityManager& entityMgr) {
 		Framework::SceneManager& sceneMgr = Framework::SceneManager::GetInstance();
 		const Framework::SceneAsset& currentScene = sceneMgr.GetActiveScene();
@@ -5807,6 +6143,12 @@ namespace Editor {
 
 #pragma region MENUBAR
 
+	/*********************************************************************//**
+	 * \brief   Renders the main menu bar of the editor at the top of the window,
+	 *          providing drop-down menus for file management, editing operations
+	 *          (undo/redo/copy/paste), window toggling, and various developer
+	 *          tools (FSM, Prefabs, Debug overlays).
+	 *********************************************************************/
 	void Editor::ShowMenuBar() {
 		ImGui::PushStyleColor(ImGuiCol_MenuBarBg, ImVec4(0.05f, 0.05f, 0.05f, 1.f));
 
@@ -5920,7 +6262,7 @@ namespace Editor {
 				ImGui::MenuItem("FSM Enemy Editor", NULL, &isFSMEditorOpen_);
 				ImGui::MenuItem("Prefab Editor", NULL, &isPrefabEditorOpen_);
 				ImGui::MenuItem("Animation Editor", NULL, &settings.showAnimationEditor);
-				
+
 				bool isAnalyzerOpen = buildSizeAnalyzer_.IsOpen();
 				if (ImGui::MenuItem("Build Size Analyzer", NULL, &isAnalyzerOpen)) {
 					buildSizeAnalyzer_.SetOpen(isAnalyzerOpen);
@@ -5954,7 +6296,13 @@ namespace Editor {
 #pragma endregion
 
 #pragma region TOOLBAR
-
+	/*********************************************************************//**
+	 * \brief   Renders the main toolbar panel docked at the top of the editor.
+	 *          It displays keyboard shortcuts for various selection and gizmo
+	 *          modes, provides playback controls (Play, Pause, Step) to toggle
+	 *          between editor and game logic, and handles layout for undo and
+	 *          redo history operations.
+	 *********************************************************************/
 	void Editor::ShowToolbar() {
 		// --- Style setup ---
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(10, 6));
@@ -6144,11 +6492,15 @@ namespace Editor {
 		ImGui::PopStyleColor();
 		ImGui::PopStyleVar();
 	}
-
 #pragma endregion
 
 #pragma region CONFIG WINDOWS
 
+	/*********************************************************************//**
+	 * \brief   Renders the Editor Preferences window. Allows developers to
+	 *          configure editor-specific behaviors and properties, such as
+	 *          the undo/redo history capacity.
+	 *********************************************************************/
 	void Editor::ShowPreferencesWindow() {
 		ImGui::SetNextWindowSize(ImVec2(850, 550), ImGuiCond_FirstUseEver);
 		if (ImGui::Begin("Editor Preferences", &settings.showPreferencesWindow)) {
@@ -6173,6 +6525,12 @@ namespace Editor {
 		ImGui::End();
 	}
 
+	/*********************************************************************//**
+	 * \brief   Renders the Project Settings window. Provides a categorized
+	 *          interface to modify global configurations including game flow
+	 *          (startup/loading scenes, scene tagging), 2D Physics (gravity),
+	 *          and performance metrics (FPS limits).
+	 *********************************************************************/
 	void Editor::ShowProjectSettingsWindow() {
 		ImGui::SetNextWindowSize(ImVec2(850, 550), ImGuiCond_FirstUseEver);
 		if (ImGui::Begin("Project Settings", &settings.showProjectSettingsWindow)) {
@@ -6227,7 +6585,7 @@ namespace Editor {
 					for (int i = 0; i < (int)sceneNames.size(); ++i)
 						if (sceneNames[i] == val) return i;
 					return 0;
-				};
+					};
 
 				ImGuiTableFlags tableFlags = ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_PadOuterX;
 				if (ImGui::BeginTable("GameConfigProperties", 2, tableFlags)) {
@@ -6290,12 +6648,12 @@ namespace Editor {
 
 						auto Contains = [](const std::vector<std::string>& vec, const std::string& val) {
 							return std::find(vec.begin(), vec.end(), val) != vec.end();
-						};
+							};
 						auto Toggle = [](std::vector<std::string>& vec, const std::string& val, bool add) {
 							auto it = std::find(vec.begin(), vec.end(), val);
 							if (add && it == vec.end()) vec.push_back(val);
 							else if (!add && it != vec.end()) vec.erase(it);
-						};
+							};
 
 						ImGui::TableSetColumnIndex(1);
 						bool isMenu = Contains(cfg.menuScenes, name);
@@ -6396,10 +6754,16 @@ namespace Editor {
 		}
 		ImGui::End();
 	}
-
 #pragma endregion
 
 #pragma region EDITOR GRID
+	/*********************************************************************//**
+	 * \brief   Renders the background grid and origin axes (X and Y) within
+	 *          the game viewport. Calculates visible grid lines dynamically
+	 *          based on the editor camera's current position and viewing bounds.
+	 *
+	 * \param   drawList 
+	 *********************************************************************/
 	void Editor::DrawEditorGrid(ImDrawList* drawList)
 	{
 		using namespace Framework;
@@ -6457,11 +6821,17 @@ namespace Editor {
 		drawList->AddLine(WorldToImGuiScreen(yA), WorldToImGuiScreen(yB), axisYColor, 2.0f);
 	}
 
-
-
+	/*********************************************************************//**
+	 * \brief   Calculates the nearest snapped grid position for a given set
+	 *          of world coordinates, aiding in precise entity and tile placement.
+	 *
+	 * \param   worldPos 
+	 * \param   normalized 
+	 * \return  A Vector2D containing the calculated, grid-snapped position.
+	 *********************************************************************/
 	Vector2D Editor::SnapToGrid(const Vector2D& worldPos, bool normalized) const
 	{
-		const float cell = normalized ? 0.1f : baseGridCellSize_/2; // world units
+		const float cell = normalized ? 0.1f : baseGridCellSize_ / 2; // world units
 		float snappedX = std::round(worldPos.x / cell) * cell;
 		float snappedY = std::round(worldPos.y / cell) * cell;
 		return { snappedX, snappedY };
@@ -6471,15 +6841,26 @@ namespace Editor {
 
 #pragma region ASSET BROWSER PANEL
 
+	/*********************************************************************//**
+	 * \brief   Renders the Asset Browser panel, allowing users to navigate
+	 *          and manage project resources, as well as handle externally
+	 *          dropped files for importing into the project.
+	 *
+	 * \param   droppedFiles
+	 *********************************************************************/
 	void Editor::ShowAssetBrowser(std::vector<std::filesystem::path>& droppedFiles) {
 		assetBrowser.RenderUI(droppedFiles);
 	}
-
 
 #pragma endregion
 
 #pragma region PREFAB EDITOR
 
+	/*********************************************************************//**
+	 * \brief   Renders the dialog modal allowing the user to create a new
+	 *          custom prefab from the currently selected entity, specifying its
+	 *          name and saving it to the project's prefab directory.
+	 *********************************************************************/
 	void Editor::ShowCreatePrefabDialog() {
 		using namespace Framework;
 
@@ -6549,6 +6930,12 @@ namespace Editor {
 		}
 	}
 
+	/*********************************************************************//**
+	 * \brief   Renders the main Prefab Editor window, providing tools for
+	 *          creating prefabs from selections, modifying component data of
+	 *          existing prefabs, adding/removing components, and saving or
+	 *          deleting them.
+	 *********************************************************************/
 	void Editor::ShowPrefabEditor() {
 		using namespace Framework;
 		ImGui::Begin("Prefab Editor", &isPrefabEditorOpen_);
@@ -6800,7 +7187,7 @@ namespace Editor {
 
 					// === TRANSFORM COMPONENT ===
 					if (compData.type == "Transform") {
-					
+
 						// Add Rotation Section
 						if (compData.data.HasMember("Rotation") && compData.data["Rotation"].IsObject()) {
 							auto& rot = compData.data["Rotation"];
@@ -6811,7 +7198,7 @@ namespace Editor {
 							if (rot.HasMember("texture_angle")) {
 								float textureAngleDeg = static_cast<float>(rot["texture_angle"].GetFloat() * (180.0f / M_PI));;
 								if (ImGui::DragFloat("Texture Angle (degrees)", &textureAngleDeg, 1.0f, -180.0f, 180.0f)) {
-									rot["texture_angle"].SetFloat(static_cast<float>(textureAngleDeg* (M_PI / 180.0f)));
+									rot["texture_angle"].SetFloat(static_cast<float>(textureAngleDeg * (M_PI / 180.0f)));
 									prefabModified = true;
 								}
 							}
@@ -6820,7 +7207,7 @@ namespace Editor {
 							if (rot.HasMember("collider_angle")) {
 								float colliderAngleDeg = static_cast<float>(rot["collider_angle"].GetFloat() * (180.0f / M_PI));
 								if (ImGui::DragFloat("Collider Angle (degrees)", &colliderAngleDeg, 1.0f, -180.0f, 180.0f)) {
-									rot["collider_angle"].SetFloat(static_cast<float>(colliderAngleDeg* (M_PI / 180.0f)));
+									rot["collider_angle"].SetFloat(static_cast<float>(colliderAngleDeg * (M_PI / 180.0f)));
 									prefabModified = true;
 								}
 							}
@@ -6936,7 +7323,7 @@ namespace Editor {
 								prefabModified = true;
 							}
 						}
-}
+					}
 
 					// === ACCELERATION COMPONENT ===
 					else if (compData.type == "Acceleration") {
@@ -6950,7 +7337,7 @@ namespace Editor {
 							}
 						}
 					}
-						
+
 
 					// === ROTATIONFLAG COMPONENT ===
 					else if (compData.type == "RotationFlag") {
@@ -7185,7 +7572,7 @@ namespace Editor {
 								}
 							}
 						}
-						}
+					}
 
 					// === CAMERA COMPONENT ===
 					else if (compData.type == "Camera") {
@@ -7245,7 +7632,7 @@ namespace Editor {
 							}
 						}
 					}
-						
+
 
 
 					// === PLAYERSTATE COMPONENT ===
@@ -7610,7 +7997,7 @@ namespace Editor {
 			std::vector<std::string> removableComponents;
 			removableComponents.push_back("None");
 			for (const auto& comp : prefab->components) {
-					removableComponents.push_back(comp.type);
+				removableComponents.push_back(comp.type);
 			}
 
 			static int selectedRemoveComponentIndex = 0;
@@ -7679,7 +8066,12 @@ namespace Editor {
 		ImGui::End();
 	}
 
-	// Apply prefab changes to all entities using this prefab
+	/*********************************************************************//**
+	 * \brief   Propagates changes made to a loaded prefab down to all
+	 *          matching instantiated entities within the currently active scene.
+	 *
+	 * \param   prefabName
+	 *********************************************************************/
 	void Editor::ApplyPrefabChangesToEntities(const std::string& prefabName) {
 		using namespace Framework;
 
@@ -7844,40 +8236,6 @@ namespace Editor {
 					}
 				}
 
-				// BIRDAI COMPONENT
-			/*	else if (compData.type == "BirdAIComponent") {
-					if (entityMgr.HasComponent(entity, BirdAIComponentType)) {
-						BirdAIComponent& birdAI = entityMgr.GetComponent<BirdAIComponent>(entity);
-						if (compData.data.HasMember("wakeup_radius"))
-							birdAI.wakeUpRadius = compData.data["wakeup_radius"].GetFloat();
-						if (compData.data.HasMember("move_speed"))
-							birdAI.moveSpeed = compData.data["move_speed"].GetFloat();
-						if (compData.data.HasMember("attack_radius"))
-							birdAI.attackRadius = compData.data["attack_radius"].GetFloat();
-						if (compData.data.HasMember("attack_speed"))
-							birdAI.attackSpeed = compData.data["attack_speed"].GetFloat();
-						if (compData.data.HasMember("wakeup_time"))
-							birdAI.wakeUpTime = compData.data["wakeup_time"].GetFloat();
-						if (compData.data.HasMember("hover_radius"))
-							birdAI.hoverRadius = compData.data["hover_radius"].GetFloat();
-						if (compData.data.HasMember("hover_height"))
-							birdAI.hoverHeight = compData.data["hover_height"].GetFloat();
-						if (compData.data.HasMember("hover_speed"))
-							birdAI.hoverSpeed = compData.data["hover_speed"].GetFloat();
-					}
-				}*/
-
-				//// SKELETONAI COMPONENT
-				//else if (compData.type == "SkeletonAIComponent") {
-				//	if (entityMgr.HasComponent(entity, SkeletonAIComponentType)) {
-				//		SkeletonAIComponent& skelAI = entityMgr.GetComponent<SkeletonAIComponent>(entity);
-				//		if (compData.data.HasMember("detection_radius"))
-				//			skelAI.detectionRadius = compData.data["detection_radius"].GetFloat();
-				//		if (compData.data.HasMember("move_speed"))
-				//			skelAI.moveSpeed = compData.data["move_speed"].GetFloat();
-				//	}
-				//}
-
 				// TRAPPED PLATFORM COMPONENT
 				else if (compData.type == "TrapPlatformComponent") {
 					if (entityMgr.HasComponent(entity, TrapPlatformComponentType)) {
@@ -7938,7 +8296,7 @@ namespace Editor {
 							camera.isActive = compData.data["is_active"].GetBool();
 					}
 				}
-						
+
 
 				// === BUTTON COMPONENT ===
 				else if (compData.type == "ButtonComponent") {
@@ -7964,7 +8322,7 @@ namespace Editor {
 							button.targetValue = compData.data["target_value"].GetFloat();
 					}
 				}
-							
+
 			}
 		}
 
@@ -7972,13 +8330,19 @@ namespace Editor {
 			<< "Applied prefab changes for " << prefabName << " to " << entities.size() << " entities" << std::endl;
 	}
 
-
-	// Save prefab changes to JSON file
+	/*********************************************************************//**
+	 * \brief   Serializes the modifications made to a custom prefab and saves
+	 *          it to a persistent JSON configuration file, then applies the
+	 *          updates scene-wide.
+	 *
+	 * \param   prefabName 
+	 *********************************************************************/
+	 // Save prefab changes to JSON file
 	void Editor::SavePrefabToFile(const std::string& prefabName) {
 		using namespace Framework;
 
 		if (prefabSystem_.SavePrefabToFile(prefabName)) {
-			Logger::Get().Info(DebugType::Editor)<< "Successfully saved prefab: " << prefabName << std::endl;
+			Logger::Get().Info(DebugType::Editor) << "Successfully saved prefab: " << prefabName << std::endl;
 
 			// Apply changes to existing entities
 			ApplyPrefabChangesToEntities(prefabName);
@@ -7987,11 +8351,15 @@ namespace Editor {
 			palettePrepared_ = false;
 		}
 		else {
-			Logger::Get().Error(DebugType::Editor)<< "Failed to save prefab: " << prefabName << std::endl;
+			Logger::Get().Error(DebugType::Editor) << "Failed to save prefab: " << prefabName << std::endl;
 		}
 	}
 
-
+	/*********************************************************************//**
+	 * \brief   Identifies all instantiated prefabs within the active scene and
+	 *          synchronizes their component states with the latest loaded
+	 *          prefab definitions.
+	 *********************************************************************/
 	void Editor::ApplyAllPrefabChangesToCurrentScene() {
 		using namespace Framework;
 
@@ -8020,7 +8388,14 @@ namespace Editor {
 	}
 
 #pragma endregion
-
+	/*********************************************************************//**
+	 * \brief   Converts a world-space coordinate into an absolute ImGui screen
+	 *          coordinate relative to the game viewport, using a specified camera.
+	 *
+	 * \param   worldPos 
+	 * \param   cameraID 
+	 * \return  An ImVec2 representing the absolute screen coordinates.
+	 *********************************************************************/
 	ImVec2 Editor::WorldToImGuiScreen(const Vector2D& worldPos, Entity cameraID)
 	{
 		if (!cameraSystem_ || cameraID == 0)
@@ -8035,12 +8410,26 @@ namespace Editor {
 		return ImVec2(screenX, screenY);
 	}
 
+	/*********************************************************************//**
+	 * \brief   Converts a world-space coordinate into an absolute ImGui screen
+	 *          coordinate relative to the game viewport using the editor camera.
+	 *
+	 * \param   worldPos 
+	 * \return  An ImVec2 representing the absolute screen coordinates.
+	 *********************************************************************/
 	ImVec2 Editor::WorldToImGuiScreen(const Vector2D& worldPos)
 	{
 		// use overloaded function, defaulting to the editor camera
 		return WorldToImGuiScreen(worldPos, editorCamera_);
 	}
 
+	/*********************************************************************//**
+	 * \brief   Converts Normalized Device Coordinates (NDC) ranging from
+	 *          [-1, 1] into absolute screen coordinates for ImGui rendering.
+	 *
+	 * \param   normalizedPos 
+	 * \return  An ImVec2 representing the absolute screen coordinates.
+	 *********************************************************************/
 	ImVec2 Editor::NormalizedToImGuiScreen(const Vector2D& normalizedPos) const {
 		// X-Axis (Maps -1 to 1)
 		float normalizedX = (normalizedPos.x + 1.0f) / 2.0f;
@@ -8055,7 +8444,11 @@ namespace Editor {
 		return ImVec2(screenX, screenY);
 	}
 
-
+	/*********************************************************************//**
+	 * \brief   Renders the Debug Visualization panel allowing developers to
+	 *          toggle visual debugging overlays for AI paths, navigation
+	 *          grids, and physics grids.
+	 *********************************************************************/
 	void Editor::ShowDebugVisualizationPanel() {
 		if (!ImGui::Begin("Debug Visualization")) {
 			ImGui::End();
@@ -8080,8 +8473,6 @@ namespace Editor {
 			ImGui::Checkbox("Show Navigation Grid", &aiSystem->showNavigationGrid);
 			ImGui::Checkbox("Show Bird Debug Info", &aiSystem->showBirdDebug);
 			ImGui::Checkbox("Show Witch Debug Info", &aiSystem->showWitchDebug);
-			/*ImGui::Checkbox("Show Paths", &aiSystem->showPaths);
-			ImGui::Checkbox("Show Colliders", &aiSystem->showColliders);*/
 
 			ImGui::EndDisabled();
 
@@ -8103,34 +8494,16 @@ namespace Editor {
 			ImGui::TextDisabled("Physics System not available");
 		}
 
-		//// Color legend
-		//if (ImGui::CollapsingHeader("State Colors Legend")) {
-		//	ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "Gray = IDLE");
-		//	ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Yellow = WAKING");
-		//	ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.0f, 1.0f), "Orange = CHASE");
-		//	ImGui::TextColored(ImVec4(0.0f, 1.0f, 1.0f, 1.0f), "Cyan = HOVER");
-		//	ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Red = ATTACK");
-		//}
-
-		//if (ImGui::CollapsingHeader("Radius Legend")) {
-		//	ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.0f, 1.0f), "Yellow Circle = Wake-up Radius");
-		//	ImGui::TextColored(ImVec4(0.0f, 0.7f, 0.7f, 1.0f), "Cyan Circle = Hover Radius");
-		//	ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Red Circle = Attack Radius");
-		//}
-
-		//if (ImGui::CollapsingHeader("Grid Legend")) {
-		//	ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Green Cells = Walkable");
-		//	ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Red Cells = Blocked");
-		//}
-
-		/*if (ImGui::CollapsingHeader("Path Legend")) {
-			ImGui::TextColored(ImVec4(1.0f, 0.0f, 1.0f, 1.0f), "Magenta Line = Current Path");
-			ImGui::Text("Squares = Waypoints");
-		}*/
-
 		ImGui::End();
 	}
 
+	/*********************************************************************//**
+	 * \brief   Determines the top-most entity positioned under the current
+	 *          mouse cursor within the game viewport, checking bounds across
+	 *          colliders, text, and sprites, sorted by render priority.
+	 *
+	 * \return  The Entity ID of the selected object, or 0 if none is found.
+	 *********************************************************************/
 	Entity Editor::GetObjAtMousePos() {
 		Framework::EntityManager entityMgr(*(gameManager_->GetSystems().ecs_));
 		Framework::SceneManager& sceneMgr = Framework::SceneManager::GetInstance();
@@ -8186,13 +8559,21 @@ namespace Editor {
 		return bestCandidate;
 	}
 
+	/*********************************************************************//**
+	 * \brief   Sorts a collection of entities in descending order based on
+	 *          their render layers and custom rendering order, placing the
+	 *          highest rendered (top-most) entities at the beginning.
+	 *
+	 * \param   entities 
+	 * \param   entityMgr 
+	 *********************************************************************/
 	void Editor::SortEntitiesByRenderLayer(std::vector<Entity>& entities, Framework::EntityManager& entityMgr) {
 		std::sort(entities.begin(), entities.end(),
 			[&](const Entity& a, const Entity& b) {
 				// Get properties for both entities
 				EntityProperties propsA = entityMgr.GetProperties(a);
 				EntityProperties propsB = entityMgr.GetProperties(b);
-				
+
 				// sort by custom render layer if both are custom
 				if (propsA.renderLayer == RenderLayer::Custom && propsB.renderLayer == RenderLayer::Custom) {
 					return propsA.customRenderOrder > propsB.customRenderOrder;
@@ -8214,7 +8595,13 @@ namespace Editor {
 	}
 
 #pragma region COMPONENT INSPECTOR
-
+	/*********************************************************************//**
+	 * \brief   Renders the inspector UI for the Transform component, allowing
+	 *          the user to modify position, rotation (texture and collider),
+	 *          and scale. Records modifying history for undo/redo.
+	 *
+	 * \param   entity 
+	 *********************************************************************/
 	void Editor::DrawTransformInspector(Entity entity) {
 		using namespace Framework;
 		EntityStorage* ecs = gameManager_->GetSystems().ecs_;
@@ -8407,6 +8794,12 @@ namespace Editor {
 		}
 	}
 
+	/*********************************************************************//**
+	 * \brief   Renders the inspector UI for the RigidBody component, modifying
+	 *          its mass and displaying force and inverse mass dynamically.
+	 *
+	 * \param   entity 
+	 *********************************************************************/
 	void Editor::DrawRigidBodyInspector(Entity entity) {
 		using namespace Framework;
 		EntityStorage* ecs = gameManager_->GetSystems().ecs_;
@@ -8446,6 +8839,13 @@ namespace Editor {
 		editSession.wasItemActive = activeNow;
 	}
 
+	/*********************************************************************//**
+	 * \brief   Renders the inspector UI for the Texture component, managing
+	 *          the texture key referencing, size, opacity, and overriding
+	 *          of UV coordinates.
+	 *
+	 * \param   entity 
+	 *********************************************************************/
 	void Editor::DrawTextureInspector(Entity entity) {
 		using namespace Framework;
 		EntityStorage* ecs = gameManager_->GetSystems().ecs_;
@@ -8557,6 +8957,13 @@ namespace Editor {
 		editSession.wasItemActive = activeNow;
 	}
 
+	/*********************************************************************//**
+	 * \brief   Renders the inspector UI for the Animation component, modifying
+	 *          animation profiles, frame limits, durations, and delays while
+	 *          handling its play and loop states.
+	 *
+	 * \param   entity 
+	 *********************************************************************/
 	void Editor::DrawAnimationInspector(Entity entity) {
 		using namespace Framework;
 		EntityStorage* ecs = gameManager_->GetSystems().ecs_;
@@ -8623,6 +9030,13 @@ namespace Editor {
 		editSession.wasItemActive = activeNow;
 	}
 
+	/*********************************************************************//**
+	 * \brief   Renders the inspector UI for the Audio component, displaying
+	 *          the assigned sound key and providing settings for audio type,
+	 *          loop/stream toggles, and volume control.
+	 *
+	 * \param   entity 
+	 *********************************************************************/
 	void Editor::DrawAudioInspector(Entity entity) {
 		using namespace Framework;
 		EntityStorage* ecs = gameManager_->GetSystems().ecs_;
@@ -8717,6 +9131,13 @@ namespace Editor {
 		editSession.wasItemActive = activeNow;
 	}
 
+	/*********************************************************************//**
+	 * \brief   Renders the inspector UI for the Button component, setting up
+	 *          its default, hover, and pressed states with their textures,
+	 *          sounds, and animations, along with action behaviors.
+	 *
+	 * \param   entity 
+	 *********************************************************************/
 	void Editor::DrawButtonInspector(Entity entity) {
 		using namespace Framework;
 		EntityStorage* ecs = gameManager_->GetSystems().ecs_;
@@ -8820,7 +9241,7 @@ namespace Editor {
 		ImGui::Separator();
 		ImGui::SeparatorText("Button Actions");
 
-		const char* items[] = { "DEFAULT", "PLAYSOUND", "RESETPLAYERPOS", "SWITCH_SCENE", "SWITCH_SCENE_ADD", "QUIT_GAME", "PREV_PAGE", "NEXT_PAGE", "RESUME_GAME"};
+		const char* items[] = { "DEFAULT", "PLAYSOUND", "RESETPLAYERPOS", "SWITCH_SCENE", "SWITCH_SCENE_ADD", "QUIT_GAME", "PREV_PAGE", "NEXT_PAGE", "RESUME_GAME" };
 		int currentItemIndex = static_cast<int>(buttonComp.action);
 
 		if (ImGui::Combo("Button Action", &currentItemIndex, items, IM_ARRAYSIZE(items))) {
@@ -8887,6 +9308,13 @@ namespace Editor {
 		editSession.wasItemActive = activeNow;
 	}
 
+	/*********************************************************************//**
+	 * \brief   Renders the inspector UI for the Camera component, handling zoom,
+	 *          viewport dimensions, following targets dynamically, and limiting
+	 *          sight within map boundaries.
+	 *
+	 * \param   entity 
+	 *********************************************************************/
 	void Editor::DrawCameraInspector(Entity entity) {
 		using namespace Framework;
 		EntityStorage* ecs = gameManager_->GetSystems().ecs_;

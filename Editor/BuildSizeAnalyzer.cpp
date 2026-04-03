@@ -29,7 +29,12 @@ namespace fs = std::filesystem;
 
 namespace Editor {
 
-	// Converts raw bytes into a human-readable string (e.g., "1.50 MB").
+	/*********************************************************************//**
+	 * \brief   Converts raw bytes into a human-readable string (e.g., "1.50 MB").
+	 * 
+	 * \param   bytes 
+	 * \return  A string representing the human-readable formatted size.
+	 *********************************************************************/
 	std::string BuildSizeAnalyzer::FormatBytes(uintmax_t bytes) const {
 		const char* suffixes[] = { "B", "KB", "MB", "GB" };
 		int suffixIndex = 0;
@@ -43,7 +48,10 @@ namespace Editor {
 		return std::string(buf);
 	}
 
-	// Recalculates the totalSelectedBuildSize_ by summing the sizes of checked items.
+	/*********************************************************************//**
+	 * \brief   Recalculates the totalSelectedBuildSize_ by summing the sizes 
+	 *          of all currently checked/selected items in the asset list.
+	 *********************************************************************/
 	void BuildSizeAnalyzer::CalculateTotalSelectedBuildSize() {
 		totalSelectedBuildSize_ = 0;
 		for (const BuildAssetItem& asset : buildAssets_) {
@@ -53,7 +61,11 @@ namespace Editor {
 		}
 	}
 
-	// Scans the source directory for files and updates the buildAssets_ list.
+	/*********************************************************************//**
+	 * \brief   Scans the source directory for files and updates the buildAssets_ 
+	 *          list. Preserves the previous selection state if the window is 
+	 *          reopened or refreshed.
+	 *********************************************************************/
 	void BuildSizeAnalyzer::RefreshBuildAssets() {
 		// Remember previous selections if the window is reopened/refreshed
 		std::unordered_map<std::string, bool> previousSelections;
@@ -84,7 +96,11 @@ namespace Editor {
 	}
 
 #ifdef _WIN32
-	// Native Windows helper to open the standard folder picker dialog.
+	/*********************************************************************//**
+	 * \brief   Native Windows helper to open the standard folder picker dialog.
+	 * 
+	 * \return  The selected folder path as a string, or an empty string if canceled.
+	 *********************************************************************/
 	std::string BuildSizeAnalyzer::OpenFolderBrowser() {
 		std::string result = "";
 
@@ -133,7 +149,11 @@ namespace Editor {
 	}
 #endif
 
-	// Copies all selected assets to the destination folder specified in exportDestinationBuffer_.
+	/*********************************************************************//**
+	 * \brief   Copies all selected assets to the destination folder specified 
+	 *          in exportDestinationBuffer_. Maintains the original directory 
+	 *          structure.
+	 *********************************************************************/
 	void BuildSizeAnalyzer::ExportSelectedBuildAssets() {
 		std::string destDir = exportDestinationBuffer_;
 
@@ -171,7 +191,10 @@ namespace Editor {
 		}
 	}
 
-	// Renders the ImGui window and all its internal UI components.
+	/*********************************************************************//**
+	 * \brief   Renders the ImGui window and all its internal UI components 
+	 *          for the Build Size Analyzer.
+	 *********************************************************************/
 	void BuildSizeAnalyzer::ShowUI() {
 		if (!showBuildSizeAnalyzer_) return;
 

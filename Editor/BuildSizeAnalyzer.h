@@ -18,6 +18,7 @@
 #include <filesystem>
 #include <unordered_map>
 #include <cstdint>
+
 namespace Editor {
 
 	struct BuildAssetItem {
@@ -32,13 +33,31 @@ namespace Editor {
 		BuildSizeAnalyzer() = default;
 		~BuildSizeAnalyzer() = default;
 
-		// Renders the ImGui window and all its internal UI components.
-		// Should be called every frame in the Editor's update loop.
+		/*********************************************************************//**
+		 * \brief   Renders the ImGui window and all its internal UI components.
+		 *          Should be called every frame in the Editor's update loop.
+		 *********************************************************************/
 		void ShowUI();
 
 		// --- Getters and Setters for Window State ---
+
+		/*********************************************************************//**
+		 * \brief   Checks if the BuildSizeAnalyzer window is currently open.
+		 * 
+		 * \return  True if the window is open, false otherwise.
+		 *********************************************************************/
 		bool IsOpen() const { return showBuildSizeAnalyzer_; }
+
+		/*********************************************************************//**
+		 * \brief   Sets the open state of the BuildSizeAnalyzer window.
+		 * 
+		 * \param   open
+		 *********************************************************************/
 		void SetOpen(bool open) { showBuildSizeAnalyzer_ = open; }
+
+		/*********************************************************************//**
+		 * \brief   Toggles the open state of the BuildSizeAnalyzer window.
+		 *********************************************************************/
 		void ToggleOpen() { showBuildSizeAnalyzer_ = !showBuildSizeAnalyzer_; }
 
 	private:
@@ -51,21 +70,39 @@ namespace Editor {
 
 		// --- Internal Helpers ---
 
-		// Scans the source directory for files and updates the buildAssets_ list.
+		/*********************************************************************//**
+		 * \brief   Scans the source directory for files and updates the 
+		 *          buildAssets_ list.
+		 *********************************************************************/
 		void RefreshBuildAssets();
 
-		// Recalculates the totalSelectedBuildSize_ by summing the sizes of checked items.
+		/*********************************************************************//**
+		 * \brief   Recalculates the totalSelectedBuildSize_ by summing the 
+		 *          sizes of checked items in the asset list.
+		 *********************************************************************/
 		void CalculateTotalSelectedBuildSize();
 
 #ifdef _WIN32
-		// Native Windows helper to open the standard folder picker dialog.
+		/*********************************************************************//**
+		 * \brief   Native Windows helper to open the standard folder picker dialog.
+		 * 
+		 * \return  The selected folder path as a string, or empty if cancelled.
+		 *********************************************************************/
 		std::string OpenFolderBrowser();
 #endif
 
-		// Copies all selected assets to the destination folder specified in exportDestinationBuffer_.
+		/*********************************************************************//**
+		 * \brief   Copies all selected assets to the destination folder 
+		 *          specified in exportDestinationBuffer_.
+		 *********************************************************************/
 		void ExportSelectedBuildAssets();
 
-		// Converts raw bytes into a human-readable string (e.g., "1.50 MB").
+		/*********************************************************************//**
+		 * \brief   Converts raw bytes into a human-readable format.
+		 * 
+		 * \param   bytes
+		 * \return  A string formatted with the appropriate suffix (B, KB, MB, GB).
+		 *********************************************************************/
 		std::string FormatBytes(uintmax_t bytes) const;
 	};
 

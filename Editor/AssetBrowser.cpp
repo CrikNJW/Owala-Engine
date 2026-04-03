@@ -22,7 +22,12 @@
 
 using namespace Framework;
 
-// Initialize the AssetBrowser with a specified root path
+/*********************************************************************//**
+ * \brief   Initializes the AssetBrowser with a specified root path. Discovers
+ *          the active project root and configures paths for optional repo syncing.
+ * 
+ * \param   rootPath
+ *********************************************************************/
 void AssetBrowser::Initialize(const fs::path& rootPath)
 {
     // Validate input path
@@ -116,7 +121,12 @@ void AssetBrowser::Initialize(const fs::path& rootPath)
         Logger::Get().Error(DebugType::Editor) << "AssetBrowser: Root path invalid: " << rootPath_.string() << std::endl;
 }
 
-// Scan a directory and populate the asset list
+/*********************************************************************//**
+ * \brief   Scans a given directory path and populates the current assets 
+ *          list used by the browser grid.
+ * 
+ * \param   directoryPath
+ *********************************************************************/
 void AssetBrowser::ScanDirectory(const fs::path& directoryPath)
 {
 	// Log incoming directory path
@@ -206,7 +216,12 @@ void AssetBrowser::ScanDirectory(const fs::path& directoryPath)
     Logger::Get().Info(DebugType::Editor) << "Total assets after sort: " << currentAssets_.size() << std::endl;
 }
 
-// Navigate to a specific path
+/*********************************************************************//**
+ * \brief   Navigates to a specific file or folder path. If it is a directory, 
+ *          it enters it; if a file, it registers as selected.
+ * 
+ * \param   target
+ *********************************************************************/
 void AssetBrowser::NavigateTo(const fs::path& target)
 {
     Logger::Get().Info(DebugType::Editor) << "NavigateTo called with: '" << target.string() << "'" << std::endl;
@@ -236,7 +251,10 @@ void AssetBrowser::NavigateTo(const fs::path& target)
     }
 }
 
-// Navigate up one level
+/*********************************************************************//**
+ * \brief   Navigates up one folder level in the directory tree, clamping 
+ *          to the rootPath_ so the user cannot browse outside the project.
+ *********************************************************************/
 void AssetBrowser::NavigateUp()
 {
     Logger::Get().Info(DebugType::Editor) << "NavigateUp called. Current: '" << currentPath_.string() << "', Root: '" << rootPath_.string() << "'" << std::endl;
@@ -264,7 +282,11 @@ void AssetBrowser::NavigateUp()
     ScanDirectory(parent);
 }
 
-// Display folder tree recursively
+/*********************************************************************//**
+ * \brief   Recursively displays a hierarchical folder tree structure in ImGui.
+ * 
+ * \param   path
+ *********************************************************************/
 void AssetBrowser::ShowFolderTree(const fs::path& path)
 {
 	// Validate the path
@@ -312,7 +334,12 @@ void AssetBrowser::ShowFolderTree(const fs::path& path)
     }
 }
 
-// Render the Asset Editor panel
+/*********************************************************************//**
+ * \brief   Renders the Asset Editor panel in ImGui, allowing the user to 
+ *          preview, reimport, replace, and permanently delete selected assets.
+ * 
+ * \param   droppedFiles
+ *********************************************************************/
 void AssetBrowser::RenderAssetEditor(std::vector<fs::path>& droppedFiles)
 {
     if (ImGui::Begin("Asset Editor")) {
@@ -684,7 +711,12 @@ void AssetBrowser::RenderAssetEditor(std::vector<fs::path>& droppedFiles)
 
 // RenderUI and HandleDroppedFiles live in AssetViewerUI.cpp to keep UI code isolated.
 
-// Handle file replacement
+/*********************************************************************//**
+ * \brief   Handles files dropped into the replacement drop zone while 
+ *          replace mode is active, opening a replacement confirmation modal.
+ * 
+ * \param   droppedFiles
+ *********************************************************************/
 void AssetBrowser::HandleReplaceFile(const std::vector<fs::path>& droppedFiles)
 {
     if (droppedFiles.empty() || !isReplaceModeActive_) return;

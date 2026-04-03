@@ -31,6 +31,12 @@ using namespace Framework;
 GizmoSystem::GizmoSystem(Editor& editor) : editor_(&editor) {}
 
 // --- Invisible Entities stuff ---
+/*****************************************************************//**
+ * \brief   Draws placeholder visual indicators for invisible entities
+ *          (such as invisible colliders and spawn points) in the editor.
+ *
+ * \param   drawList 
+ *********************************************************************/
 void GizmoSystem::DrawInvisPlaceholders(ImDrawList* drawList) {
     // Draw placeholder green dot for SpawnPoint (invisible entities)
     EntityManager entityMgr(GameManager::GetInstance().GetECS());
@@ -76,7 +82,12 @@ void GizmoSystem::DrawInvisPlaceholders(ImDrawList* drawList) {
     );
 }
 
-
+/*****************************************************************//**
+ * \brief   Determines whether an invisible entity (spawn point or 
+ *          invisible collider) was clicked based on current mouse position.
+ *
+ * \return  The Entity ID of the clicked invisible entity, or 0 if none was clicked.
+ *********************************************************************/
 Entity GizmoSystem::IsInvisEntityClicked() {
     ImVec2 mouseScreenPos = ImGui::GetMousePos();
 
@@ -145,7 +156,14 @@ Entity GizmoSystem::IsInvisEntityClicked() {
 
     return clickedEntity;
 }
+
 // --- Gizmos Drawing ---
+/*****************************************************************//**
+ * \brief   Draws the currently active transform gizmo for the selected entity.
+ *
+ * \param   drawList 
+ * \param   selectedEntityIndex 
+ *********************************************************************/
 void GizmoSystem::DrawGizmos(ImDrawList* drawList, int selectedEntityIndex) {
     // no entity selected. no need to draw transform gizmos
     if (selectedEntityIndex <= 1) return;
@@ -187,6 +205,13 @@ void GizmoSystem::DrawGizmos(ImDrawList* drawList, int selectedEntityIndex) {
     }
 }
 
+/*****************************************************************//**
+ * \brief   Draws an outline polyline around the specified entity based 
+ *          on its texture, text, or collider bounds.
+ *
+ * \param   drawList 
+ * \param   entity 
+ *********************************************************************/
 void GizmoSystem::DrawOutline(ImDrawList* drawList, Entity entity) {
     EntityManager entityMgr(GameManager::GetInstance().GetECS());
 
@@ -254,6 +279,13 @@ void GizmoSystem::DrawOutline(ImDrawList* drawList, Entity entity) {
     drawList->AddPolyline(screenCorners, 4, IM_COL32(255, 0, 0, 255), true, 2.0f);
 }
 
+/*****************************************************************//**
+ * \brief   Draws the translation gizmo (arrows for X and Y axes) at the 
+ *          given screen origin. Handles hover highlighting.
+ *
+ * \param   drawList 
+ * \param   origin 
+ *********************************************************************/
 void GizmoSystem::DrawTranslateGizmo(ImDrawList* drawList, ImVec2 origin) {
     ImVec2 mousePos = ImGui::GetMousePos();
 
@@ -319,6 +351,13 @@ void GizmoSystem::DrawTranslateGizmo(ImDrawList* drawList, ImVec2 origin) {
     );
 }
 
+/*****************************************************************//**
+ * \brief   Draws the scale gizmo (boxes for X and Y axes) at the 
+ *          given screen origin. Handles hover highlighting.
+ *
+ * \param   drawList 
+ * \param   origin 
+ *********************************************************************/
 void GizmoSystem::DrawScaleGizmo(ImDrawList* drawList, ImVec2 origin) {
     ImVec2 mousePos = ImGui::GetMousePos();
     ImVec2 xTip = ImVec2(origin.x + axisLength_, origin.y);
@@ -362,6 +401,14 @@ void GizmoSystem::DrawScaleGizmo(ImDrawList* drawList, ImVec2 origin) {
         ImVec2(origin.x + centerCubeHalfsize_, origin.y + centerCubeHalfsize_), colCenter);
 }
 
+/*****************************************************************//**
+ * \brief   Draws the rotation gizmo (a ring) around the specified entity.
+ *          Handles hover highlighting and shows current rotation visually.
+ *
+ * \param   drawList 
+ * \param   origin 
+ * \param   entity 
+ *********************************************************************/
 void GizmoSystem::DrawRotateGizmo(ImDrawList* drawList, ImVec2 origin, Entity entity) {
     ImVec2 mousePos = ImGui::GetMousePos();
     float radius = axisLength_ * 0.8f;
@@ -403,6 +450,14 @@ void GizmoSystem::DrawRotateGizmo(ImDrawList* drawList, ImVec2 origin, Entity en
 }
 
 // --- Gizmos Dragging & Transformation --- 
+/*****************************************************************//**
+ * \brief   Updates the state of the gizmo interactions, including handling
+ *          mouse inputs for starting and stopping drags, and applying 
+ *          transformations.
+ *
+ * \param   selectedEntityIndex 
+ * \param   activeCamera 
+ *********************************************************************/
 void GizmoSystem::Update(int selectedEntityIndex, Entity activeCamera) {
     if (selectedEntityIndex <= 1 || !IsGizmosToggled()) {
         isDragging_ = false;
@@ -449,6 +504,11 @@ void GizmoSystem::Update(int selectedEntityIndex, Entity activeCamera) {
     }
 }
 
+/*****************************************************************//**
+ * \brief   Finalizes a drag operation. Records the JSON state of relevant
+ *          components after the transformation completes to be sent to
+ *          the history manager for undo/redo capabilities.
+ *********************************************************************/
 void GizmoSystem::HandleStopDrag() {
     // save the current state of the relevant components AFTER transformation
     EntityStorage& ecs_ = GameManager::GetInstance().GetECS();
@@ -504,6 +564,11 @@ void GizmoSystem::HandleStopDrag() {
     }
 }
 
+/*****************************************************************//**
+ * \brief   Initializes state when a drag operation begins. Caches the
+ *          initial JSON representation of relevant entity components
+ *          before any transformation modifies it.
+ *********************************************************************/
 void GizmoSystem::HandleStartDrag() {
     EntityStorage& ecs_ = GameManager::GetInstance().GetECS();
     EntityManager entityMgr(ecs_);
@@ -538,6 +603,13 @@ void GizmoSystem::HandleStartDrag() {
     }
 }
 
+/*****************************************************************//**
+ * \brief   Applies the calculated transformation (translation, scaling, or 
+ *          rotation) dynamically to the dragged entity utilizing its components.
+ *
+ * \param   mouseDelta 
+ * \param   activeCamera 
+ *********************************************************************/
 void GizmoSystem::ApplyTransformation(const ImVec2 mouseDelta, const Entity activeCamera) {
     // Safety check: isDragging_ must be true, and draggedEntity_ must be valid
     if (!isDragging_ || draggedEntity_ == 0) return;

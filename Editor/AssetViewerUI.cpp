@@ -20,7 +20,10 @@
 
 using namespace Framework;
 
-// Loads icon textures on demand and caches them for the session. Icons are stored in the project under "owala/Engine Icons".
+/*********************************************************************//**
+ * \brief   Loads icon textures on demand and caches them for the session. 
+ *          Icons are stored in the project under "owala/Engine Icons".
+ *********************************************************************/
 void AssetBrowser::EnsureIconTexturesLoaded()
 {
     // Icon textures are loaded lazily so startup stays fast.
@@ -62,7 +65,15 @@ void AssetBrowser::EnsureIconTexturesLoaded()
     iconsLoaded_ = true;
 }
 
-// Truncates a label to fit within a specified width, appending "..." if truncation occurs. Returns the truncated label and sets wasTruncated flag.
+/*********************************************************************//**
+ * \brief   Truncates a label to fit within a specified width, appending 
+ *          "..." if truncation occurs.
+ * 
+ * \param   text 
+ * \param   maxWidth 
+ * \param   wasTruncated 
+ * \return  The shortened string that fits within the max width.
+ *********************************************************************/
 std::string AssetBrowser::TruncateLabelToFit(const std::string& text, float maxWidth, bool& wasTruncated) const
 {
     wasTruncated = false;
@@ -94,7 +105,12 @@ std::string AssetBrowser::TruncateLabelToFit(const std::string& text, float maxW
     return ellipsis;
 }
 
-// Initializes the upload queue state for a new batch of dropped files. This resets all relevant flags and counters, and shows the upload progress popup.
+/*********************************************************************//**
+ * \brief   Initializes the upload queue state for a new batch of dropped 
+ *          files. Resets states and displays the progress popup.
+ * 
+ * \param   droppedFiles 
+ *********************************************************************/
 void AssetBrowser::StartUploadQueue(const std::vector<fs::path>& droppedFiles)
 {
     if (droppedFiles.empty()) return;
@@ -110,7 +126,13 @@ void AssetBrowser::StartUploadQueue(const std::vector<fs::path>& droppedFiles)
     uploadCurrentFile_.clear();
 }
 
-// Copies a single dropped file to the local output directory and optionally syncs it to the repo mirror. Returns true on success, false on failure.
+/*********************************************************************//**
+ * \brief   Copies a single dropped file to the local output directory and 
+ *          optionally syncs it to the repo mirror.
+ * 
+ * \param   sourcePath 
+ * \return  True on successful copy, false on failure.
+ *********************************************************************/
 bool AssetBrowser::CopyDroppedFile(const fs::path& sourcePath)
 {
     try
@@ -204,7 +226,11 @@ bool AssetBrowser::CopyDroppedFile(const fs::path& sourcePath)
     }
 }
 
-// Processes one file from the upload queue per frame. This allows the editor to remain responsive during large batch uploads. When the queue is empty, it finalizes the upload session and refreshes the asset list.
+/*********************************************************************//**
+ * \brief   Processes one file from the upload queue per frame. Keeps the 
+ *          editor responsive during large batch uploads. Finalizes the session 
+ *          when empty.
+ *********************************************************************/
 void AssetBrowser::ProcessUploadQueue()
 {
     if (!uploadInProgress_) return;
@@ -229,6 +255,11 @@ void AssetBrowser::ProcessUploadQueue()
     uploadProcessedFiles_++;
 }
 
+/*********************************************************************//**
+ * \brief   Renders the Asset Viewer and Project Explorer UI using ImGui.
+ * 
+ * \param   droppedFiles 
+ *********************************************************************/
 void AssetBrowser::RenderUI(std::vector<fs::path>& droppedFiles)
 {
     EnsureIconTexturesLoaded();
@@ -459,6 +490,12 @@ void AssetBrowser::RenderUI(std::vector<fs::path>& droppedFiles)
     RenderAssetEditor(droppedFiles);
 }
 
+/*********************************************************************//**
+ * \brief   Handles the start of the drop action when files are deposited 
+ *          onto the AssetViewer.
+ * 
+ * \param   droppedFiles 
+ *********************************************************************/
 void AssetBrowser::HandleDroppedFiles(const std::vector<fs::path>& droppedFiles)
 {
     if (droppedFiles.empty()) return;

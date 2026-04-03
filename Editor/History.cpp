@@ -26,6 +26,13 @@
 namespace Editor {
 	using namespace Framework;
 
+	/*****************************************************************//**
+	 * \brief   Executes a specific operation to apply or revert a recorded
+	 *          change in the editor, depending on whether it is an undo.
+	 *
+	 * \param   op 
+	 * \param   isUndo 
+	 *********************************************************************/
 	void HistoryManager::Apply(const Operation& op, bool isUndo) {
 		EntityManager entityMgr(GameManager::GetInstance().GetECS());
 		const std::string& dataToUse = isUndo ? op.data.memento.beforeJSON : op.data.memento.afterJSON;
@@ -61,6 +68,12 @@ namespace Editor {
 		}
 	}
 
+	/*****************************************************************//**
+	 * \brief   Recreates or updates an entity from a serialized JSON string.
+	 *
+	 * \param   entity 
+	 * \param   json 
+	 *********************************************************************/
 	void HistoryManager::RestoreEntityFromSnapshot(Entity entity, const std::string& json) {
 		EntityStorage* ecs_ = &GameManager::GetInstance().GetECS();
 		EntityManager entityMgr(*ecs_);
@@ -85,6 +98,14 @@ namespace Editor {
 		SyncSceneLoadedState(entity);
 	}
 
+	/*****************************************************************//**
+	 * \brief   Restores the state of a specific component attached to an
+	 *          entity from its JSON serialization snapshot.
+	 *
+	 * \param   entity 
+	 * \param   type 
+	 * \param   json 
+	 *********************************************************************/
 	void HistoryManager::ApplyComponentSnapshot(Entity entity, ComponentType type, const std::string& json) {
 		EntityManager entityMgr(GameManager::GetInstance().GetECS());
 
@@ -359,6 +380,9 @@ namespace Editor {
 		}
 	}
 
+	/*****************************************************************//**
+	 * \brief   Removes history steps exceeding the specified undo limits.
+	 *********************************************************************/
 	void HistoryManager::PruneHistoryToLimit() {
 		if (maxHistorySteps <= 0) {
 			Logger::Info(DebugType::Editor) << "HistoryManager::Prune: Max steps less than 0. Setting to default." << std::endl;
@@ -394,6 +418,12 @@ namespace Editor {
 		}
 	}
 
+	/*****************************************************************//**
+	 * \brief   Updates an entity's internal system references to ensure it
+	 *          belongs correctly to its parent loaded scene structure.
+	 *
+	 * \param   entity 
+	 *********************************************************************/
 	void HistoryManager::SyncSceneLoadedState(Entity entity) {
 		using namespace Framework;
 		EntityManager entityMgr(GameManager::GetInstance().GetECS());
@@ -414,6 +444,12 @@ namespace Editor {
 	// ---------------------------------------------------------------------------
 	// Configuration
 	// ---------------------------------------------------------------------------
+
+	/*****************************************************************//**
+	 * \brief   Sets the maximum size / capability of the undo-redo stack sequence.
+	 *
+	 * \param   limit 
+	 *********************************************************************/
 	void HistoryManager::SetUndoLimit(int limit) {
 		if (limit <= 0) {
 			return;
@@ -427,6 +463,12 @@ namespace Editor {
 	// ---------------------------------------------------------------------------
 	// Accessors
 	// ---------------------------------------------------------------------------
+
+	/*****************************************************************//**
+	 * \brief   Retrieves the descriptive identifier of the top undo stack element.
+	 *
+	 * \return  Representation of the latest available undo item.
+	 *********************************************************************/
 	std::string HistoryManager::GetLatestUndoDescription() const {
 		if (undoStack.empty()) {
 			return {};
@@ -434,6 +476,11 @@ namespace Editor {
 		return undoStack.back().description;
 	}
 
+	/*****************************************************************//**
+	 * \brief   Retrieves the descriptive identifier of the top redo stack element.
+	 *
+	 * \return  Representation of the latest available redo item.
+	 *********************************************************************/
 	std::string HistoryManager::GetLatestRedoDescription() const {
 		if (redoStack.empty()) {
 			return {};
@@ -441,6 +488,11 @@ namespace Editor {
 		return redoStack.back().description;
 	}
 
+	/*****************************************************************//**
+	 * \brief   Gets a list mapping descriptions corresponding to entire history.
+	 *
+	 * \return  Array containing available stack operations texts respectively.
+	 *********************************************************************/
 	std::vector<std::string> HistoryManager::GetUndoHistoryDescriptions() const {
 		std::vector<std::string> descriptions;
 		descriptions.reserve(undoStack.size());
@@ -452,6 +504,11 @@ namespace Editor {
 		return descriptions;
 	}
 
+	/*****************************************************************//**
+	 * \brief   Gets a list mapping descriptions corresponding to undone queue.
+	 *
+	 * \return  Array containing available stack operations texts respectively.
+	 *********************************************************************/
 	std::vector<std::string> HistoryManager::GetRedoHistoryDescriptions() const {
 		std::vector<std::string> descriptions;
 		descriptions.reserve(redoStack.size());
@@ -466,11 +523,23 @@ namespace Editor {
 	// ---------------------------------------------------------------------------
 	// APIs
 	// ---------------------------------------------------------------------------
+
+	/*****************************************************************//**
+	 * \brief   Destroys and cleans memory traces of tracking structures logic.
+	 *********************************************************************/
 	void HistoryManager::ClearHistory() {
 		undoStack.clear();
 		redoStack.clear();
 	}
 
+	/*****************************************************************//**
+	 * \brief   Constructs and tracks a top level hierarchy action involving
+	 *          an entity, for the given operation type.
+	 *
+	 * \param   opType 
+	 * \param   entity 
+	 * \param   description 
+	 *********************************************************************/
 	void HistoryManager::Record(OpType opType, Entity entity, const std::string& description) {
 		// Do not record any operations during Play Mode.
 		if (GameManager::GetInstance().GetEditor()->IsGamePlaying()) return;
@@ -500,6 +569,15 @@ namespace Editor {
 		Push(op);
 	}
 
+	/*****************************************************************//**
+	 * \brief   Records a modification to a specific generic component instance.
+	 *
+	 * \param   entity 
+	 * \param   description 
+	 * \param   beforeJSON 
+	 * \param   afterJSON 
+	 * \param   compType 
+	 *********************************************************************/
 	void HistoryManager::RecordModifyComponent(Entity entity, const std::string& description, const std::string& beforeJSON, const std::string& afterJSON, ComponentType compType) {
 		// Do not record any operations during Play Mode.
 		if (GameManager::GetInstance().GetEditor()->IsGamePlaying()) return;
@@ -518,6 +596,11 @@ namespace Editor {
 		Push(op);
 	}
 
+	/*****************************************************************//**
+	 * \brief   Registers and inserts the configured operation definition object.
+	 *
+	 * \param   op 
+	 *********************************************************************/
 	void HistoryManager::Push(Operation& op) {
 		if (op.opType == OpType::None) {
 			Logger::Info(DebugType::Editor) << "HistoryManager::Push: Invalid operation type, cannot push to history." << std::endl;
@@ -535,14 +618,28 @@ namespace Editor {
 		PruneHistoryToLimit();
 	}
 
+	/*****************************************************************//**
+	 * \brief   Determines whether backwards chronological actions can successfully execute.
+	 *
+	 * \return  A validation check corresponding to non empty queue lists.
+	 *********************************************************************/
 	bool HistoryManager::CanUndo() const {
 		return !undoStack.empty();
 	}
 
+	/*****************************************************************//**
+	 * \brief   Determines whether redoable chronologically cancelled actions remain queued.
+	 *
+	 * \return  A validation check corresponding to non empty validation queue.
+	 *********************************************************************/
 	bool HistoryManager::CanRedo() const {
 		return !redoStack.empty();
 	}
 
+	/*****************************************************************//**
+	 * \brief   Retrieves tracking stack data representing state changes and
+	 *          automatically calls systems internally restoring previous data configurations.
+	 *********************************************************************/
 	void HistoryManager::Undo() {
 		if (!CanUndo()) {
 			return;
@@ -574,6 +671,10 @@ namespace Editor {
 		}
 	}
 
+	/*****************************************************************//**
+	 * \brief   Identifies earlier executed reversions reinserting components
+	 *          to match tracking states mapped successfully originally.
+	 *********************************************************************/
 	void HistoryManager::Redo() {
 		if (!CanRedo()) {
 			return;
@@ -607,6 +708,11 @@ namespace Editor {
 	// ---------------------------------------------------------------------------
 	// Grouping APIs
 	// ---------------------------------------------------------------------------
+
+	/*****************************************************************//**
+	 * \brief   Declares an initialization of grouped undo events merging modifications
+	 *          made consequently linked to an entity or collection logic.
+	 *********************************************************************/
 	void HistoryManager::BeginGroup() {
 		if (groupDepth == 0) {
 			activeGroupID = nextGroupID++;
@@ -614,6 +720,9 @@ namespace Editor {
 		++groupDepth;
 	}
 
+	/*****************************************************************//**
+	 * \brief   Appends completion states merging recent changes indicating event end.
+	 *********************************************************************/
 	void HistoryManager::EndGroup() {
 		if (groupDepth == 0) {
 			Logger::Info(DebugType::Editor) << "History::EndGroup: Unmatched Endgroup! Did you forget to call BeginGroup?" << std::endl;
@@ -626,6 +735,11 @@ namespace Editor {
 		}
 	}
 
+	/*****************************************************************//**
+	 * \brief   Poll check determining if an unresolved group operation structure process exists.
+	 *
+	 * \return  Verification status if the sequence loop block captures data execution currently.
+	 *********************************************************************/
 	bool HistoryManager::IsGroupActive() const noexcept {
 		return activeGroupID != 0;
 	}

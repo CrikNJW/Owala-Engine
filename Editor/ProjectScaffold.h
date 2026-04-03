@@ -19,31 +19,28 @@
 #include <string>
 
 namespace Editor {
-	/**
-	 * Creates a new project directory structure with the specified root directory and project name.
-	 * Generates the standard folders for assets, data, and source code, and populates them with default configuration files.
-	 *
-	 * \param rootDir
-	 * \param projectName
-	 * \return
-	 */
+	/*********************************************************************//**
+	* \brief   Writes the active_game.cmake file with the given game directory.
+	*          This file is used by CMake to determine which game project to build
+	*          and run when using the editor's Play button.
+	*
+	* \param   gameDir
+	*********************************************************************/
 	bool ScaffoldNewProject(const std::string& rootDir, const std::string& projectName);
 
-	/**
-	 * Checks if the given path is a valid project directory by verifying that it exists, is a directory,
-	 * and contains at least one of the expected subfolders (e.g. "Source" or "Assets").
+	/*********************************************************************//**
+	 * \brief   Checks if the given path is a valid project directory by verifying that it exists, is a directory,
+	 *          and contains at least one of the expected subfolders (e.g. "Source" or "Assets").
 	 *
-	 * \param path
-	 * \return
-	 */
+	 * \param   path
+	 * \return  True if the supplied root matches valid game project specifications.
+	 *********************************************************************/
 	bool ValidateImportPath(const std::string& path);
 
-	/**
-	 * Writes the active_game.cmake file with the given game directory.
-	 * This file is used by CMake to determine which game project to build
-	 * and run when using the editor's Play button.
-	 *
-	 * \param gameDir
-	 */
+	/*********************************************************************//**
+	 * \brief   Shows the "Create New Project" modal dialog after the user clicks "New Project" in the File menu.
+	 *          The dialog prompts the user to enter a project name and select a parent directory, then calls
+	 *          ScaffoldNewProject to create the project structure.
+	 *********************************************************************/
 	void WriteActiveGameConfig(const std::string& gameDir);
 }

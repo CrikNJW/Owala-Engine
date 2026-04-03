@@ -27,6 +27,11 @@
 #include <vector>
 
 namespace Editor{
+	
+	/*****************************************************************//**
+	 * \enum    OpType
+	 * \brief   Defines the types of trackable operations for the undo/redo system.
+	 *********************************************************************/
 	enum class OpType : uint8_t {
 		None = 0,
 		Create,
@@ -34,16 +39,31 @@ namespace Editor{
 		ModifyComponent,
 	};
 
+	/*****************************************************************//**
+	 * \enum    PayloadMode
+	 * \brief   Specifies whether a recorded payload represents an entire
+	 *          entity structure or a single component.
+	 *********************************************************************/
 	enum class PayloadMode : uint8_t {
 		Component,
 		Entity
 	};
 
+	/*****************************************************************//**
+	 * \struct  Memento
+	 * \brief   Stores the serialized JSON states of an object before and
+	 *          after an operation, enabling bidirectional state restoration.
+	 *********************************************************************/
 	struct Memento {
 		std::string beforeJSON;
 		std::string afterJSON;
 	};
 
+	/*****************************************************************//**
+	 * \struct  OpData
+	 * \brief   Holds the core payload data required to restore or reapply
+	 *          a recorded editor operation.
+	 *********************************************************************/
 	struct OpData {
 		Entity entity = 0;
 		PayloadMode mode = PayloadMode::Component;
@@ -51,6 +71,11 @@ namespace Editor{
 		Memento memento;
 	};
 
+	/*****************************************************************//**
+	 * \struct  Operation
+	 * \brief   Encapsulates a full trackable editor action, including descriptive
+	 *          metadata and underlying manipulation data. Supports grouping.
+	 *********************************************************************/
 	struct Operation {
 		OpType opType = OpType::None;
 		std::string description;
@@ -59,6 +84,11 @@ namespace Editor{
 		OpData data;
 	};
 
+	/*****************************************************************//**
+	 * \class   HistoryManager
+	 * \brief   Manages the undo and redo queues, providing APIs to record
+	 *          operations (single or grouped) and apply state reversals.
+	 *********************************************************************/
 	class HistoryManager {
 	private:
 		/* Preservation */
@@ -73,59 +103,161 @@ namespace Editor{
 		int groupDepth = 0;
 
 		/* Internal Helpers */
-		// Prunes the Undo Stack to the limit, starting from the oldest operation in the Undo Stack.
+
+		/*****************************************************************//**
+		 * \brief   Prunes the Undo Stack to the limit, starting from the oldest operation in the Undo Stack.
+		 *********************************************************************/
 		void PruneHistoryToLimit();
-		// The actual application of the Undo/Redo operation.
+
+		/*****************************************************************//**
+		 * \brief   The actual application of the Undo/Redo operation.
+		 *
+		 * \param   op
+		 * \param   isUndo
+		 *********************************************************************/
 		void Apply(const Operation& op, bool isUndo);
-		// Restores an entity to the state recorded in the JSON snapshot.
+
+		/*****************************************************************//**
+		 * \brief   Restores an entity to the state recorded in the JSON snapshot.
+		 *
+		 * \param   entity
+		 * \param   json
+		 *********************************************************************/
 		void RestoreEntityFromSnapshot(Entity entity, const std::string& json);
-		// Restores a component to the state recorded in the JSON snapshot.
+
+		/*****************************************************************//**
+		 * \brief   Restores a component to the state recorded in the JSON snapshot.
+		 *
+		 * \param   entity
+		 * \param   type
+		 * \param   json
+		 *********************************************************************/
 		void ApplyComponentSnapshot(Entity entity, Framework::ComponentType type, const std::string& json);
-		// Helper to handle LoadedTag.
+
+		/*****************************************************************//**
+		 * \brief   Helper to handle LoadedTag.
+		 *
+		 * \param   entity
+		 *********************************************************************/
 		void SyncSceneLoadedState(Entity entity);
+		
 	public:
 		HistoryManager() = default;
 
 		/* Config */
-		// Sets the max limit of the Undo Stack. Undo Stack will be pruned to fit the new limit.
+		
+		/*****************************************************************//**
+		 * \brief   Sets the max limit of the Undo Stack. The Stack will be
+		 *          pruned to fit the new limit if it already exceeds it.
+		 *
+		 * \param   limit
+		 *********************************************************************/
 		void SetUndoLimit(int limit);
 
 		/* Accessors */
-		// Retrieves the description of the latest operation in the Undo Stack.
+		
+		/*****************************************************************//**
+		 * \brief   Retrieves the description of the latest operation in the Undo Stack.
+		 * \return  A string literal description of the action.
+		 *********************************************************************/
 		std::string GetLatestUndoDescription() const;
-		// Retrieves the description of the latest operation in the Redo Stack.
+		
+		/*****************************************************************//**
+		 * \brief   Retrieves the description of the latest operation in the Redo Stack.
+		 * \return  A string literal description of the action.
+		 *********************************************************************/
 		std::string GetLatestRedoDescription() const;
-		// Retrieves the descriptions of all operations in the Undo Stack.
+		
+		/*****************************************************************//**
+		 * \brief   Retrieves the descriptions of all operations in the Undo Stack.
+		 * \return  Array of string descriptions mapped sequentially.
+		 *********************************************************************/
 		std::vector<std::string> GetUndoHistoryDescriptions() const;
-		// Retrieves the descriptions of all operations in the Redo Stack.
+		
+		/*****************************************************************//**
+		 * \brief   Retrieves the descriptions of all operations in the Redo Stack.
+		 * \return  Array of string descriptions mapped sequentially.
+		 *********************************************************************/
 		std::vector<std::string> GetRedoHistoryDescriptions() const;
-		// Gets the current history stack limit (Readonly).
+		
+		/*****************************************************************//**
+		 * \brief   Gets the current history stack limit (Readonly).
+		 * \return  Current history stack limit.
+		 *********************************************************************/
 		const int GetUndoLimit() const { return maxHistorySteps; };
 
 		/* APIs */
+		
+		/*****************************************************************//**
+		 * \brief   Discards memory tracks formatting structure clearing history caches.
+		 *********************************************************************/
 		void ClearHistory();
-		// Function for recording Entity-Level operations.
+		
+		/*****************************************************************//**
+		 * \brief   Function for recording Entity-Level operations.
+		 *
+		 * \param   opType
+		 * \param   entity
+		 * \param   description
+		 *********************************************************************/
 		void Record(OpType opType, Entity entity, const std::string& description);
-		// Dedicated Function for recording operations relating to Component Modifications.
-		// Add/Remove/Modify Components should use this.
+		
+		/*****************************************************************//**
+		 * \brief   Dedicated Function for recording operations relating to Component Modifications.
+		 *          Add/Remove/Modify Components should use this.
+		 *
+		 * \param   entity
+		 * \param   description
+		 * \param   beforeJSON
+		 * \param   afterJSON
+		 * \param   compType
+		 *********************************************************************/
 		void RecordModifyComponent(Entity entity, const std::string& description, const std::string& beforeJSON, const std::string& afterJSON, Framework::ComponentType compType = Framework::ComponentType::MAX_COMPONENTS);
-		// Pushes an operation to the Undo Stack. Do not use this unless you know what you are doing.
+		
+		/*****************************************************************//**
+		 * \brief  Pushes an operation to the Undo Stack. Do not use this unless you know what you are doing.
+		 *
+		 * \param   op 
+		 *********************************************************************/
 		void Push(Operation& op);
-		// Returns true if there is at least 1 operation in the Undo Stack.
+		
+		/*****************************************************************//**
+		 * \brief   Returns true if there is at least 1 operation in the Undo Stack.
+		 *********************************************************************/
 		bool CanUndo() const;
-		// Returns true if there is at least 1 operation in the Redo Stack.
+		
+		/*****************************************************************//**
+		 * \brief   Returns true if there is at least 1 operation in the Redo Stack.
+		 *********************************************************************/
 		bool CanRedo() const;
-		// Perform an Undo operation.
+		
+		/*****************************************************************//**
+		 * \brief   Perform an Undo operation.
+		 *********************************************************************/
 		void Undo();
-		// Perform an Redo operation.
+		
+		/*****************************************************************//**
+		 * \brief	Perform an Redo operation.
+		 *********************************************************************/
 		void Redo();
 
 		/* Grouping APIs */
-		// Begins appending recorded operations following this call into a group.
+		
+		/*****************************************************************//**
+		 * \brief   Begins appending recorded operations following this call into a group.
+		 *********************************************************************/
 		void BeginGroup();
-		// Combines all operations that were recorded since the BeginGroup() call into a single operation and pushes it onto the Undo Stack.
+		
+		/*****************************************************************//**
+		 * \brief   Combines all operations mapped tracking modifications formatted after explicitly
+					matched call defining group initialization logically terminating tracking sequences 
+					functionally cleanly sequentially evaluating changes mapped formats effectively cleanly.
+		 *********************************************************************/
 		void EndGroup();
-		// Returns true if operations are currently being recorded as a grouped operation.
+		
+		/*****************************************************************//**
+		 * \brief   Returns true if operations are currently being recorded as a grouped operation.
+		 *********************************************************************/
 		bool IsGroupActive() const noexcept;
 	};
 }

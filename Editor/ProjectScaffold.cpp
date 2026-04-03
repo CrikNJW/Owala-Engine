@@ -23,13 +23,13 @@
 
 namespace Editor {
 
-	/**
-	 * Writes the active_game.cmake file with the given game directory. 
-	 * This file is used by CMake to determine which game project to build 
-	 * and run when using the editor's Play button.
+	/*********************************************************************//**
+	 * \brief   Writes the active_game.cmake file with the given game directory. 
+	 *          This file is used by CMake to determine which game project to build 
+	 *          and run when using the editor's Play button.
 	 * 
-	 * \param gameDir
-	 */
+	 * \param   gameDir 
+	 *********************************************************************/
 	void WriteActiveGameConfig(const std::string& gameDir) {
 		namespace fs = std::filesystem;
 		fs::path repoRoot = fs::current_path().parent_path().parent_path(); // Find the repo root by going up two levels from the current directory
@@ -56,14 +56,14 @@ namespace Editor {
 		}
 	}
 
-	/**
-	 * Creates a new project directory structure with the specified root directory and project name.
-	 * Generates the standard folders for assets, data, and source code, and populates them with default configuration files.
+	/*********************************************************************//**
+	 * \brief   Creates a new project directory structure with the specified root directory and project name.
+	 *          Generates the standard folders for assets, data, and source code, and populates them with default configuration files.
 	 * 
-	 * \param rootDir
-	 * \param projectName
-	 * \return 
-	 */
+	 * \param   rootDir 
+	 * \param   projectName 
+	 * \return  True if the scaffold operation completed successfully, false if errors occurred.
+	 *********************************************************************/
 	bool ScaffoldNewProject(const std::string& rootDir, const std::string& projectName) {
 		namespace fs = std::filesystem;
 
@@ -265,13 +265,13 @@ namespace Editor {
 		return true;
 	}
 
-	/**
-	 * Checks if the given path is a valid project directory by verifying that it exists, is a directory, 
-	 * and contains at least one of the expected subfolders (e.g. "Source" or "Assets").
+	/*********************************************************************//**
+	 * \brief   Checks if the given path is a valid project directory by verifying that it exists, is a directory, 
+	 *          and contains at least one of the expected subfolders (e.g. "Source" or "Assets").
 	 * 
-	 * \param path
-	 * \return 
-	 */
+	 * \param   path 
+	 * \return  True if the supplied root matches valid game project specifications.
+	 *********************************************************************/
 	bool ValidateImportPath(const std::string& path) {
 		namespace fs = std::filesystem;
 
@@ -293,10 +293,11 @@ namespace Editor {
 		return false;
 	}
 
-	/**
-	 * Shows the "Create New Project" modal dialog after the user clicks "New Project" in the File menu.
-	 * The dialog prompts the user to enter a project name and select a parent directory, then calls ScaffoldNewProject to create the project structure.
-	 */
+	/*********************************************************************//**
+	 * \brief   Shows the "Create New Project" modal dialog after the user clicks "New Project" in the File menu.
+	 *          The dialog prompts the user to enter a project name and select a parent directory, then calls 
+	 *          ScaffoldNewProject to create the project structure.
+	 *********************************************************************/
 	void Editor::ShowNewProjectDialog() {
 		// Open the modal on the first call each time the flag is raised
 		if (!ImGui::IsPopupOpen("Create New Project##modal")) {
@@ -405,10 +406,9 @@ namespace Editor {
 		}
 	}
 
-	/**
-	 * Shows the "Import Existing Project" modal dialog after the user clicks "Import Project" in the File menu.
-	 * 
-	 */
+	/*********************************************************************//**
+	 * \brief   Shows the "Import Existing Project" modal dialog after the user clicks "Import Project" in the File menu.
+	 *********************************************************************/
 	void Editor::ShowImportProjectDialog() {
 		if (!ImGui::IsPopupOpen("Import Existing Project##modal")) {
 			ImGui::OpenPopup("Import Existing Project##modal");
