@@ -24,13 +24,18 @@
 
 using namespace Framework;
 
-// FreeTypeManager Class
+/*****************************************************************//**
+ * \brief   Initializes the FreeType library upon creation.
+ *********************************************************************/
 FreeTypeManager::FreeTypeManager() {
     if (FT_Init_FreeType(&m_library)) {
         Logger::Error(DebugType::Font) << "FreeType: Could not init FreeType library" << std::endl;
     }
 }
 
+/*****************************************************************//**
+ * \brief   Cleans up and frees the FreeType library.
+ *********************************************************************/
 FreeTypeManager::~FreeTypeManager() {
     if (m_library) {
         FT_Done_FreeType(m_library);
@@ -38,9 +43,14 @@ FreeTypeManager::~FreeTypeManager() {
     }
 }
 
-// Font Class
+/*****************************************************************//**
+ * \brief   Initializes default font properties and variables.
+ *********************************************************************/
 Font::Font() : m_textureAtlas(0), m_characters(), m_face(), m_rawLineHeight(0.f), m_rawAscent(0.f), m_size(0){}
 
+/*****************************************************************//**
+ * \brief   Frees the OpenGL texture atlas and FreeType face object.
+ *********************************************************************/
 Font::~Font() {
     if (m_textureAtlas) {
         glDeleteTextures(1, &m_textureAtlas);
@@ -50,6 +60,14 @@ Font::~Font() {
     }
 }
 
+/*****************************************************************//**
+ * \brief   Loads font data and generates a texture atlas for rendering.
+ *
+ * \param   library 
+ * \param   fontPath 
+ * \param   size 
+ * \return  True if font was successfully loaded, false otherwise.
+ *********************************************************************/
 bool Font::Load(FT_Library library, const std::string& fontPath, unsigned int size) {
     if (FT_New_Face(library, fontPath.c_str(), 0, &m_face)) {
         Logger::Error(DebugType::Font) << "FreeType: Failed to load font: " << fontPath << std::endl;
@@ -147,15 +165,31 @@ bool Font::Load(FT_Library library, const std::string& fontPath, unsigned int si
     return true;
 }
 
-
+/*****************************************************************//**
+ * \brief   Returns the map of loaded character glyphs.
+ *
+ * \return  Map matching characters to their glyph data.
+ *********************************************************************/
 const std::map<char, Character>& Font::GetCharacters() const {
     return m_characters;
 }
 
+/*****************************************************************//**
+ * \brief   Returns the OpenGL texture ID of the generated atlas.
+ *
+ * \return  OpenGL texture ID.
+ *********************************************************************/
 unsigned int Font::GetAtlasID() const {
     return m_textureAtlas;
 }
 
+/*****************************************************************//**
+ * \brief   Calculates the visual pixel width of a given string.
+ *
+ * \param   text 
+ * \param   scale 
+ * \return  Width of the string in pixels.
+ *********************************************************************/
 float Font::GetStringWidth(const std::string& text, float scale) const {
     float width = 0.0f;
     for (char c_signed : text) {
@@ -169,14 +203,31 @@ float Font::GetStringWidth(const std::string& text, float scale) const {
     return width;
 }
 
+/*****************************************************************//**
+ * \brief   Gets the scaled line height of the font.
+ *
+ * \param   scale 
+ * \return  Scaled line height.
+ *********************************************************************/
 float Font::GetLineHeight(float scale) const {
     return m_rawLineHeight * scale;
 }
 
+/*****************************************************************//**
+ * \brief   Gets the base pixel size the font was loaded with.
+ *
+ * \return  Base pixel size.
+ *********************************************************************/
 unsigned int Font::GetPixelSize() const {
     return m_size;
 }
 
+/*****************************************************************//**
+ * \brief   Gets the scaled ascent distance of the font.
+ *
+ * \param   scale 
+ * \return  Scaled ascent distance.
+ *********************************************************************/
 float Font::GetAscent(float scale) const {
     return m_rawAscent * scale;
 }

@@ -4886,7 +4886,6 @@ namespace Editor {
 					if (!engine_->IsEditorMode()) {
 						// Toggle collider visibility with C key
 						if (ImGui::IsKeyPressed(ImGuiKey_C)) {
-							SpriteRenderSystem* spriteRenderer_ = gameManager_->GetSystems().spriteRenderer_;
 							if (spriteRenderer_) spriteRenderer_->ToggleColliders();
 						}
 

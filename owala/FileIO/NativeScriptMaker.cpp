@@ -18,6 +18,12 @@
 #include "Logger.h"
 
 namespace Framework {
+	/*****************************************************************//**
+	 * \brief   Cleans up a string to ensure it is a valid C++ class name.
+	 * 
+	 * \param   className 
+	 * \return  A sanitized class name string.
+	 *********************************************************************/
 	std::string NativeScriptMaker::SanitizeClassName(const std::string& className) {
 		std::string sanitized_name;
 		for (char c : className) {
@@ -34,6 +40,12 @@ namespace Framework {
 		return sanitized_name;
 	}
 
+	/*****************************************************************//**
+	 * \brief   Generates the boilerplate code for a native script header file.
+	 * 
+	 * \param   className 
+	 * \return  A string containing the header file content.
+	 *********************************************************************/
 	std::string NativeScriptMaker::HeaderContent(const std::string& className) {
 		std::ostringstream oss;
 		oss << "#pragma once\n\n";
@@ -49,6 +61,13 @@ namespace Framework {
 		return oss.str();
 	}
 
+	/*****************************************************************//**
+	 * \brief   Generates the boilerplate code for a native script source file.
+	 *
+	 * \param   className 
+	 * \param   header 
+	 * \return  A string containing the cpp file content.
+	 *********************************************************************/
 	std::string NativeScriptMaker::CppContent(const std::string& className, const std::string& header) {
 		std::ostringstream oss;
 		oss << "#include \"" + header + "\"\n";
@@ -67,6 +86,13 @@ namespace Framework {
 		return oss.str();
 	}
 
+	/*****************************************************************//**
+	 * \brief   Writes a given string of text to a file at the specified path.
+	 *
+	 * \param   path 
+	 * \param   contents 
+	 * \return  True if the file was written successfully, false otherwise.
+	 *********************************************************************/
 	bool NativeScriptMaker::WriteFile(const std::string& path, const std::string& contents) {
 		try {
 			std::ofstream outputFile(path, std::ios::binary);
@@ -87,6 +113,14 @@ namespace Framework {
 		}
 	}
 
+	/*****************************************************************//**
+	 * \brief   Creates both the .h and .cpp files for a new native script.
+	 *
+	 * \param   className 
+	 * \param   dirAbs 
+	 * \param   outMsg 
+	 * \return  True if the script pair was successfully generated.
+	 *********************************************************************/
 	const bool NativeScriptMaker::CreateScriptPair(const std::string& className, const std::string& dirAbs, std::string& outMsg) {
 		std::string sanitized_name = SanitizeClassName(className);
 		if (sanitized_name.empty()) {

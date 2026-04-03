@@ -23,11 +23,15 @@
 namespace Framework {
 	std::string FileIOSystem::sourceDataDir_;
 
+	/*****************************************************************//**
+	 * \brief   Sanitizes a file name by converting it to lowercase and 
+	 *          replacing spaces with underscores.
+	 *
+	 * \param   name 
+	 * \return  
+	 *********************************************************************/
 	std::string FileIOSystem::SanitizeFileName(const std::string& name) {
 		std::string sanitized_name = name;
-		/*std::transform(sanitized_name.begin(), sanitized_name.end(), sanitized_name.begin(),
-			[](unsigned char c) { return static_cast<char>(std::tolower(c)); });*/
-
 			
 		std::transform(sanitized_name.begin(), sanitized_name.end(), sanitized_name.begin(),
 			[](unsigned char c) -> char { return static_cast<char>(std::tolower(c)); });
@@ -37,6 +41,13 @@ namespace Framework {
 		return sanitized_name;
 	}
 
+	/*****************************************************************//**
+	 * \brief   Reads a JSON file from the specified path into a RapidJSON Document.
+	 *
+	 * \param   fileName 
+	 * \param   doc 
+	 * \return  
+	 *********************************************************************/
 	bool FileIOSystem::ReadFile(const string& fileName, Document& doc) {
 		ifstream file(fileName);
 		if (!file) {
@@ -51,6 +62,15 @@ namespace Framework {
 		return true;
 	}
 
+	/*****************************************************************//**
+	 * \brief   Writes a RapidJSON Document out to a file, optionally mirroring
+	 *          it back to the source project directory.
+	 *
+	 * \param   fileName 
+	 * \param   d 
+	 * \param   writeToRoot 
+	 * \return  
+	 *********************************************************************/
 	bool FileIOSystem::WriteFileJson(const string& fileName, Document& d, bool writeToRoot) {
 		// Write JSON file
 		std::ofstream os(fileName);
@@ -101,6 +121,14 @@ namespace Framework {
 		return true;
 	}
 
+	/*****************************************************************//**
+	 * \brief   Deletes a JSON file from disk, optionally removing it from
+	 *          the source project directory as well.
+	 *
+	 * \param   fileName 
+	 * \param   deleteFromRoot 
+	 * \return  
+	 *********************************************************************/
 	bool FileIOSystem::DeleteFileJson(const string& fileName, bool deleteFromRoot) {
 		if (!fs::exists(fileName)) {
 			Logger::Get().Error(DebugType::FileIOSystem) << "Can't find file to delete: " << fileName << std::endl;
@@ -133,6 +161,12 @@ namespace Framework {
 		return true;
 	}
 
+	/*****************************************************************//**
+	 * \brief   Loads window configuration settings including dimensions and
+	 *          fullscreen state from the primary config file.
+	 *
+	 * \return  
+	 *********************************************************************/
 	WindowConfig FileIOSystem::LoadWindowConfig() {
 		rapidjson::Document d;
 		Vector2D windowSize = Vector2D(1920.0f, 1080.0f);
@@ -162,6 +196,11 @@ namespace Framework {
 		// Debugging output
 		return WindowConfig(windowSize, fullScreen);
 	}
+
+	/*****************************************************************//**
+	 * \brief   Serializes and saves dynamic world configurations like physics
+	 *          gravity and performance limiters.
+	 *********************************************************************/
 	void FileIOSystem::SaveWorldConfig() {
 		rapidjson::Document doc;
 		doc.SetObject();
@@ -192,6 +231,10 @@ namespace Framework {
 		}
 	}
 
+	/*****************************************************************//**
+	 * \brief   Loads global configuration elements into the active ECS physics 
+	 *          and graphics systems.
+	 *********************************************************************/
 	void FileIOSystem::LoadWorldConfig() {
 		rapidjson::Document doc;
 		//Read the file name passed in as a path
@@ -233,6 +276,13 @@ namespace Framework {
 		}
 	}
 
+	/*****************************************************************//**
+	 * \brief   Parses animation sequence data from a given path into an
+	 *          AnimationInfo container.
+	 *
+	 * \param   filepath 
+	 * \return  
+	 *********************************************************************/
 	AnimationInfo FileIOSystem::LoadAnimationInfo(std::string filepath) {
 		rapidjson::Document d;
 		ReadFile(filepath, d); //Read the file name passed in as a path
@@ -253,9 +303,6 @@ namespace Framework {
 		const rapidjson::Value& frameDuration = d[FileIOKeys::FRAME_DURATION];
 		const rapidjson::Value& isLooping = d[FileIOKeys::IS_LOOPING];
 		const rapidjson::Value& startFrame = d[FileIOKeys::START_FRAME];
-
-		// Debugging output
-		//Logger::Get().Info(DebugType::FileIOSystem) << "Animation Data read from " << filepath << ": frameCount: " << frameCount.GetInt() << ", frameDuration : " << frameDuration.GetFloat() << ", isLooping : " << isLooping.GetBool() << ", startFrame : " << startFrame.GetInt() << std::endl;
 
 		//Create AnimationComponent from data
 		AnimationInfo anim{ frameCount.GetInt(), frameDuration.GetFloat(), isLooping.GetBool(), startFrame.GetInt()};
@@ -288,7 +335,12 @@ namespace Framework {
 		return anim;
 	}
 
-	// Load audio file paths from game data (audioFileNames.json) into a map of soundKey -> list of file paths for that sound
+	/*****************************************************************//**
+	 * \brief   Load audio file paths from game data (audioFileNames.json) 
+	 *	into a map of soundKey -> list of file paths for that sound
+	 *
+	 * \param   audioFilesMap 
+	 *********************************************************************/
 	void FileIOSystem::LoadAudioFileNames(std::unordered_map<std::string, std::vector<std::string>>& audioFilesMap) {
 		rapidjson::Document d;
 		ReadFile(FileIOKeys::AUDIO_NAMES_FILEPATH, d); //Read the file name passed in as a path
@@ -313,7 +365,11 @@ namespace Framework {
 		}
 	}
 
-	// Load animation event -> audio mappings from game data (animationEventAudio.json)
+	/*****************************************************************//**
+	 * \brief   Load animation event -> audio mappings from game data (animationEventAudio.json)
+	 *
+	 * \param   outMap 
+	 *********************************************************************/
 	void FileIOSystem::LoadAnimationEventAudio(std::unordered_map<std::string, AnimationEventAudioConfig>& outMap) {
 		rapidjson::Document d;
 		if (!ReadFile(FileIOKeys::ANIM_EVENT_AUDIO_FILEPATH, d) || !d.IsObject()) {
@@ -351,6 +407,13 @@ namespace Framework {
 		}
 	}
 
+	/*****************************************************************//**
+	 * \brief   Reads serialized level structures mapping scenes effectively 
+	 *          storing asset representations tracking dynamic layouts accurately.
+	 *
+	 * \param   doc 
+	 * \return  
+	 *********************************************************************/
 	bool FileIOSystem::LoadSceneAssets(rapidjson::Document& doc) {
 		rapidjson::Document d;
 		if (!ReadFile(FileIOKeys::SCENE_ASSETS_FILEPATH, d) || !d.IsArray()) {
@@ -362,6 +425,13 @@ namespace Framework {
 		return true;
 	}
 
+	/*****************************************************************//**
+	 * \brief   Serializes a single scene environment to a managed tracking logic 
+	 *          registry path correctly appending structural updates smoothly.
+	 *
+	 * \param   sceneAsset 
+	 * \return  
+	 *********************************************************************/
 	bool FileIOSystem::SaveSceneAsset(const SceneAsset& sceneAsset) {
 		try {
 			Logger::Get().Info(DebugType::FileIOSystem) << "Saving scene asset <" << sceneAsset.name << "> to: " << FileIOKeys::SCENE_ASSETS_FILEPATH << std::endl;
@@ -409,6 +479,13 @@ namespace Framework {
 		}
 	}
 
+	/*****************************************************************//**
+	 * \brief   Executes full bulk save resolving structural definitions mapped 
+	 *          globally committing active memory assets mapping successfully completely.
+	 *
+	 * \param   allAssets 
+	 * \return  
+	 *********************************************************************/
 	bool FileIOSystem::SaveAllSceneAssets(const std::unordered_map<SceneGUID, SceneAsset>& allAssets) {
 		try {
 			Logger::Get().Info(DebugType::FileIOSystem) << "Saving all " << allAssets.size() << " scene assets to: " << FileIOKeys::SCENE_ASSETS_FILEPATH << std::endl;
@@ -440,6 +517,12 @@ namespace Framework {
 		}
 	}
 
+	/*****************************************************************//**
+	 * \brief   Evaluates configuration dependencies extracting project states 
+	 *          including startup tracking dynamically structural navigation tracking paths.
+	 *
+	 * \return  
+	 *********************************************************************/
 	GameConfig FileIOSystem::LoadGameConfig() {
 		GameConfig config;
 		rapidjson::Document doc;
@@ -470,6 +553,13 @@ namespace Framework {
 		return config;
 	}
 
+	/*****************************************************************//**
+	 * \brief   Injects defined configuration tracking attributes to JSON formats 
+	 *          structurally capturing menu structures executing navigation properly cleanly.
+	 *
+	 * \param   config 
+	 * \return  
+	 *********************************************************************/
 	bool FileIOSystem::SaveGameConfig(const GameConfig& config) {
 		rapidjson::Document doc;
 		doc.SetObject();

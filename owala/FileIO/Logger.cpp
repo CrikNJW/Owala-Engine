@@ -38,6 +38,9 @@ namespace Framework {
         return "";
     }();
 
+    /*****************************************************************//**
+     * \brief   Initializes Windows debug symbols for accurate stack tracing.
+     *********************************************************************/
     const void Logger::InitSymbols() {
         // SYMOPT_DEFERRED_LOADS: load symbols only when its needed
         // SYMOPT_LOAD_LINES: load file and line number information in addition to function names
@@ -50,6 +53,11 @@ namespace Framework {
         }
     }
 
+    /*****************************************************************//**
+     * \brief   Forms a timestamped filepath string for generating crash logs.
+     *
+     * \return  A string literal holding the generated filepath.
+     *********************************************************************/
     const std::string Logger::GetCrashLogFilename() {
         std::ostringstream oss;
         std::time_t t = std::time(nullptr);
@@ -61,6 +69,14 @@ namespace Framework {
         return oss.str();
     }
     
+    /*****************************************************************//**
+     * \brief   Logs crash data utilizing a previously captured stack trace instance.
+     *          Usually called when catching a specific custom GameException.
+     *
+     * \param   type
+     * \param   message
+     * \param   stack_trace
+     *********************************************************************/
     // called when GameException is thrown. uses stack trace captured at the point where GameException was thrown
     void Logger::LogCrash(const DebugType type, const std::string& message, const backward::StackTrace& stack_trace) {
         Get().Error(type) << message << std::endl; // log to console for debugging
@@ -88,6 +104,13 @@ namespace Framework {
         }
     }
 
+    /*****************************************************************//**
+     * \brief   Logs a generic crash dynamically, capturing a fresh stack
+     *          trace exactly from the point of failure.
+     *
+     * \param   type
+     * \param   message
+     *********************************************************************/
     // called when other exceptions are thrown. captures stack trace at this point
     void Logger::LogCrash(const DebugType type, const std::string& message) {
         Get().Error(type) << message << std::endl; // log to console for debugging
@@ -117,12 +140,24 @@ namespace Framework {
         }
     }
 
+    /*****************************************************************//**
+     * \brief   Outputs standard operational or status information to the console.
+     *
+     * \param   type
+     * \return  A mutable stream reference ready to be pipelined.
+     *********************************************************************/
     // Informative logging
     std::ostream& Logger::Info(DebugType type) {
         std::cout << GetDebugType(type) << ' ';
         return std::cout;
     }
 
+    /*****************************************************************//**
+     * \brief   Outputs structured error or failing execution logs to the console.
+     *
+     * \param   type
+     * \return  A mutable stream reference pointing to the system error channel.
+     *********************************************************************/
     // Error logging
     std::ostream& Logger::Error(DebugType type) {
         std::cerr << "[ERROR] " << GetDebugType(type) << ' ';

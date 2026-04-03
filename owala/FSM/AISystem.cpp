@@ -173,7 +173,7 @@ namespace Framework {
     }
 
     // Editor-only: draws debug visualization for witch enemies including detection radius and attack hit radius.
-    void AISystem::DrawWitchDebug(Entity entity, const FSMComponent& ai, const Vector2D& pos, ImDrawList* drawList, Editor::Editor* editor, Entity cameraID) {
+    void AISystem::DrawWitchDebug(Entity /*entity*/, const FSMComponent& ai, const Vector2D& pos, ImDrawList* drawList, Editor::Editor* editor, Entity cameraID) {
         // Only draw for witch-type enemies (check FSM definition path)
         if (ai.fsmDefinitionPath.find("witch") == std::string::npos &&
             ai.fsmDefinitionPath.find("Witch") == std::string::npos) {

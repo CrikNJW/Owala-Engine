@@ -179,7 +179,7 @@ namespace Framework {
                 EntityManager entityMgr(GameManager::GetInstance().GetECS());
                 if (!entityMgr.HasComponent(e.entity, TransformType)) return;
                 Vector2D position = entityMgr.GetComponent<Transform>(e.entity).position;
-                FMOD::Channel* ch = this->PlayRandomSound3D(cfg.soundKey, cfg.audioType, cfg.volume, position, minHearingRange, maxHearingRange);
+                ch = this->PlayRandomSound3D(cfg.soundKey, cfg.audioType, cfg.volume, position, minHearingRange, maxHearingRange);
                 if (ch && e.entity != 0) {
                     entity3DChannels_[e.entity] = ch;
                 }

@@ -599,7 +599,7 @@ namespace Framework {
         // Dilation is proportional: a 2x tall sprite gets 2x the dilation, keeping
         // the sub-pixel gap closed consistently regardless of tile count.
         // const float referenceTileH = sprites.empty() ? 1.0f : sprites[0].size.y;
-        const float baseDilation = 1.5f / halfH; // 1.5 pixels worth in NDC
+        //const float baseDilation = 1.5f / halfH; // 1.5 pixels worth in NDC
 
         for (const auto& s : sprites) {
             const float cx = s.topLeft.x + s.size.x * 0.5f;

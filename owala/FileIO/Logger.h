@@ -19,11 +19,16 @@
 #pragma once
 #include <iostream>
 #include <fstream>
-#include <sstream>
+#include <sstream>  
 #include <ctime>
 #include "backward.hpp"
 #include <windows.h>
 
+/*****************************************************************//**
+ * \enum    DebugType
+ * \brief   Enumeration categorizing the source subsystem or context
+ *          of a log message or generated exception.
+ *********************************************************************/
 const enum class DebugType {
     Unknown,
     WindowsSystem,
@@ -52,6 +57,11 @@ const enum class DebugType {
     Game
 };
 
+/*****************************************************************//**
+ * \var     DebugTypeLabels
+ * \brief   String representations corresponding sequentially to
+ *          the entries defined in the DebugType enumeration.
+ *********************************************************************/
 const std::string DebugTypeLabels[] = {
     "Unknown Exception",
     "WindowsSystem",
@@ -83,6 +93,12 @@ const std::string DebugTypeLabels[] = {
 namespace Framework {
 
     // throw GameException with DebugType and a msg instead of runtime_error
+    
+    /*****************************************************************//**
+     * \struct  GameException
+     * \brief   A specialized exception block capturing deep tracing paths 
+     *          automatically exactly when the throw executes.
+     *********************************************************************/
     const struct GameException : public std::exception {
         DebugType type;
         std::string msg;
@@ -97,26 +113,57 @@ namespace Framework {
         }
     };
 
+    /*****************************************************************//**
+     * \class   Logger
+     * \brief   Singleton class directing logging streams and establishing 
+     *          crash serialization outputs formatting stack traces tracking execution.
+     *********************************************************************/
 	class Logger {
     public:
-        // need this to resolve the symbols in stack trace
+        /*****************************************************************//**
+         * \brief   need this to resolve the symbols in stack trace
+         *********************************************************************/
         static const void InitSymbols();
 
-        // make logger singleton
+        /*****************************************************************//**
+         * \brief   Retrieves globally mapped core logger singleton instance.
+         *
+         * \return  Singleton Logger instance.
+         *********************************************************************/
         static Logger& Get() {
             static Logger instance;
             return instance;
         }
 
-        // for general debugging statements
+        /*****************************************************************//**
+         * \brief   Directs standard info debugging outputs sequentially dynamically formats structures.
+         *
+         * \param   type
+         * \return  Stream logic outputs formatting text paths visually mapping console streams cleanly.
+         *********************************************************************/
         static std::ostream& Info(DebugType type);
-        // for error debugging
+        
+        /*****************************************************************//**
+         * \brief   Captures error reporting text dynamically formatting debugging streams securely paths explicitly.
+         *
+         * \param   type
+         *********************************************************************/
         static std::ostream& Error(DebugType type);
         
-        // functions to log crashes to a log file
-        // for GameExceptions thrown
+        /*****************************************************************//**
+         * \brief   Registers tracking configurations logically explicitly explicitly.
+         *
+         * \param   type
+         * \param   message
+         * \param   stack_trace
+         *********************************************************************/
         static void LogCrash(const DebugType type, const std::string& message, const backward::StackTrace& stack_trace);
-        // for other exceptions caught
+        
+        /*****************************************************************//**
+         * \brief   Records explicitly defined trace failures optimally precisely uniquely gracefully smoothly organically manually.
+         *
+         * \param   type
+         *********************************************************************/
         static void LogCrash(const DebugType type, const std::string& message);
 
     private:
