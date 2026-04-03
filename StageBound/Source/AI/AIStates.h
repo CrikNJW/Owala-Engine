@@ -19,6 +19,7 @@
 #include "FSM.h"
 #include "Pathfinding.h"
 #include "OwalaTime.h"
+#include "Vector2D.h"
 #include <vector>
 
 namespace Framework {
@@ -41,6 +42,9 @@ namespace Framework {
 
     private:
         float wakeUpRadius_ = 300.0f;
+        Vector2D originalPosition_;       // Store bird's original position
+        float lastWorldRotation_ = 0.0f;  // Track world rotation to counteract it
+        bool positionInitialized_ = false;
     };
 
     // --- WAKING STATE ---
@@ -118,6 +122,7 @@ namespace Framework {
     class BirdHoverState : public State {
     public:
         const char* GetName() const override { return "Hover"; }
+        void OnEnter(Entity entity, EntityStorage& ecs) override;
         void OnUpdate(Entity entity, EntityStorage& ecs, float dt) override;
         void SetParameter(const std::string& key, float value) override;
 
@@ -266,6 +271,25 @@ namespace Framework {
         float fallDuration_ = 1.0f;
         float minTeleportRange_ = 80.0f;
         float maxTeleportRange_ = 200.0f;
+    };
+
+    // --- WITCH FALLING STATE (gravity-based landing after teleport) ---
+    class WitchFallingState : public State {
+    public:
+        const char* GetName() const override { return "WitchFalling"; }
+        void OnEnter(Entity entity, EntityStorage& ecs) override;
+        void OnUpdate(Entity entity, EntityStorage& ecs, float dt) override;
+        void SetParameter(const std::string& key, float value) override;
+
+        float GetTimer() const { return timer_; }
+        float GetMaxFallTime() const { return maxFallTime_; }
+        bool IsGrounded() const { return isGrounded_; }
+
+    private:
+        float timer_ = 0.0f;
+        float maxFallTime_ = 3.0f;  // Max time before giving up and proceeding anyway
+        float fallSpeed_ = 400.0f;  // Gravity fall speed
+        bool isGrounded_ = false;
     };
 
     // --- WITCH CHARGING STATE ---

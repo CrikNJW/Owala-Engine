@@ -25,6 +25,9 @@
 #include "GameManager.h" 
 #include "PhysicsSystem.h"
 #include "GameMessages.h"
+#include "CameraSystem.h"
+#include "TransformationSystem.h"
+#include <algorithm>
 
 namespace Framework {
     
@@ -33,6 +36,20 @@ namespace Framework {
         EntityManager mgr(ecs);
         auto players = mgr.GetAllEntitiesWithComponent(true, PlayerTagType);
         return players.empty() ? 0 : players[0];
+    }
+
+    static void FaceEntityTowardsPlayer(Entity entity, EntityStorage& ecs) {
+        EntityManager mgr(ecs);
+        Entity player = GetPlayer(ecs);
+        if (player == 0) return;
+        if (!mgr.HasComponent(entity, TransformType) || !mgr.HasComponent(player, TransformType)) return;
+        if (!mgr.HasComponent(entity, TextureComponentType)) return;
+
+        const Vector2D myPos = mgr.GetComponent<Transform>(entity).position;
+        const Vector2D playerPos = mgr.GetComponent<Transform>(player).position;
+
+        // Witch sprites default to facing left; flip when player is on the right.
+        mgr.GetComponent<TextureComponent>(entity).flipHorizontal = (playerPos.x > myPos.x);
     }
 
     // Per-entity storage for the pre-collision velocity that SimpleChase
@@ -54,19 +71,35 @@ namespace Framework {
             mgr.GetComponent<Velocity>(entity).Vel = { 0.f, 0.f };
         }
 
-        if (mgr.HasComponent(entity, TransformType)) {
-            mgr.GetComponent<Transform>(entity).rotation.textureAngle = 0.0f;
+        TransformationSystem* transformSys = GameManager::GetInstance().GetSystems().transformation_;
+        
+        // Add RotationFlag so bird's position rotates with the world like platforms during idle
+        if (!mgr.HasComponent(entity, RotationFlagType)) {
+            RotationFlag rotFlag;
+            if (transformSys) {
+                rotFlag.currentRotation = transformSys->GetGlobalRotation();
+            }
+            mgr.AddComponent<RotationFlag>(entity, rotFlag);
+        } else {
+            // Update existing RotationFlag to match current world rotation
+            if (transformSys) {
+                mgr.GetComponent<RotationFlag>(entity).currentRotation = transformSys->GetGlobalRotation();
+            }
         }
 
         s_lastChaseVel.erase(entity);
 
     }
     void BirdIdleState::OnUpdate(Entity entity, EntityStorage& ecs, float dt) {
-        (void)entity;
-        (void)ecs;
         (void)dt;
-        // Just waiting for transition 
+        EntityManager mgr(ecs);
         
+        // Continuously sync RotationFlag with world rotation during idle
+        // (since enemies are skipped by TransformationSystem's automatic rotation update)
+        TransformationSystem* transformSys = GameManager::GetInstance().GetSystems().transformation_;
+        if (transformSys && mgr.HasComponent(entity, RotationFlagType)) {
+            mgr.GetComponent<RotationFlag>(entity).currentRotation = transformSys->GetGlobalRotation();
+        }
     }
     void BirdIdleState::SetParameter(const std::string& key, float value) {
         if (key == "wakeUpRadius") wakeUpRadius_ = value;
@@ -75,11 +108,25 @@ namespace Framework {
 
     // --- WAKING ---
     void BirdWakingState::OnEnter(Entity entity, EntityStorage& ecs) {
-        (void)entity;
-        (void)ecs;
         timer_ = 0.0f;
 
         EntityManager mgr(ecs);
+        TransformationSystem* transformSys = GameManager::GetInstance().GetSystems().transformation_;
+        
+        // Ensure bird still has RotationFlag during waking (rotates with world)
+        if (!mgr.HasComponent(entity, RotationFlagType)) {
+            RotationFlag rotFlag;
+            if (transformSys) {
+                rotFlag.currentRotation = transformSys->GetGlobalRotation();
+            }
+            mgr.AddComponent<RotationFlag>(entity, rotFlag);
+        } else {
+            // Update existing RotationFlag to match current world rotation
+            if (transformSys) {
+                mgr.GetComponent<RotationFlag>(entity).currentRotation = transformSys->GetGlobalRotation();
+            }
+        }
+        
         if (mgr.HasComponent(entity, TransformType)) {
             Vector2D position = mgr.GetComponent<Transform>(entity).position;
             MessageBus::Instance().Publish(BirdWakeEvent(entity, position));
@@ -87,9 +134,15 @@ namespace Framework {
         }
     }
     void BirdWakingState::OnUpdate(Entity entity, EntityStorage& ecs, float dt) {
-        (void)entity;
-        (void)ecs;
         timer_ += dt;
+        EntityManager mgr(ecs);
+        
+        // Continuously sync RotationFlag with world rotation during waking
+        // (since enemies are skipped by TransformationSystem's automatic rotation update)
+        TransformationSystem* transformSys = GameManager::GetInstance().GetSystems().transformation_;
+        if (transformSys && mgr.HasComponent(entity, RotationFlagType)) {
+            mgr.GetComponent<RotationFlag>(entity).currentRotation = transformSys->GetGlobalRotation();
+        }
     }
     void BirdWakingState::SetParameter(const std::string& key, float value) {
         if (key == "wakeUpTime") wakeUpTime_ = value;
@@ -99,6 +152,12 @@ namespace Framework {
     void BirdSimpleChaseState::OnEnter(Entity entity, EntityStorage& ecs) {
         EntityManager mgr(ecs);
         ownerID_ = entity;
+
+        // Remove RotationFlag so bird no longer rotates with world - it's now flying freely
+        if (mgr.HasComponent(entity, RotationFlagType)) {
+            mgr.GetComponent<RotationFlag>(entity).currentRotation = 0.0f;
+           // mgr.RemoveComponent(entity, RotationFlagType);
+        }
 
         if (mgr.HasComponent(entity, VelocityType)) {
             s_lastChaseVel[entity] = mgr.GetComponent<Velocity>(entity).Vel;
@@ -115,6 +174,11 @@ namespace Framework {
         if (player == 0 || !mgr.HasComponent(entity, TransformType) || !mgr.HasComponent(player, TransformType)) {
             // Safety stop if player dies mid-chase
             return;
+        }
+
+        if (mgr.HasComponent(entity, RotationFlagType)) {
+            mgr.GetComponent<RotationFlag>(entity).currentRotation = 0.0f;
+            // mgr.RemoveComponent(entity, RotationFlagType);
         }
 
         Vector2D myPos = mgr.GetComponent<Transform>(entity).position;
@@ -234,6 +298,12 @@ namespace Framework {
         timer_ = 0.0f;
         EntityManager mgr(ecs);
 
+        // Remove RotationFlag so bird is not affected by world rotation during bounce
+        if (mgr.HasComponent(entity, RotationFlagType)) {
+            mgr.GetComponent<RotationFlag>(entity).currentRotation = 0.0f;
+           // mgr.RemoveComponent(entity, RotationFlagType);
+        }
+
         if (!mgr.HasComponent(entity, VelocityType)) return;
 
         // Get current velocity to determine bounce direction
@@ -271,9 +341,15 @@ namespace Framework {
 
     void BirdBounceState::OnUpdate(Entity entity, EntityStorage& ecs, float dt) {
         timer_ += dt;
+        EntityManager mgr(ecs);
+
+        if (mgr.HasComponent(entity, RotationFlagType)) {
+            mgr.GetComponent<RotationFlag>(entity).currentRotation = 0.0f;
+            // mgr.RemoveComponent(entity, RotationFlagType);
+        }
 
         // Gradually reduce bounce velocity
-        EntityManager mgr(ecs);
+        
         if (mgr.HasComponent(entity, VelocityType)) {
             s_lastChaseVel[entity] = mgr.GetComponent<Velocity>(entity).Vel;
         }
@@ -286,6 +362,14 @@ namespace Framework {
     }
 
     // --- HOVER ---
+    void BirdHoverState::OnEnter(Entity entity, EntityStorage& ecs) {
+        EntityManager mgr(ecs);
+        
+        if (mgr.HasComponent(entity, RotationFlagType)) {
+            mgr.GetComponent<RotationFlag>(entity).currentRotation = 0.0f;
+        }
+    }
+
     void BirdHoverState::OnUpdate(Entity entity, EntityStorage& ecs, float dt) {
         attackTimer_ -= dt;
         EntityManager mgr(ecs);
@@ -294,6 +378,12 @@ namespace Framework {
 
         Vector2D playerPos = mgr.GetComponent<Transform>(player).position;
         Vector2D myPos = mgr.GetComponent<Transform>(entity).position;
+
+        // Remove RotationFlag so bird is not affected by world rotation during hover
+        if (mgr.HasComponent(entity, RotationFlagType)) {
+            mgr.GetComponent<RotationFlag>(entity).currentRotation = 0.0f;
+            // mgr.RemoveComponent(entity, RotationFlagType);
+        }
 
         // Simple orbiting/hover logic
         Vector2D dir = myPos - playerPos; // Vector away from player
@@ -319,6 +409,12 @@ namespace Framework {
         ownerID_ = entity;
         timer_ = 0.0f;
         EntityManager mgr(ecs);
+
+        // Remove RotationFlag so bird is not affected by world rotation during attack
+        if (mgr.HasComponent(entity, RotationFlagType)) {
+            mgr.GetComponent<RotationFlag>(entity).currentRotation = 0.0f;
+        }
+
         Entity player = GetPlayer(ecs);
         if (player == 0) return;
 
@@ -356,7 +452,9 @@ namespace Framework {
         if (!mgr.HasComponent(entity, VelocityType)) return;
 
         Vector2D& vel = mgr.GetComponent<Velocity>(entity).Vel;
-
+        if (mgr.HasComponent(entity, RotationFlagType)) {
+            mgr.GetComponent<RotationFlag>(entity).currentRotation = 0.0f;
+        }
         // ---------------------------------------------------------------
         // Accelerate along the dive direction, capped at attackMaxSpeed_
         // This gives the "lunge" feel instead of instant full speed.
@@ -384,6 +482,12 @@ namespace Framework {
         ownerID_ = entity;
         timer_ = 0.0f;
         EntityManager mgr(ecs);
+
+        // Remove RotationFlag so bird is not affected by world rotation during recovery
+        if (mgr.HasComponent(entity, RotationFlagType)) {
+            mgr.GetComponent<RotationFlag>(entity).currentRotation = 0.0f;
+        }
+
         if (mgr.HasComponent(entity, VelocityType)) {
             mgr.GetComponent<Velocity>(entity).Vel = { 0.f, 0.f };
         }
@@ -398,8 +502,12 @@ namespace Framework {
     }
     void BirdRecoveryState::OnUpdate(Entity entity, EntityStorage& ecs, float dt) {
         (void)entity;
-        (void)ecs;
+        EntityManager mgr(ecs);
         timer_ += dt;
+
+        if (mgr.HasComponent(entity, RotationFlagType)) {
+            mgr.GetComponent<RotationFlag>(entity).currentRotation = 0.0f;
+        }
     }
     void BirdRecoveryState::SetParameter(const std::string& key, float value) {
         if (key == "duration") duration_ = value;
@@ -461,10 +569,12 @@ namespace Framework {
         if (mgr.HasComponent(entity, VelocityType)) {
             mgr.GetComponent<Velocity>(entity).Vel = { 0.f, 0.f };
         }
+        FaceEntityTowardsPlayer(entity, ecs);
     }
 
     void WitchIdleState::OnUpdate(Entity entity, EntityStorage& ecs, float dt) {
         // Just waiting for player detection (handled by FSM transitions)
+        FaceEntityTowardsPlayer(entity, ecs);
         (void)entity; (void)ecs; (void)dt; 
     }
 
@@ -484,9 +594,11 @@ namespace Framework {
             Vector2D position = mgr.GetComponent<Transform>(entity).position;
             MessageBus::Instance().Publish(PlaySound3DEvent{ "Witch_Alert", AudioType::SFX, 0.3f, position });
         }
+        FaceEntityTowardsPlayer(entity, ecs);
     }
 
     void WitchAlertedState::OnUpdate(Entity entity, EntityStorage& ecs, float dt) {
+        FaceEntityTowardsPlayer(entity, ecs);
         (void)entity; (void)ecs;
         timer_ += dt;
         // Play alert animation here if you have animation system
@@ -504,9 +616,11 @@ namespace Framework {
         if (mgr.HasComponent(entity, VelocityType)) {
             mgr.GetComponent<Velocity>(entity).Vel = { 0.f, 0.f };
         }
+        FaceEntityTowardsPlayer(entity, ecs);
     }
 
     void WitchEnragedState::OnUpdate(Entity entity, EntityStorage& ecs, float dt) {
+        FaceEntityTowardsPlayer(entity, ecs);
         (void)entity; (void)ecs;
         timer_ += dt;
         // Play enraged animation here
@@ -529,9 +643,11 @@ namespace Framework {
             Vector2D position = mgr.GetComponent<Transform>(entity).position;
             MessageBus::Instance().Publish(PlaySound3DEvent{ "Witch_Teleport", AudioType::SFX, 0.3f, position });
         }
+        FaceEntityTowardsPlayer(entity, ecs);
     }
 
     void WitchTeleportSpinState::OnUpdate(Entity entity, EntityStorage& ecs, float dt) {
+        FaceEntityTowardsPlayer(entity, ecs);
         (void)entity; (void)ecs;
         timer_ += dt;
     }
@@ -541,6 +657,52 @@ namespace Framework {
     }
 
     // --- WITCH TELEPORT FALL ---
+    // Helper: Get the effective "up" direction based on world rotation
+    static Vector2D GetEffectiveUpDirection(float worldRotationDeg) {
+        // Normalize to 0-360
+        float rot = std::fmod(worldRotationDeg + 360.0f, 360.0f);
+        
+        // Round to nearest 90 degree increment
+        if (rot >= 315.0f || rot < 45.0f) {
+            return { 0.0f, 1.0f };  // Normal up
+        } else if (rot >= 45.0f && rot < 135.0f) {
+            return { -1.0f, 0.0f }; // Up is to the left (rotated 90° CCW)
+        } else if (rot >= 135.0f && rot < 225.0f) {
+            return { 0.0f, -1.0f }; // Up is down (rotated 180°)
+        } else {
+            return { 1.0f, 0.0f };  // Up is to the right (rotated 270°)
+        }
+    }
+
+    // Helper: Calculate platform top position based on rotation
+    static Vector2D GetPlatformTopPosition(const Vector2D& platformPos, const Vector2D& halfSize, 
+                                           float platformRotation, float witchHalfHeight, 
+                                           float worldRotation) {
+        Vector2D upDir = GetEffectiveUpDirection(worldRotation);
+        
+        // Calculate the platform's rotated bounds
+        AABB_Bounds bounds = PhysicsSystem::GetRotatedAABB(platformPos, halfSize, platformRotation);
+        
+        // The "top" depends on world rotation
+        Vector2D result;
+        if (std::abs(upDir.y) > 0.5f) {
+            // Normal or inverted
+            if (upDir.y > 0) {
+                result = { platformPos.x, bounds.max.y + witchHalfHeight + 1.0f };
+            } else {
+                result = { platformPos.x, bounds.min.y - witchHalfHeight - 1.0f };
+            }
+        } else {
+            // World rotated 90 or 270
+            if (upDir.x > 0) {
+                result = { bounds.max.x + witchHalfHeight + 1.0f, platformPos.y };
+            } else {
+                result = { bounds.min.x - witchHalfHeight - 1.0f, platformPos.y };
+            }
+        }
+        return result;
+    }
+
     void WitchTeleportFallState::OnEnter(Entity entity, EntityStorage& ecs) {
         timer_ = 0.0f;
         EntityManager mgr(ecs);
@@ -550,56 +712,266 @@ namespace Framework {
             !mgr.HasComponent(player, TransformType)) return;
 
         Vector2D playerPos = mgr.GetComponent<Transform>(player).position;
-        Vector2D witchScale = mgr.GetComponent<Transform>(entity).scale;
-        Vector2D witchHS = witchScale * 0.5f;
+        
+        // Use actual AABB collider size for witch, not transform scale
+        Vector2D witchHS{ 50.0f, 50.0f }; // Default fallback
+        if (mgr.HasComponent(entity, AABBColliderType)) {
+            const AABBCollider& witchCollider = mgr.GetComponent<AABBCollider>(entity);
+            witchHS = witchCollider.HalfSize;
+        }
 
-        // Gather all platform AABBs for collision checking
-        auto platforms = mgr.GetAllEntitiesWithComponent(true, PlatformTagType);
+        // Get world rotation from TransformationSystem
+        float worldRotation = 0.0f;
+        TransformationSystem* transformSys = GameManager::GetInstance().GetSystems().transformation_;
+        if (transformSys) {
+            worldRotation = transformSys->GetGlobalRotation();
+        }
 
-        static std::mt19937 rng{ std::random_device{}() };
-        std::uniform_real_distribution<float> angleDist(0.0f, 2.0f * 3.14159265f);
-        std::uniform_real_distribution<float> distDist(minTeleportRange_, maxTeleportRange_);
-
-        const int maxAttempts = 15;
-        Vector2D teleportPos = mgr.GetComponent<Transform>(entity).position;
-
-        for (int attempt = 0; attempt < maxAttempts; ++attempt) {
-            float angle = angleDist(rng);
-            float dist = distDist(rng);
-            Vector2D candidatePos = playerPos + Vector2D{ std::cos(angle) * dist, std::sin(angle) * dist };
-
-            // Build AABB for witch at candidate position
-            AABB_Bounds witchBounds = {
-                { candidatePos.x - witchHS.x, candidatePos.y - witchHS.y },
-                { candidatePos.x + witchHS.x, candidatePos.y + witchHS.y }
-            };
-
-            bool overlaps = false;
-            for (Entity platEntity : platforms) {
-                if (!mgr.HasComponent(platEntity, TransformType)) continue;
-                Transform& pt = mgr.GetComponent<Transform>(platEntity);
-                Vector2D platHS = pt.scale * 0.5f;
-
-                float platRotation = 0.0f;
-                if (mgr.HasComponent(platEntity, RotationFlagType)) {
-                    platRotation = mgr.GetComponent<RotationFlag>(platEntity).currentRotation;
-                }
-                AABB_Bounds platBounds = PhysicsSystem::GetRotatedAABB(pt.position, platHS, platRotation);
-
-                if (CollisionIntersection_RectRect_Static(witchBounds, platBounds)) {
-                    overlaps = true;
-                    break;
-                }
+        // Get camera viewport bounds to ensure witch stays visible
+        CameraSystem* camSys = GameManager::GetInstance().GetSystems().camera_;
+        float viewLeft = -1000.0f, viewRight = 1000.0f, viewBottom = -1000.0f, viewTop = 1000.0f;
+        if (camSys) {
+            Entity activeCamera = camSys->GetActiveCamera();
+            if (activeCamera != 0) {
+                camSys->GetViewBounds(activeCamera, viewLeft, viewRight, viewBottom, viewTop);
             }
+        }
+        // Add padding so witch doesn't appear at the very edge
+        const float viewPadding = 50.0f;
+        viewLeft += viewPadding + witchHS.x;
+        viewRight -= viewPadding + witchHS.x;
+        viewBottom += viewPadding + witchHS.y;
+        viewTop -= viewPadding + witchHS.y;
 
-            if (!overlaps) {
-                teleportPos = candidatePos;
-                break;
+        // Gather all platform entities (entities with PlatformTag or Platform layer)
+        std::vector<Entity> platforms;
+        for (Entity e : mgr.GetAllEntitiesWithComponent(true, AABBColliderType)) {
+            if (e == entity || e == player) continue;
+            if (!mgr.HasComponent(e, TransformType)) continue;
+            if (!mgr.HasComponent(e, LoadedTagType)) continue;
+            
+            // Check if this is a platform (has PlatformTag or Platform collision layer)
+            bool isPlatform = mgr.HasComponent(e, PlatformTagType);
+            if (!isPlatform) {
+                const EntityProperties& props = mgr.GetProperties(e);
+                isPlatform = (props.layer == CollisionLayer::Platform);
+            }
+            
+            if (isPlatform) {
+                platforms.push_back(e);
             }
         }
 
-        // Teleport to valid position (falls back to current position if all attempts overlap)
+        // Find valid teleport positions on platforms near the player
+        struct PlatformCandidate {
+            Entity platformEntity;
+            Vector2D topPosition;
+            float distToPlayer;
+        };
+        std::vector<PlatformCandidate> candidates;
+
+        for (Entity plat : platforms) {
+            const Transform& platTf = mgr.GetComponent<Transform>(plat);
+            const AABBCollider& platCollider = mgr.GetComponent<AABBCollider>(plat);
+            
+            float platformRotation = 0.0f;
+            if (mgr.HasComponent(plat, RotationFlagType)) {
+                platformRotation = mgr.GetComponent<RotationFlag>(plat).currentRotation;
+            }
+
+            Vector2D platformPos = platTf.position + platCollider.Offset;
+            
+            // Get the top position of this platform
+            Vector2D topPos = GetPlatformTopPosition(platformPos, platCollider.HalfSize, 
+                                                     platformRotation, witchHS.y, worldRotation);
+            
+            // Check if within range
+            float dist = topPos.Distance(playerPos);
+            if (dist < minTeleportRange_ || dist > maxTeleportRange_) continue;
+            
+            // Check if within viewport
+            if (topPos.x < viewLeft || topPos.x > viewRight ||
+                topPos.y < viewBottom || topPos.y > viewTop) continue;
+            
+            candidates.push_back({ plat, topPos, dist });
+        }
+
+        // Sort by distance to player
+        std::sort(candidates.begin(), candidates.end(), 
+            [](const PlatformCandidate& a, const PlatformCandidate& b) {
+                return a.distToPlayer < b.distToPlayer;
+            });
+
+        // Gather all collidables for overlap testing
+        auto collidables = mgr.GetAllEntitiesWithComponent(true, AABBColliderType);
+        
+        Vector2D teleportPos = mgr.GetComponent<Transform>(entity).position;
+        bool foundValidPos = false;
+
+        // Try each candidate platform position
+        for (const auto& candidate : candidates) {
+            // Try multiple X positions along the platform top
+            const Transform& platTf = mgr.GetComponent<Transform>(candidate.platformEntity);
+            const AABBCollider& platCollider = mgr.GetComponent<AABBCollider>(candidate.platformEntity);
+            
+            float platformRotation = 0.0f;
+            if (mgr.HasComponent(candidate.platformEntity, RotationFlagType)) {
+                platformRotation = mgr.GetComponent<RotationFlag>(candidate.platformEntity).currentRotation;
+            }
+            
+            AABB_Bounds platBounds = PhysicsSystem::GetRotatedAABB(
+                platTf.position + platCollider.Offset, platCollider.HalfSize, platformRotation);
+            
+            Vector2D upDir = GetEffectiveUpDirection(worldRotation);
+            
+            // Generate positions along the platform surface
+            std::vector<Vector2D> positionsToTry;
+            
+            if (std::abs(upDir.y) > 0.5f) {
+                // Normal or inverted - move along X axis
+                float yPos = (upDir.y > 0) ? (platBounds.max.y + witchHS.y + 1.0f) 
+                                           : (platBounds.min.y - witchHS.y - 1.0f);
+                float xMin = platBounds.min.x + witchHS.x;
+                float xMax = platBounds.max.x - witchHS.x;
+                const float clampedMinX = std::min(xMin, xMax);
+                const float clampedMaxX = std::max(xMin, xMax);
+                
+                // Prefer position closest to player
+                float playerX = std::clamp(playerPos.x, clampedMinX, clampedMaxX);
+                positionsToTry.push_back({ playerX, yPos });
+                positionsToTry.push_back({ (clampedMinX + clampedMaxX) * 0.5f, yPos }); // Center
+                positionsToTry.push_back({ clampedMinX, yPos });
+                positionsToTry.push_back({ clampedMaxX, yPos });
+            } else {
+                // World rotated 90 or 270 - move along Y axis
+                float xPos = (upDir.x > 0) ? (platBounds.max.x + witchHS.y + 1.0f) 
+                                           : (platBounds.min.x - witchHS.y - 1.0f);
+                float yMin = platBounds.min.y + witchHS.x;
+                float yMax = platBounds.max.y - witchHS.x;
+                const float clampedMinY = std::min(yMin, yMax);
+                const float clampedMaxY = std::max(yMin, yMax);
+                
+                float playerY = std::clamp(playerPos.y, clampedMinY, clampedMaxY);
+                positionsToTry.push_back({ xPos, playerY });
+                positionsToTry.push_back({ xPos, (clampedMinY + clampedMaxY) * 0.5f });
+                positionsToTry.push_back({ xPos, clampedMinY });
+                positionsToTry.push_back({ xPos, clampedMaxY });
+            }
+            
+            for (const Vector2D& candidatePos : positionsToTry) {
+                // Check viewport bounds
+                if (candidatePos.x < viewLeft || candidatePos.x > viewRight ||
+                    candidatePos.y < viewBottom || candidatePos.y > viewTop) continue;
+                
+                // Check distance from player
+                float dist = candidatePos.Distance(playerPos);
+                if (dist < minTeleportRange_ || dist > maxTeleportRange_) continue;
+                
+                // Build AABB for witch at candidate position
+                AABB_Bounds witchBounds = {
+                    { candidatePos.x - witchHS.x, candidatePos.y - witchHS.y },
+                    { candidatePos.x + witchHS.x, candidatePos.y + witchHS.y }
+                };
+
+                bool overlaps = false;
+                for (Entity collidable : collidables) {
+                    if (collidable == entity) continue;
+                    if (collidable == candidate.platformEntity) continue; // Allow touching the platform we're standing on
+                    if (!mgr.HasComponent(collidable, TransformType)) continue;
+                    if (!mgr.HasComponent(collidable, AABBColliderType)) continue;
+
+                    const Transform& ct = mgr.GetComponent<Transform>(collidable);
+                    const AABBCollider& collider = mgr.GetComponent<AABBCollider>(collidable);
+                    Vector2D colliderPos = ct.position + collider.Offset;
+
+                    float colliderRotation = 0.0f;
+                    if (mgr.HasComponent(collidable, RotationFlagType)) {
+                        colliderRotation = mgr.GetComponent<RotationFlag>(collidable).currentRotation;
+                    }
+                    
+                    AABB_Bounds collidableBounds = PhysicsSystem::GetRotatedAABB(colliderPos, collider.HalfSize, colliderRotation);
+
+                    if (CollisionIntersection_RectRect_Static(witchBounds, collidableBounds)) {
+                        overlaps = true;
+                        break;
+                    }
+                }
+
+                if (!overlaps) {
+                    teleportPos = candidatePos;
+                    foundValidPos = true;
+                    break;
+                }
+            }
+            
+            if (foundValidPos) break;
+        }
+
+        // Fallback: if no platform position found, try original random approach but avoid overlap
+        if (!foundValidPos) {
+            static std::mt19937 rng{ std::random_device{}() };
+            std::uniform_real_distribution<float> angleDist(0.0f, 2.0f * 3.14159265f);
+            std::uniform_real_distribution<float> distDist(minTeleportRange_, maxTeleportRange_);
+
+            const int maxAttempts = 30;
+            for (int attempt = 0; attempt < maxAttempts; ++attempt) {
+                float angle = angleDist(rng);
+                float dist = distDist(rng);
+                Vector2D candidatePos = playerPos + Vector2D{ std::cos(angle) * dist, std::sin(angle) * dist };
+
+                if (candidatePos.x < viewLeft || candidatePos.x > viewRight ||
+                    candidatePos.y < viewBottom || candidatePos.y > viewTop) continue;
+
+                AABB_Bounds witchBounds = {
+                    { candidatePos.x - witchHS.x, candidatePos.y - witchHS.y },
+                    { candidatePos.x + witchHS.x, candidatePos.y + witchHS.y }
+                };
+
+                bool overlaps = false;
+                for (Entity collidable : collidables) {
+                    if (collidable == entity) continue;
+                    if (!mgr.HasComponent(collidable, TransformType)) continue;
+                    if (!mgr.HasComponent(collidable, AABBColliderType)) continue;
+
+                    const Transform& ct = mgr.GetComponent<Transform>(collidable);
+                    const AABBCollider& collider = mgr.GetComponent<AABBCollider>(collidable);
+                    Vector2D colliderPos = ct.position + collider.Offset;
+
+                    float colliderRotation = 0.0f;
+                    if (mgr.HasComponent(collidable, RotationFlagType)) {
+                        colliderRotation = mgr.GetComponent<RotationFlag>(collidable).currentRotation;
+                    }
+                    
+                    AABB_Bounds collidableBounds = PhysicsSystem::GetRotatedAABB(colliderPos, collider.HalfSize, colliderRotation);
+
+                    if (CollisionIntersection_RectRect_Static(witchBounds, collidableBounds)) {
+                        overlaps = true;
+                        break;
+                    }
+                }
+
+                if (!overlaps) {
+                    teleportPos = candidatePos;
+                    foundValidPos = true;
+                    break;
+                }
+            }
+        }
+
+        // If no valid position found, clamp current position to viewport at minimum
+        if (!foundValidPos) {
+            const float clampedViewLeft = std::min(viewLeft, viewRight);
+            const float clampedViewRight = std::max(viewLeft, viewRight);
+            const float clampedViewBottom = std::min(viewBottom, viewTop);
+            const float clampedViewTop = std::max(viewBottom, viewTop);
+            teleportPos.x = std::clamp(teleportPos.x, clampedViewLeft, clampedViewRight);
+            teleportPos.y = std::clamp(teleportPos.y, clampedViewBottom, clampedViewTop);
+        }
+
+        // Teleport to valid position
         mgr.GetComponent<Transform>(entity).position = teleportPos;
+
+       
 
         // Play teleport sound at new position
         MessageBus::Instance().Publish(PlaySound3DEvent{ "Witch_Teleport", AudioType::SFX, 0.3f, teleportPos });
@@ -610,14 +982,161 @@ namespace Framework {
     }
 
     void WitchTeleportFallState::OnUpdate(Entity entity, EntityStorage& ecs, float dt) {
-        (void)entity; (void)ecs;
+        FaceEntityTowardsPlayer(entity, ecs);
+        (void)entity; //(void)ecs;
         timer_ += dt;
+        EntityManager mgr(ecs);
+        RigidBody rb;
+        rb.isAffectedByGravity = false;
+
+        mgr.GetComponent<RigidBody>(entity) = rb; // Reset velocity and gravity
     }
 
     void WitchTeleportFallState::SetParameter(const std::string& key, float value) {
         if (key == "fallDuration") fallDuration_ = value;
         if (key == "minTeleportRange") minTeleportRange_ = value;
         if (key == "maxTeleportRange") maxTeleportRange_ = value;
+    }
+
+    // --- WITCH FALLING (gravity-based landing after teleport) ---
+    void WitchFallingState::OnEnter(Entity entity, EntityStorage& ecs) {
+        timer_ = 0.0f;
+        isGrounded_ = false;
+        EntityManager mgr(ecs);
+        
+        // Enable gravity for falling
+        if (mgr.HasComponent(entity, RigidBodyType)) {
+            RigidBody& rb = mgr.GetComponent<RigidBody>(entity);
+            rb.isAffectedByGravity = true;
+        }
+        
+        // Reset velocity
+        if (mgr.HasComponent(entity, VelocityType)) {
+            Velocity& vel = mgr.GetComponent<Velocity>(entity);
+            vel.Vel = { 0.0f, 0.0f };
+        }
+    }
+
+    void WitchFallingState::OnUpdate(Entity entity, EntityStorage& ecs, float dt) {
+        FaceEntityTowardsPlayer(entity, ecs);
+        timer_ += dt;
+        EntityManager mgr(ecs);
+        
+        // Get world rotation to determine "down" direction
+        float worldRotation = 0.0f;
+        TransformationSystem* transformSys = GameManager::GetInstance().GetSystems().transformation_;
+        if (transformSys) {
+            worldRotation = transformSys->GetGlobalRotation();
+        }
+        
+        Vector2D downDir = { 0.0f, -1.0f };  // Default down
+        float rot = std::fmod(worldRotation + 360.0f, 360.0f);
+        if (rot >= 315.0f || rot < 45.0f) {
+            downDir = { 0.0f, -1.0f };  // Normal down
+        } else if (rot >= 45.0f && rot < 135.0f) {
+            downDir = { 1.0f, 0.0f };   // Right (gravity pulls right)
+        } else if (rot >= 135.0f && rot < 225.0f) {
+            downDir = { 0.0f, 1.0f };   // Up (gravity pulls up)
+        } else {
+            downDir = { -1.0f, 0.0f };  // Left (gravity pulls left)
+        }
+        
+        // Apply gravity in the "down" direction based on world rotation
+        if (mgr.HasComponent(entity, VelocityType)) {
+            Velocity& vel = mgr.GetComponent<Velocity>(entity);
+            vel.Vel += downDir * fallSpeed_ * dt;
+            
+            // Clamp fall speed
+            float speed = vel.Vel.Magnitude();
+            if (speed > fallSpeed_) {
+                vel.Vel = vel.Vel * (fallSpeed_ / speed);
+            }
+        }
+        
+        // Get witch position and use TextureComponent half_size for collision detection
+        // (witch doesn't have an AABBCollider)
+        if (mgr.HasComponent(entity, TransformType) && mgr.HasComponent(entity, TextureComponentType)) {
+            Vector2D witchPos = mgr.GetComponent<Transform>(entity).position;
+            const TextureComponent& witchTex = mgr.GetComponent<TextureComponent>(entity);
+            Vector2D witchHS = witchTex.HalfSize;
+            
+            // Create a small probe box slightly below the witch to check for ground
+            Vector2D probeOffset = downDir * 5.0f;  // Small distance in down direction
+            AABB_Bounds witchBounds = {
+                { witchPos.x - witchHS.x * 0.5f, witchPos.y - witchHS.y },
+                { witchPos.x + witchHS.x * 0.5f, witchPos.y + witchHS.y * 0.2f }
+            };
+            
+            // Offset by probe in down direction for ground check
+            AABB_Bounds probeBounds = {
+                { witchBounds.min.x + probeOffset.x, witchBounds.min.y + probeOffset.y },
+                { witchBounds.max.x + probeOffset.x, witchBounds.max.y + probeOffset.y }
+            };
+            
+            // Check collision with platforms
+            for (Entity e : mgr.GetAllEntitiesWithComponent(true, AABBColliderType)) {
+                if (e == entity) continue;
+                if (!mgr.HasComponent(e, TransformType)) continue;
+                if (!mgr.HasComponent(e, LoadedTagType)) continue;
+                
+                // Check if this is a platform (not trap platform)
+                bool isPlatform = mgr.HasComponent(e, PlatformTagType);
+                if (!isPlatform) {
+                    const EntityProperties& props = mgr.GetProperties(e);
+                    isPlatform = (props.layer == CollisionLayer::Platform);
+                }
+                
+                // Exclude trap platforms
+                const EntityProperties& eProps = mgr.GetProperties(e);
+                if (eProps.layer == CollisionLayer::TrapPlatform) continue;
+                
+                if (!isPlatform) continue;
+                
+                const Transform& platTf = mgr.GetComponent<Transform>(e);
+                const AABBCollider& platCollider = mgr.GetComponent<AABBCollider>(e);
+                Vector2D platPos = platTf.position + platCollider.Offset;
+                
+                float platformRotation = 0.0f;
+                if (mgr.HasComponent(e, RotationFlagType)) {
+                    platformRotation = mgr.GetComponent<RotationFlag>(e).currentRotation;
+                }
+                
+                AABB_Bounds platBounds = PhysicsSystem::GetRotatedAABB(platPos, platCollider.HalfSize, platformRotation);
+                
+                if (CollisionIntersection_RectRect_Static(probeBounds, platBounds)) {
+                    isGrounded_ = true;
+                    
+                    // Stop falling
+                    if (mgr.HasComponent(entity, VelocityType)) {
+                        mgr.GetComponent<Velocity>(entity).Vel = { 0.0f, 0.0f };
+                    }
+                    
+                    // Disable gravity
+                    if (mgr.HasComponent(entity, RigidBodyType)) {
+                        RigidBody& rb = mgr.GetComponent<RigidBody>(entity);
+                        rb.isAffectedByGravity = false;
+                    }
+                    break;
+                }
+            }
+        }
+        
+        // Timeout: if we've been falling too long, just proceed anyway
+        if (timer_ >= maxFallTime_) {
+            isGrounded_ = true;
+            if (mgr.HasComponent(entity, VelocityType)) {
+                mgr.GetComponent<Velocity>(entity).Vel = { 0.0f, 0.0f };
+            }
+            if (mgr.HasComponent(entity, RigidBodyType)) {
+                RigidBody& rb = mgr.GetComponent<RigidBody>(entity);
+                rb.isAffectedByGravity = false;
+            }
+        }
+    }
+
+    void WitchFallingState::SetParameter(const std::string& key, float value) {
+        if (key == "maxFallTime") maxFallTime_ = value;
+        if (key == "fallSpeed") fallSpeed_ = value;
     }
 
     // --- WITCH CHARGING ---
@@ -630,9 +1149,11 @@ namespace Framework {
         if (mgr.HasComponent(entity, VelocityType)) {
             mgr.GetComponent<Velocity>(entity).Vel = { 0.f, 0.f };
         }
+        FaceEntityTowardsPlayer(entity, ecs);
     }
 
     void WitchChargingState::OnUpdate(Entity entity, EntityStorage& ecs, float dt) {
+        FaceEntityTowardsPlayer(entity, ecs);
         (void)entity; (void)ecs;
         timer_ += dt;
         // Show charging animation/effect
@@ -649,6 +1170,7 @@ namespace Framework {
         timer_ = 0.0f;
         currentRadius_ = 0.0f;
         damageDealt_ = false;
+        FaceEntityTowardsPlayer(entity, ecs);
 
         EntityManager mgr(ecs);
         if (mgr.HasComponent(entity, VelocityType)) {
@@ -662,11 +1184,45 @@ namespace Framework {
         MessageBus::Instance().Publish(PlaySound3DEvent{ "Witch_Attack", AudioType::SFX, 0.3f, position });
 
         if (mgr.HasComponent(entity, FSMComponentType)) {
-            mgr.GetComponent<FSMComponent>(entity).attackCircleTextureKey = "SB_Witch_Attack_Radius.png";
+            FSMComponent& fsm = mgr.GetComponent<FSMComponent>(entity);
+            // Setup animated attack circle VFX
+            fsm.attackCircleAnimated = true;
+            fsm.attackCircleAnimTimer = 0.0f;
+            fsm.attackCircleAnimFrame = 0;
+            // 21 spritesheets × 2 frames = 42 frames over 2.0s attack duration ≈ 0.048s per frame
+            fsm.attackCircleAnimFrameDuration = 0.048f;
+            fsm.attackCircleAnimTextures = {
+                "SB_Witch_Circle_VFX_Spritesheet1.png",
+                "SB_Witch_Circle_VFX_Spritesheet2.png",
+                "SB_Witch_Circle_VFX_Spritesheet3.png",
+                "SB_Witch_Circle_VFX_Spritesheet4.png",
+                "SB_Witch_Circle_VFX_Spritesheet5.png",
+                "SB_Witch_Circle_VFX_Spritesheet6.png",
+                "SB_Witch_Circle_VFX_Spritesheet7.png",
+                "SB_Witch_Circle_VFX_Spritesheet8.png",
+                "SB_Witch_Circle_VFX_Spritesheet9.png",
+                "SB_Witch_Circle_VFX_Spritesheet10.png",
+                "SB_Witch_Circle_VFX_Spritesheet11.png",
+                "SB_Witch_Circle_VFX_Spritesheet12.png",
+                "SB_Witch_Circle_VFX_Spritesheet13.png",
+                "SB_Witch_Circle_VFX_Spritesheet14.png",
+                "SB_Witch_Circle_VFX_Spritesheet15.png",
+                "SB_Witch_Circle_VFX_Spritesheet16.png",
+                "SB_Witch_Circle_VFX_Spritesheet17.png",
+                "SB_Witch_Circle_VFX_Spritesheet18.png",
+                "SB_Witch_Circle_VFX_Spritesheet19.png",
+                "SB_Witch_Circle_VFX_Spritesheet20.png",
+                "SB_Witch_Circle_VFX_Spritesheet21.png",
+            };
+            // Start with first texture
+            if (!fsm.attackCircleAnimTextures.empty()) {
+                fsm.attackCircleTextureKey = fsm.attackCircleAnimTextures[0];
+            }
         }
     }
 
     void WitchAttackState::OnUpdate(Entity entity, EntityStorage& ecs, float dt) {
+        FaceEntityTowardsPlayer(entity, ecs);
         timer_ += dt;
         EntityManager mgr(ecs);
 
@@ -695,6 +1251,7 @@ namespace Framework {
 
                 if (distance <= currentRadius_) {
                     damageDealt_ = true;
+                    MessageBus::Instance().Publish(VFXTriggerEvent{ "WitchAttackHitEvent", true, playerPos });
 
                     // Route through PlayerSystem::DamagePlayer() via event so that
                     // knockback, invulnerability, VFX, and hurt/death sounds all fire
@@ -710,15 +1267,48 @@ namespace Framework {
 
         // Write current radius to FSMComponent for visual rendering
         if (mgr.HasComponent(entity, FSMComponentType)) {
-            mgr.GetComponent<FSMComponent>(entity).attackCircleRadius = currentRadius_;
+            FSMComponent& fsm = mgr.GetComponent<FSMComponent>(entity);
+            fsm.attackCircleRadius = currentRadius_;
+            
+            // Update animated VFX frame
+            if (fsm.attackCircleAnimated && !fsm.attackCircleAnimTextures.empty()) {
+                fsm.attackCircleAnimTimer += dt;
+                
+                // Witch attack circle sheets are 2-frame horizontal strips.
+                const int framesPerSheet = 2;
+                int totalFrames = static_cast<int>(fsm.attackCircleAnimTextures.size()) * framesPerSheet;
+                
+                // Advance frame based on timer
+                if (fsm.attackCircleAnimTimer >= fsm.attackCircleAnimFrameDuration) {
+                    fsm.attackCircleAnimTimer -= fsm.attackCircleAnimFrameDuration;
+                    fsm.attackCircleAnimFrame++;
+                    
+                    // Clamp to last frame (don't loop)
+                    if (fsm.attackCircleAnimFrame >= totalFrames) {
+                        fsm.attackCircleAnimFrame = totalFrames - 1;
+                    }
+                }
+                
+                // Determine which spritesheet and which sub-frame
+                int sheetIndex = fsm.attackCircleAnimFrame / framesPerSheet;
+                if (sheetIndex >= static_cast<int>(fsm.attackCircleAnimTextures.size())) {
+                    sheetIndex = static_cast<int>(fsm.attackCircleAnimTextures.size()) - 1;
+                }
+                fsm.attackCircleTextureKey = fsm.attackCircleAnimTextures[sheetIndex];
+            }
         }
     }
 
     void WitchAttackState::OnExit(Entity entity, EntityStorage& ecs) {
         EntityManager mgr(ecs);
         if (mgr.HasComponent(entity, FSMComponentType)) {
-            mgr.GetComponent<FSMComponent>(entity).attackCircleRadius = 0.0f;
-            mgr.GetComponent<FSMComponent>(entity).attackCircleTextureKey.clear();
+            FSMComponent& fsm = mgr.GetComponent<FSMComponent>(entity);
+            fsm.attackCircleRadius = 0.0f;
+            fsm.attackCircleTextureKey.clear();
+            fsm.attackCircleAnimated = false;
+            fsm.attackCircleAnimTimer = 0.0f;
+            fsm.attackCircleAnimFrame = 0;
+            fsm.attackCircleAnimTextures.clear();
         }
         currentRadius_ = 0.0f;
     }
@@ -787,6 +1377,7 @@ namespace Framework {
     REGISTER_STATE("WitchEnraged", WitchEnragedState);
     REGISTER_STATE("WitchTeleportSpin", WitchTeleportSpinState);
     REGISTER_STATE("WitchTeleportFall", WitchTeleportFallState);
+    REGISTER_STATE("WitchFalling", WitchFallingState);
     REGISTER_STATE("WitchCharging", WitchChargingState);
     REGISTER_STATE("WitchAttack", WitchAttackState);
     REGISTER_STATE("WitchDeath", WitchDeathState);
@@ -831,6 +1422,8 @@ namespace Framework {
                 return wt->GetTimer() >= wt->GetSpinDuration();
             if (auto* wtf = dynamic_cast<WitchTeleportFallState*>(s))
                 return wtf->GetTimer() >= wtf->GetFallDuration();
+            if (auto* wfall = dynamic_cast<WitchFallingState*>(s))
+                return wfall->IsGrounded() || wfall->GetTimer() >= wfall->GetMaxFallTime();
             if (auto* wc = dynamic_cast<WitchChargingState*>(s))
                 return wc->GetTimer() >= wc->GetChargeDuration();
             if (auto* watt = dynamic_cast<WitchAttackState*>(s))

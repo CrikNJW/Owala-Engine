@@ -31,6 +31,7 @@ namespace Framework {
     static constexpr float EDGE_TOLERANCE = 0.1f;      // push-out tolerance (keep below gravity pull per frame ~0.27px)
     static constexpr float VELOCITY_THRESHOLD = 5.0f;  // Min velocity to count as moving into
     static constexpr float EDGE_BIAS = 3.0f;           // Prefer vertical resolution on edges
+    static constexpr float CONTACT_EPSILON = 0.001f;   // Stabilize side-vs-ground decisions around float ties
 
     // Allocates the collision matrix to the number of layers and sets every pair to collide by default.
     void PhysicsSystem::InitializeCollisionMatrix() {
@@ -449,7 +450,6 @@ namespace Framework {
             const Vector2D& pos = entityMgr.GetComponent<Transform>(entity).position;
             const Vector2D& halfSize = entityMgr.GetComponent<AABBCollider>(entity).HalfSize;
             const AABBCollider& collider = entityMgr.GetComponent<AABBCollider>(entity);
-            Vector2D colliderPos = pos + collider.Offset;
 
             float colliderRotation = 0.0f;
             if (entityMgr.HasComponent(entity, RotationFlagType)) {
@@ -458,6 +458,14 @@ namespace Framework {
             if (entityMgr.HasComponent(entity, TransformType)) {
                 colliderRotation += entityMgr.GetComponent<Transform>(entity).rotation.colliderAngle * (180.0f / static_cast<float>(M_PI));
             }
+
+            Vector2D rotatedOffset = collider.Offset;
+            if (std::abs(colliderRotation) > 0.01f) {
+                float rotRad = colliderRotation * (static_cast<float>(M_PI) / 180.0f);
+                Matrix3x3 rotMat = Matrix3x3::CreateRotation(rotRad);
+                rotatedOffset = rotMat * collider.Offset;
+            }
+            Vector2D colliderPos = pos + rotatedOffset;
 
             AABB_Bounds bounds = GetRotatedAABB(colliderPos, halfSize, colliderRotation);
             GridInsert(i, bounds);
@@ -472,12 +480,24 @@ namespace Framework {
             int i = entityToColliderIndex_[dynE];
 
             const Vector2D& pos1 = entityMgr.GetComponent<Transform>(dynE).position;
-            const Vector2D& halfSize1 = entityMgr.GetComponent<Framework::AABBCollider>(dynE).HalfSize;
+            const AABBCollider& collider1 = entityMgr.GetComponent<Framework::AABBCollider>(dynE);
+            const Vector2D& halfSize1 = collider1.HalfSize;
             float rotation1 = 0.0f;
             if (entityMgr.HasComponent(dynE, RotationFlagType)) {
                 rotation1 = entityMgr.GetComponent<RotationFlag>(dynE).currentRotation;
             }
-            AABB_Bounds bounds1 = GetRotatedAABB(pos1, halfSize1, rotation1);
+            if (entityMgr.HasComponent(dynE, TransformType)) {
+                rotation1 += entityMgr.GetComponent<Transform>(dynE).rotation.colliderAngle * (180.0f / static_cast<float>(M_PI));
+            }
+
+            Vector2D rotatedOffset1 = collider1.Offset;
+            if (std::abs(rotation1) > 0.01f) {
+                float rotRad = rotation1 * (static_cast<float>(M_PI) / 180.0f);
+                Matrix3x3 rotMat = Matrix3x3::CreateRotation(rotRad);
+                rotatedOffset1 = rotMat * collider1.Offset;
+            }
+            Vector2D colliderPos1 = pos1 + rotatedOffset1;
+            AABB_Bounds bounds1 = GetRotatedAABB(colliderPos1, halfSize1, rotation1);
 
             GridQuery(bounds1, potentialPartners);
 
@@ -578,9 +598,13 @@ namespace Framework {
             }
         }
 
-        // Detect trap entities
+        // Detect trap entities and their falling state
         bool e1IsTrap = entityMgr.HasComponent(e1, TrapPlatformComponentType);
         bool e2IsTrap = entityMgr.HasComponent(e2, TrapPlatformComponentType);
+        
+        // Check if traps are currently falling
+        bool e1TrapFalling = e1IsTrap && entityMgr.GetComponent<TrapPlatformComponent>(e1).hasFallen;
+        bool e2TrapFalling = e2IsTrap && entityMgr.GetComponent<TrapPlatformComponent>(e2).hasFallen;
 
         // trap v player, make trap static to avoid player pushing
         if ((e1IsTrap && isE2Player) || (e2IsTrap && isE1Player)) {
@@ -588,10 +612,23 @@ namespace Framework {
             if (e2IsTrap) e2IsDynamic = false;
         }
 
-        // trap v enemy, make trap static to avoid enemy pushing
+        // trap v enemy: Different behavior based on trap state
         if ((e1IsTrap && isE2Enemy) || (e2IsTrap && isE1Enemy)) {
-            if (e1IsTrap) e1IsDynamic = false;
-            if (e2IsTrap) e2IsDynamic = false;
+            Entity trapEntity = e1IsTrap ? e1 : e2;
+            bool trapIsFalling = (trapEntity == e1) ? e1TrapFalling : e2TrapFalling;
+            
+            if (trapIsFalling) {
+                // Falling trap: Skip collision resolution entirely
+                // This allows the trap to overlap with the enemy for damage detection
+                // (handled by PlayerSystem or damage system, not physics)
+                return;
+            } else {
+                // Static trap: Bird should collide with it as a solid platform
+                // Make trap static so the bird bounces off instead of pushing it
+                if (e1IsTrap) e1IsDynamic = false;
+                if (e2IsTrap) e2IsDynamic = false;
+                // Keep enemy dynamic so it gets pushed out of the trap
+            }
         }
 
 
@@ -705,21 +742,23 @@ namespace Framework {
             // the top surface and the overlaps are close enough to be ambiguous.
             bool isEdgeLanding = false;
             if (biasedMinOverlapY >= minOverlapX && entityMgr.HasComponent(dynE, PlayerStateType)) {
-                isEdgeLanding = (overlapBottom < overlapTop) &&
-                                (overlapBottom <= minOverlapX + EDGE_BIAS * 3) &&
+                isEdgeLanding = (overlapBottom <= overlapTop + CONTACT_EPSILON) &&
+                                (overlapBottom <= minOverlapX + EDGE_BIAS * 3 + CONTACT_EPSILON) &&
                                 (dynVel.y <= 0);
             }
 
-            if (biasedMinOverlapY < minOverlapX || isEdgeLanding) {
+            if (biasedMinOverlapY <= minOverlapX + CONTACT_EPSILON || isEdgeLanding) {
                 // VERTICAL COLLISION
-                if (overlapTop < overlapBottom) {
+                if (overlapTop + CONTACT_EPSILON < overlapBottom) {
                     // Hit ceiling
                     dynPos.y -= (overlapTop + EDGE_TOLERANCE);
                     if (dynVel.y > 0) dynVel.y = 0;
                 }
                 else {
-                    // Landed on platform
-                    dynPos.y += (overlapBottom + EDGE_TOLERANCE);
+                    // Landed on platform.
+                    // Do not add extra tolerance upward here: it creates a tiny air-gap,
+                    // which causes a repeated fall->land jitter on subsequent frames.
+                    dynPos.y += overlapBottom;
                     if (dynVel.y < 0) dynVel.y = 0;
 
                     if (entityMgr.HasComponent(dynE, PlayerStateType)) {

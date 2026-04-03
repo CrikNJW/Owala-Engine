@@ -36,6 +36,7 @@
 #include "EntityManager.h"
 #include "SceneManager.h"
 #include "ResourceManager.h"
+#include "WindowsSystem.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -406,8 +407,8 @@ namespace Framework {
             }
 
             // --- Calculate Screen Position ---
+            Vector2D windowSize = gm.GetSystems().win_->getWindowSize();
             Vector2D screenTextPos = textPos;
-            float finalScale = textComp.scale;
 
             if (!isUIElement) {
                 // Anchor to World Position
@@ -416,15 +417,11 @@ namespace Framework {
                     screenTextPos = cameraSystem_->WorldToScreen(textPos, activeCamera);
                 }
 
-                // Scale the Text
-                // Apply your reference zoom ratio to the text scale
-                finalScale *= zoomRatio;
-
                 // Apply Offset in Screen Space (NDC)
                 // Convert halfSize (Pixels) -> NDC. 
-                // We scale the offset by 'finalScale' so it shrinks/grows with the text.
-                float ndcHalfW = (textComp.halfSize.x * finalScale / gfx_.getScreenWidth()) * 2.0f;
-                float ndcHalfH = (textComp.halfSize.y * finalScale / gfx_.getScreenHeight()) * 2.0f;
+                // We only scale by 'zoomRatio' because textComp.halfSize already includes textComp.scale
+                float ndcHalfW = (textComp.halfSize.x * zoomRatio / windowSize.x) * 2.0f;
+                float ndcHalfH = (textComp.halfSize.y * zoomRatio / windowSize.y) * 2.0f;
 
                 screenTextPos.x -= ndcHalfW;
                 screenTextPos.y += ndcHalfH;
@@ -606,7 +603,26 @@ namespace Framework {
                     float screenRadius = std::abs(screenEdge.x - screenCenter.x);
                     Vector2D halfSize = { screenRadius, screenRadius };
 
-                    gfx_.drawSprite(tex, screenCenter, halfSize);
+                    // Handle animated attack circle VFX
+                    if (fsm.attackCircleAnimated && !fsm.attackCircleAnimTextures.empty()) {
+                        const int framesPerSheet = 2;
+                        int subFrame = fsm.attackCircleAnimFrame % framesPerSheet;
+                        
+                        // Calculate UV coordinates for the current sub-frame.
+                        // Witch attack circle VFX sheets are 2-frame horizontal strips.
+                        float uvWidth = 0.5f;
+                        float uvHeight = 1.0f;
+                        int col = subFrame;
+                        int row = 0;
+                        
+                        Vector2D minUV = { col * uvWidth, row * uvHeight };
+                        Vector2D maxUV = { minUV.x + uvWidth, minUV.y + uvHeight };
+                        
+                        gfx_.drawSprite(tex, screenCenter, halfSize, 0.0f, minUV, maxUV);
+                    }
+                    else {
+                        gfx_.drawSprite(tex, screenCenter, halfSize);
+                    }
                 }
                 catch (...) {
                     // Fallback: texture not found, skip rendering
