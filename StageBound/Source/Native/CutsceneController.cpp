@@ -31,6 +31,9 @@
 
 REGISTER_SCRIPT(CutsceneController, "CutsceneController")
 
+/*****************************************************************//**
+ * \brief   Applies the current slide's texture and resets animation.
+ *********************************************************************/
 void CutsceneController::ApplySlide() {
 	EntityManager entityMgr(GameManager::GetInstance().GetECS());
 	
@@ -49,6 +52,10 @@ void CutsceneController::ApplySlide() {
 	}
 }
 
+/*****************************************************************//**
+ * \brief   Advances to the next slide or finishes the cutscene.
+ * \return  True if cutscene is finished, false otherwise.
+ *********************************************************************/
 bool CutsceneController::NextSlide() {
 	currentSlide++;
 	if (currentSlide >= static_cast<int>(slides.size())) {
@@ -60,6 +67,9 @@ bool CutsceneController::NextSlide() {
 	return false;
 }
 
+/*****************************************************************//**
+ * \brief   Handles the end of the cutscene and loads the next level.
+ *********************************************************************/
 void CutsceneController::FinishCutscene() {
 	if (isEnding) return;
 	isEnding = true;
@@ -89,6 +99,9 @@ void CutsceneController::FinishCutscene() {
 	GameManager::GetInstance().InitiateLevelLoad("Tutorial 1");
 }
 
+/*****************************************************************//**
+ * \brief   Fits the slide image to cover the screen.
+ *********************************************************************/
 void CutsceneController::FitImageToScreen() {
 	EntityManager entityMgr(GameManager::GetInstance().GetECS());
 	//WindowsSystem& win = *GameManager::GetInstance().GetSystems().win_;
@@ -101,6 +114,10 @@ void CutsceneController::FitImageToScreen() {
 	transform.position = { 0.f, 0.f };
 }
 
+/*****************************************************************//**
+ * \brief   Checks if the skip key is currently held down.
+ * \return  True if skip is held down, false otherwise.
+ *********************************************************************/
 bool CutsceneController::IsSkipHeldDown() const {
 	InputSystem* input = GameManager::GetInstance().GetSystems().input_;
 	if (!input) return false;
@@ -108,6 +125,9 @@ bool CutsceneController::IsSkipHeldDown() const {
 	return input->KeyDown(InputSystem::Key::Space) || input->KeyDown(InputSystem::Key::F);
 }
 
+/*****************************************************************//**
+ * \brief   Initializes the cutscene slides and timing variables.
+ *********************************************************************/
 void CutsceneController::OnCreate() {
 	slides = {
 		{"SB_CutScene_01_Spritesheet01.png", 2.f},
@@ -125,6 +145,9 @@ void CutsceneController::OnCreate() {
 	ApplySlide();
 }
 
+/*****************************************************************//**
+ * \brief   Updates cutscene logic, handling slide advancing and skipping.
+ *********************************************************************/
 void CutsceneController::OnUpdate() {
 	if (isEnding) return;
 
@@ -164,6 +187,9 @@ void CutsceneController::OnUpdate() {
 	}
 }
 
+/*****************************************************************//**
+ * \brief   Cleans up audio resources when destroyed.
+ *********************************************************************/
 void CutsceneController::OnDestroy() {
 	GameManager::GetInstance().GetSystems().audio_->StopAudio(GetEntity());
 }

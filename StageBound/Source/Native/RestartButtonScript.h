@@ -19,10 +19,25 @@
 
 using namespace Framework;
 
+/*****************************************************************//**
+ * \class   RestartButtonScript
+ * \brief   Script to reload the previous scene when the button is clicked.
+ *********************************************************************/
 class RestartButtonScript : public ScriptableEntity {
 protected:
+	/*****************************************************************//**
+	 * \brief   Initializes script state.
+	 *********************************************************************/
 	void OnCreate() override;
+
+	/*****************************************************************//**
+	 * \brief   Checks for button press to restart the level.
+	 *********************************************************************/
 	void OnUpdate() override;
+
+	/*****************************************************************//**
+	 * \brief   Cleans up before destruction.
+	 *********************************************************************/
 	void OnDestroy() override;
 private:
 	Entity self_;

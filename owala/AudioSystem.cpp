@@ -2,10 +2,11 @@
  * \file   AudioSystem.cpp
  *
  * \primary_author
- *      Ng Jordain Ying Zhe (75%)
+ *      Ng Jordain Ying Zhe (70%)
  * \secondary_author
- *      Yar Xuan  (15%)
+ *      Yar Xuan  (10%)
  *      Ng Jing Wen (10%)
+ *      Jason Lou (10%)
  *
  * \brief
  *   Audio system wrapper around FMOD for loading, playing, and managing
@@ -28,6 +29,9 @@
 
 namespace Framework {
 
+    /*****************************************************************//**
+     * \brief   Checks FMOD results and logs errors if any occur.
+     *********************************************************************/
     void AudioSystem::check(FMOD_RESULT r, const char* where) {
         if (r != FMOD_OK) {
             std::fprintf(stderr, "[FMOD] %s failed: (%d) %s\n",
@@ -35,8 +39,14 @@ namespace Framework {
         }
     }
 
+    /*****************************************************************//**
+     * \brief   Returns the FMOD system pointer.
+     *********************************************************************/
     FMOD::System* AudioSystem::getFMODSystem() const { return system_; }
 
+    /*****************************************************************//**
+     * \brief   Sets up FMOD, channels, DSPs, and subscribes to events.
+     *********************************************************************/
     void AudioSystem::Initialize() {
         FMOD_RESULT r;
 
@@ -204,6 +214,9 @@ namespace Framework {
         SetGroupReverbRoom(AudioType::SFX, 0.8f);
      }
 
+    /*****************************************************************//**
+     * \brief   Updates the spatial 3D listener using the player's position.
+     *********************************************************************/
      void AudioSystem::UpdateListenerFromPlayer_() {
          if (!system_) return;
 
@@ -226,6 +239,9 @@ namespace Framework {
          system_->set3DListenerAttributes(0, &pos, &vel, &forward, &up);
      }
 
+    /*****************************************************************//**
+     * \brief   Main update loop for FMOD, processing fades and entity audio.
+     *********************************************************************/
     void AudioSystem::Update() {
         GameManager& gm = GameManager::GetInstance();
         ResourceManager& resourceManager_ = *gm.GetSystems().resourceManager_;
@@ -321,8 +337,8 @@ namespace Framework {
                 bool isPlaying = false;
 
                 if (playAs3D) {
-                    // For 3D enemy sounds, check per-entity channel � NOT the shared
-                    // channels_ map � so each enemy instance is tracked independently.
+                    // For 3D enemy sounds, check per-entity channel  NOT the shared
+                    // channels_ map  so each enemy instance is tracked independently.
                     auto it3D = entity3DChannels_.find(entity);
                     if (it3D != entity3DChannels_.end() && it3D->second) {
                         it3D->second->isPlaying(&isPlaying);
@@ -362,6 +378,9 @@ namespace Framework {
         }
     }
 
+    /*****************************************************************//**
+     * \brief   Cleans up channels, DSPs, and the FMOD system.
+     *********************************************************************/
     void AudioSystem::Shutdown() {
         // Stop and release channels
         stopAll();
@@ -389,6 +408,9 @@ namespace Framework {
         }
     }
 
+    /*****************************************************************//**
+     * \brief   Loads an audio file and adds it to the sounds cache.
+     *********************************************************************/
     bool AudioSystem::loadSound(const std::string& id,
         const char* path,
         bool loop,
@@ -423,6 +445,9 @@ namespace Framework {
         return true;
     }
 
+    /*****************************************************************//**
+     * \brief   Plays a 2D sound through FMOD.
+     *********************************************************************/
     FMOD::Channel* AudioSystem::play(FMOD::Sound& sound, AudioType type, float volume, bool paused) {
         if (!system_) return nullptr;
 
@@ -440,6 +465,9 @@ namespace Framework {
         return ch;
     }
 
+    /*****************************************************************//**
+     * \brief   Plays a 3D spatial sound through FMOD.
+     *********************************************************************/
     FMOD::Channel* AudioSystem::play3D(FMOD::Sound& sound, AudioType type, float volume,
         const Vector2D& worldPos, float minDistance, float maxDistance, bool paused) {
         if (!system_) return nullptr;
@@ -469,6 +497,9 @@ namespace Framework {
         return ch;
     }
 
+    /*****************************************************************//**
+     * \brief   Quickly plays a single sound file once.
+     *********************************************************************/
     bool AudioSystem::playOneShot(const char* path, float volume) {
         if (!system_ || !path) return false;
 
@@ -490,39 +521,60 @@ namespace Framework {
         return (r == FMOD_OK);
     }
 
+    /*****************************************************************//**
+     * \brief   Sets the global volume.
+     *********************************************************************/
     void AudioSystem::setMasterVolume(float volume) {
         if (masterGroup_) {
             masterGroup_->setVolume(volume);
         }
     }
 
+    /*****************************************************************//**
+     * \brief   Sets the music volume.
+     *********************************************************************/
     void AudioSystem::setMusicVolume(float volume) {
         if (musicGroup_) musicGroup_->setVolume(volume);
     }
 
+    /*****************************************************************//**
+     * \brief   Sets the sound effects volume.
+     *********************************************************************/
     void AudioSystem::setSFXVolume(float volume) {
         if (sfxGroup_) sfxGroup_->setVolume(volume);
         if (drySfxGroup_) drySfxGroup_->setVolume(volume);
     }
 
+    /*****************************************************************//**
+     * \brief   Gets the global volume.
+     *********************************************************************/
     float AudioSystem::getMasterVolume() {
         float vol = 1.0f;
         if (masterGroup_) masterGroup_->getVolume(&vol);
         return vol;
     }
 
+    /*****************************************************************//**
+     * \brief   Gets the music volume.
+     *********************************************************************/
     float AudioSystem::getMusicVolume() {
         float vol = 1.0f;
         if (musicGroup_) musicGroup_->getVolume(&vol);
         return vol;
     }
 
+    /*****************************************************************//**
+     * \brief   Gets the sound effects volume.
+     *********************************************************************/
     float AudioSystem::getSFXVolume() {
         float vol = 1.0f;
         if (sfxGroup_) sfxGroup_->getVolume(&vol);
         return vol;
     }
 
+    /*****************************************************************//**
+     * \brief   Stops 2D audio channels for a specific entity.
+     *********************************************************************/
     void AudioSystem::Stop2DAudio(Entity entity, float fadeDuration) {
         // Check and stop 2D channels
         auto it2D = entityChannels_.find(entity);
@@ -537,6 +589,9 @@ namespace Framework {
         }
     }
 
+    /*****************************************************************//**
+     * \brief   Stops 3D audio channels for a specific entity.
+     *********************************************************************/
     void AudioSystem::Stop3DAudio(Entity entity, float fadeDuration) {
         // Check and stop 3D channels
         auto it3D = entity3DChannels_.find(entity);
@@ -551,6 +606,9 @@ namespace Framework {
         }
     }
 
+    /*****************************************************************//**
+     * \brief   Stops all audio associated with an entity.
+     *********************************************************************/
     void AudioSystem::StopAudio(Entity entity, float fadeDuration) {
         Stop2DAudio(entity, fadeDuration);
         Stop3DAudio(entity, fadeDuration);
@@ -562,6 +620,9 @@ namespace Framework {
         }
     }
 
+    /*****************************************************************//**
+     * \brief   Stops all playing channels entirely.
+     *********************************************************************/
     void AudioSystem::stopAll(bool fadeOut) {
         if (fadeOut) {
             // Stop last-played channel per id
@@ -595,6 +656,9 @@ namespace Framework {
         entity3DChannels_.clear();
     }
 
+    /*****************************************************************//**
+     * \brief   Removes a sound from memory.
+     *********************************************************************/
     void AudioSystem::unloadSound(const std::string& id) {
         auto it = sounds_.find(id);
         if (it != sounds_.end()) {
@@ -606,6 +670,9 @@ namespace Framework {
         if (ct != channels_.end()) channels_.erase(ct);
     }
 
+    /*****************************************************************//**
+     * \brief   Plays audio on UI button clicks.
+     *********************************************************************/
     void AudioSystem::OnButtonClicked(const ButtonClickedEvent& event) {
         // If button's action is not play sound, don't process
         if (event.action != ButtonAction::PLAYSOUND) {
@@ -633,6 +700,9 @@ namespace Framework {
         }
     }
 
+    /*****************************************************************//**
+     * \brief   Mutes the system master group.
+     *********************************************************************/
     void AudioSystem::SuspendAudio() {
         if (masterGroup_) {
             masterGroup_->setPaused(true);
@@ -640,6 +710,9 @@ namespace Framework {
         }
     }
 
+    /*****************************************************************//**
+     * \brief   Unmutes the system master group.
+     *********************************************************************/
     void AudioSystem::ResumeAudio() {
         if (masterGroup_) {
             masterGroup_->setPaused(false);
@@ -647,6 +720,9 @@ namespace Framework {
         }
     }
 
+    /*****************************************************************//**
+     * \brief   Retrieves a random sound filepath associated with an event key.
+     *********************************************************************/
     std::string AudioSystem::getRandomSound(std::string eventKey) {
         auto it = soundPaths_.find(eventKey);
 
@@ -682,6 +758,9 @@ namespace Framework {
         return "";
     }
 
+    /*****************************************************************//**
+     * \brief   Slowly fades down a channel's volume to zero over time.
+     *********************************************************************/
     void AudioSystem::FadeOutChannel(FMOD::Channel* channel, float duration) {
         if (!channel) return;
 
@@ -701,6 +780,9 @@ namespace Framework {
         fadingChannels_[channel] = speed;
     }
 
+    /*****************************************************************//**
+     * \brief   Plays a random 2D sound for the given event key.
+     *********************************************************************/
     FMOD::Channel* AudioSystem::PlayRandomSound(std::string eventKey, AudioType audiotype, float volume, bool startPaused) {
         std::string soundPath = getRandomSound(eventKey);
 
@@ -720,6 +802,9 @@ namespace Framework {
         return nullptr;
     }
 
+    /*****************************************************************//**
+     * \brief   Plays a random 3D sound for the given event key.
+     *********************************************************************/
     FMOD::Channel* AudioSystem::PlayRandomSound3D(std::string eventKey, AudioType audiotype, float volume, Vector2D position, float minDist, float maxDist, bool startPaused) {
         std::string soundPath = getRandomSound(eventKey);
 
@@ -739,18 +824,27 @@ namespace Framework {
 
     // ---------------- Reverb Controls ----------------
 
+    /*****************************************************************//**
+     * \brief   Enables or disables reverb for a certain channel group.
+     *********************************************************************/
     void AudioSystem::EnableGroupReverb(AudioType type, bool enable) {
         FMOD::DSP* dsp = (type == AudioType::MUSIC) ? musicReverbDSP_ : sfxReverbDSP_;
         if (!dsp) return;
         dsp->setBypass(!enable);
     }
 
+    /*****************************************************************//**
+     * \brief   Sets the reverb wet mix output level.
+     *********************************************************************/
     void AudioSystem::SetGroupReverbWetDb(AudioType type, float wetDb) {
         FMOD::DSP* dsp = (type == AudioType::MUSIC) ? musicReverbDSP_ : sfxReverbDSP_;
         if (!dsp) return;
         dsp->setParameterFloat(FMOD_DSP_SFXREVERB_WETLEVEL, wetDb);
     }
 
+    /*****************************************************************//**
+     * \brief   Sets the decay time for the reverb effect.
+     *********************************************************************/
     void AudioSystem::SetGroupReverbDecay(AudioType type, float decayMs) {
         FMOD::DSP* dsp = (type == AudioType::MUSIC) ? musicReverbDSP_ : sfxReverbDSP_;
         if (!dsp) return;
@@ -760,6 +854,9 @@ namespace Framework {
 
     // "Room size" approximation for SFXREVERB:
     // - bigger room => longer decay + higher density/diffusion
+    /*****************************************************************//**
+     * \brief   Scales reverb settings dynamically based on a simulated room size.
+     *********************************************************************/
     void AudioSystem::SetGroupReverbRoom(AudioType type, float room01) {
         FMOD::DSP* dsp = (type == AudioType::MUSIC) ? musicReverbDSP_ : sfxReverbDSP_;
         if (!dsp) return;
@@ -777,6 +874,9 @@ namespace Framework {
 
     // ---------------- Spatial Settings ----------------
 
+    /*****************************************************************//**
+     * \brief   Configures FMOD 3D global audio behaviors.
+     *********************************************************************/
     void AudioSystem::Set3DSettings(float dopplerScale, float distanceFactor, float rolloffScale) {
         if (!system_) return;
         distanceFactor_ = distanceFactor;
@@ -784,6 +884,9 @@ namespace Framework {
     }
 
 	// Update positions of all 3D channels based on their associated entity's current transform.
+    /*****************************************************************//**
+     * \brief   Synchronizes 3D channels with entity world positions.
+     *********************************************************************/
     void AudioSystem::Update3DChannelPositions_() {
         EntityManager entityMgr(GameManager::GetInstance().GetECS());
 

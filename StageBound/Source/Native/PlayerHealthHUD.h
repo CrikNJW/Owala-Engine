@@ -19,10 +19,25 @@
 
 using namespace Framework;
 
+/*****************************************************************//**
+ * \class   PlayerHealthHUD
+ * \brief   Updates a HUD heart element when the player loses a life.
+ *********************************************************************/
 class PlayerHealthHUD : public ScriptableEntity {
 protected:
+	/*****************************************************************//**
+	 * \brief   Finds the entity ID.
+	 *********************************************************************/
 	void OnCreate() override;
+
+	/*****************************************************************//**
+	 * \brief   Tracks player lives and updates texture/VFX if lost.
+	 *********************************************************************/
 	void OnUpdate() override;
+
+	/*****************************************************************//**
+	 * \brief   Cleans up before destruction.
+	 *********************************************************************/
 	void OnDestroy() override;
 
 private:

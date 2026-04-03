@@ -20,13 +20,28 @@
 
 using namespace Framework;
 
+/*****************************************************************//**
+ * \class   FPS
+ * \brief   Script that calculates and displays the current frames per second.
+ *********************************************************************/
 class FPS : public ScriptableEntity {
 private:
 	bool shouldHide = true;
 	float accum_ = 0.f;
 	int frames_ = 0;
 protected:
+	/*****************************************************************//**
+	 * \brief   Initializes the FPS counters.
+	 *********************************************************************/
 	void OnCreate() override;
+
+	/*****************************************************************//**
+	 * \brief   Updates the FPS calculation and text display every frame.
+	 *********************************************************************/
 	void OnUpdate() override;
+
+	/*****************************************************************//**
+	 * \brief   Cleans up upon destruction.
+	 *********************************************************************/
 	void OnDestroy() override;
 };

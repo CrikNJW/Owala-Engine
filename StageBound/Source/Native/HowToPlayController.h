@@ -21,15 +21,30 @@
 
 using namespace Framework;
 
+/*****************************************************************//**
+ * \class   HowToPlayController
+ * \brief   Script to control the pages in the How To Play menu.
+ *********************************************************************/
 class HowToPlayController : public ScriptableEntity {
 protected:
+	/*****************************************************************//**
+	 * \brief   Initializes the controller and caches viewable entities.
+	 *********************************************************************/
 	void OnCreate() override;
+
+	/*****************************************************************//**
+	 * \brief   Updates page visibility and button states every frame.
+	 *********************************************************************/
 	void OnUpdate() override;
+
+	/*****************************************************************//**
+	 * \brief   Cleans up when the entity is destroyed.
+	 *********************************************************************/
 	void OnDestroy() override;
 
 private:
-	int currentPage = 0;
-	int maxPages = 3;
-	std::vector<std::vector<Entity>> pageCache_; // cache entities for each page
-	Entity prevBtn, nextBtn; // cache button entities
+	int currentPage = 0;                                 //!< Current visible page index.
+	int maxPages = 3;                                    //!< Total number of instruction pages.
+	std::vector<std::vector<Entity>> pageCache_;         //!< Cached lists of entities for each page.
+	Entity prevBtn, nextBtn;                             //!< Cached references to the navigation buttons.
 };

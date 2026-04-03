@@ -19,10 +19,25 @@
 
 namespace Framework {
 
+    /*****************************************************************//**
+     * \class   LoadingScreenController
+     * \brief   Script to control the loading screen UI and scene transitions.
+     *********************************************************************/
     class LoadingScreenController : public ScriptableEntity {
     protected:
+        /*****************************************************************//**
+         * \brief   Initializes the loading screen.
+         *********************************************************************/
         void OnCreate() override;
+
+        /*****************************************************************//**
+         * \brief   Updates loading progress and transitions when complete.
+         *********************************************************************/
         void OnUpdate() override;
+
+        /*****************************************************************//**
+         * \brief   Cleans up variables on destruction.
+         *********************************************************************/
         void OnDestroy() override;
     };
 

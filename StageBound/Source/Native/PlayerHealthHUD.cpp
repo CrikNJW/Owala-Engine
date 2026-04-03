@@ -19,10 +19,17 @@
 
 REGISTER_SCRIPT(PlayerHealthHUD, "PlayerHealthHUD")
 
+/*****************************************************************//**
+ * \brief   Gets the ID of the entity this script is attached to.
+ *********************************************************************/
 void PlayerHealthHUD::OnCreate() {
 	self_ = GetEntity();
 }
 
+/*****************************************************************//**
+ * \brief   Constantly checks the player's remaining lives and updates 
+ *          the HUD graphics and VFX when a life is lost.
+ *********************************************************************/
 void PlayerHealthHUD::OnUpdate() {
 	std::string currentScene = SceneManager::GetInstance().GetActiveScene().name;
 	bool isLevel = GameManager::GetInstance().IsLevelScene(currentScene);
@@ -97,5 +104,8 @@ void PlayerHealthHUD::OnUpdate() {
 	}
 }
 
+/*****************************************************************//**
+ * \brief   Cleanup before the entity is destroyed.
+ *********************************************************************/
 void PlayerHealthHUD::OnDestroy() {
 }

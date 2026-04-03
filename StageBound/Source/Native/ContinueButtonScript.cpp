@@ -20,25 +20,35 @@
 
 REGISTER_SCRIPT(ContinueButtonScript, "ContinueButtonScript")
 
+/*****************************************************************//**
+ * \brief   Initialize script state.
+ *********************************************************************/
 void ContinueButtonScript::OnCreate() {
 	self_ = GetEntity();
 }
 
+/*****************************************************************//**
+ * \brief   Check button state and load the next level appropriately.
+ *********************************************************************/
 void ContinueButtonScript::OnUpdate() {
+	// Stop if we are already loading
 	if (initiatedNextLevelLoad) return;
 
 	GameManager& gameMgr = GameManager::GetInstance();
 	EntityManager entityMgr(gameMgr.GetECS());
 
+	// Verify the entity holds a button component
 	if (entityMgr.HasComponent(self_, ButtonType)) {
 		Button btn = entityMgr.GetComponent<Button>(self_);
 
-		// button clicked
+		// When the button is clicked
 		if (btn.isPressed) {
 			SceneManager& sceneMgr = SceneManager::GetInstance();
 			const SceneAsset& prevScene = sceneMgr.GetSceneAt(gameMgr.GetPrevScene());
 			
 			std::string nextLevelName = "MainMenu";
+			
+			// Figure out what the next scene should be
 			if (prevScene.name == "Tutorial 1") {
 				nextLevelName = "Tutorial 2";
 			}
@@ -55,12 +65,16 @@ void ContinueButtonScript::OnUpdate() {
 				nextLevelName = "Level 4";
 			}
 
+			// Load the determined level
 			gameMgr.InitiateLevelLoad(nextLevelName);
 			initiatedNextLevelLoad = true;
 		}
 	}
 }
 
+/*****************************************************************//**
+ * \brief   Cleanup before entity is destroyed.
+ *********************************************************************/
 void ContinueButtonScript::OnDestroy() {
 	// Logic to be called before Entity is deleted
 }

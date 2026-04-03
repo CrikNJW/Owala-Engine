@@ -25,10 +25,17 @@
 
 namespace Framework {
 
+    /*****************************************************************//**
+     * \brief   Sets up default states for rotation logic and limits.
+     *********************************************************************/
     TransformationSystem::TransformationSystem()
         : globalRotation(0.0f), targetGlobalRotation(0.0f), isGlobalRotating(false), rotationCooldown(0.0f), rotationCooldownDuration(0.5f) {
     }
 
+    /*****************************************************************//**
+     * \brief   Updates initial transformation matrices for all loaded 
+     *          entities storing a rotation flag component.
+     *********************************************************************/
     void TransformationSystem::Initialize() {
         EntityManager entityMgr(GameManager::GetInstance().GetECS());
         for (const Entity& entity : entityMgr.GetAllEntitiesWithComponent(true, TransformType)) {
@@ -38,6 +45,10 @@ namespace Framework {
         }
     }
 
+    /*****************************************************************//**
+     * \brief   Frame update loop managing rotation mechanics, input processing, 
+     *          cinematics, and applying final transforms across ECS entities.
+     *********************************************************************/
     void TransformationSystem::Update() {
         ProcessRotationInput(); 
         UpdateRotateCinematic();
@@ -46,6 +57,10 @@ namespace Framework {
     }
 
     // Cinematic: zoom out first (wait until done) -> rotate (hold zoom) -> zoom back in
+    /*****************************************************************//**
+     * \brief   Handles the phases of the rotation cinematic effect
+     *          (zooming the camera out, rotating, and zooming back in).
+     *********************************************************************/
     void TransformationSystem::UpdateRotateCinematic() {
         GameManager& gm = GameManager::GetInstance();
         CameraSystem* cameraSystem = gm.GetSystems().camera_;
@@ -116,6 +131,10 @@ namespace Framework {
         }
     }
 
+    /*****************************************************************//**
+     * \brief   Evaluates input signals mapping to the world rotation ability
+     *          and validates if execution conditions are met.
+     *********************************************************************/
     void TransformationSystem::ProcessRotationInput() {
         GameManager& gm = GameManager::GetInstance();
         InputSystem& input_ = *gm.GetSystems().input_;
@@ -155,6 +174,10 @@ namespace Framework {
         }
     }
 
+    /*****************************************************************//**
+     * \brief   Smoothly increments global world offsets visually turning 
+     *          the level geometries corresponding to the target axis limit.
+     *********************************************************************/
     void TransformationSystem::UpdateGlobalRotation() {
         if (!isGlobalRotating) return;
 
@@ -217,6 +240,10 @@ namespace Framework {
         }
     }
 
+    /*****************************************************************//**
+     * \brief   Clears tracking targets returning rotational offsets 
+     *          and sequence behaviors entirely back to initial setups.
+     *********************************************************************/
     void TransformationSystem::ResetGlobalRotation() {
         globalRotation = 0.0f;
         targetGlobalRotation = 0.0f;
@@ -230,6 +257,11 @@ namespace Framework {
         zoomOutInitialized_ = false;
     }
 
+    /*****************************************************************//**
+     * \brief   Calculates an entity's base coordinate relative to rotation transformations.
+     * 
+     * \return  The pre-rotation 2D coordinate space mapping vector.
+     *********************************************************************/
     Vector2D TransformationSystem::GetOriginalPos(EntityManager& entityMgr, Entity entity) {
         if (!entityMgr.HasComponent(entity, RotationFlagType) ||
             !entityMgr.HasComponent(entity, TransformType))
@@ -246,6 +278,10 @@ namespace Framework {
         return inverseRotationMat * currentPos;
     }
 
+    /*****************************************************************//**
+     * \brief   Filters entities and invokes transform recalculations spanning
+     *          the ECS active objects.
+     *********************************************************************/
     void TransformationSystem::UpdateAllTransforms() {
         EntityManager entityMgr(GameManager::GetInstance().GetECS());
 
@@ -256,6 +292,10 @@ namespace Framework {
         }
     }
 
+    /*****************************************************************//**
+     * \brief   Recalculates an entity's internal geometry offset matrices 
+     *          matching its physics scale boundaries accurately.
+     *********************************************************************/
     void TransformationSystem::UpdateEntityTransform(Entity entity) {
         EntityManager entityMgr(GameManager::GetInstance().GetECS());
 
@@ -340,6 +380,11 @@ namespace Framework {
         }
     }
 
+    /*****************************************************************//**
+     * \brief   Retrieves an entity's previously cached core transform matrix.
+     * 
+     * \return  Entity's mapped transform orientation parameters structure.
+     *********************************************************************/
     Matrix3x3 TransformationSystem::GetTransformMatrix(Entity entity) const {
         EntityManager entityMgr(GameManager::GetInstance().GetECS());
 
@@ -349,6 +394,11 @@ namespace Framework {
         return Matrix3x3();
     }
 
+    /*****************************************************************//**
+     * \brief   Force calculates and evaluates an entity's transform data instantly.
+     * 
+     * \return  Recalculated coordinate mapping and rotation parameter block.
+     *********************************************************************/
     Matrix3x3 TransformationSystem::ComputeTransformMatrix(Entity entity) const {
         EntityManager entityMgr(GameManager::GetInstance().GetECS());
 

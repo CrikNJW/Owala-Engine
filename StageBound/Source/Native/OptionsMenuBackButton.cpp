@@ -21,10 +21,16 @@
 
 REGISTER_SCRIPT(OptionsMenuBackButton, "OptionsMenuBackButton")
 
+/*****************************************************************//**
+ * \brief   Initializes the close menu flag to false.
+ *********************************************************************/
 void OptionsMenuBackButton::OnCreate() {
     shouldCloseMenu_ = false;
 }
 
+/*****************************************************************//**
+ * \brief   Checks for button clicks and closes the options menu.
+ *********************************************************************/
 void OptionsMenuBackButton::OnUpdate() {
     if (shouldCloseMenu_) {
         GameManager::GetInstance().GetSystems().physics_->SetPaused(false);
@@ -49,6 +55,9 @@ void OptionsMenuBackButton::OnUpdate() {
     }
 }
 
+/*****************************************************************//**
+ * \brief   Cleans up before the entity is destroyed.
+ *********************************************************************/
 void OptionsMenuBackButton::OnDestroy() {
 	// Logic to be called before Entity is deleted
 }

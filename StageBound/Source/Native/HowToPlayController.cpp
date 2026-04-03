@@ -21,6 +21,10 @@
 
 REGISTER_SCRIPT(HowToPlayController, "HowToPlayController")
 
+/*****************************************************************//**
+ * \brief   Initializes the script by caching entities and subscribing
+ *          to button click events.
+ *********************************************************************/
 void HowToPlayController::OnCreate() {
     EntityManager entityMgr(*GameManager::GetInstance().GetSystems().ecs_);
 
@@ -47,6 +51,10 @@ void HowToPlayController::OnCreate() {
     });
 }
 
+/*****************************************************************//**
+ * \brief   Updates the visibility of page entities and navigation buttons
+ *          based on the current page index.
+ *********************************************************************/
 void HowToPlayController::OnUpdate() {
     EntityManager entityMgr(*GameManager::GetInstance().GetSystems().ecs_);
 
@@ -82,6 +90,9 @@ void HowToPlayController::OnUpdate() {
     }
 }
 
+/*****************************************************************//**
+ * \brief   Called right before the entity is destroyed.
+ *********************************************************************/
 void HowToPlayController::OnDestroy() {
 	// Logic to be called before Entity is deleted
 }

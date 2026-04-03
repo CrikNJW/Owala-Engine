@@ -19,10 +19,16 @@
 
 REGISTER_SCRIPT(RestartButtonScript, "RestartButtonScript")
 
+/*****************************************************************//**
+ * \brief   Initializes script state.
+ *********************************************************************/
 void RestartButtonScript::OnCreate() {
 	self_ = GetEntity();
 }
 
+/*****************************************************************//**
+ * \brief   Reloads the immediate prior stage upon button press.
+ *********************************************************************/
 void RestartButtonScript::OnUpdate() {
 	if (initiatedNextLevelLoad) return;
 
@@ -43,6 +49,9 @@ void RestartButtonScript::OnUpdate() {
 	}
 }
 
+/*****************************************************************//**
+ * \brief   Cleanup before entity is destroyed.
+ *********************************************************************/
 void RestartButtonScript::OnDestroy() {
 	// Logic to be called before Entity is deleted
 }

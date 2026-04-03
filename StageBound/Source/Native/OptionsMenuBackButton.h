@@ -19,11 +19,26 @@
 #include "GameManager.h"
 using namespace Framework;
 
+/*****************************************************************//**
+ * \class   OptionsMenuBackButton
+ * \brief   Script to close the options menu when the back button is clicked.
+ *********************************************************************/
 class OptionsMenuBackButton : public ScriptableEntity {
 private:
 	bool shouldCloseMenu_;
 protected:
+	/*****************************************************************//**
+	 * \brief   Initializes the close flag.
+	 *********************************************************************/
 	void OnCreate() override;
+
+	/*****************************************************************//**
+	 * \brief   Checks for clicks and triggers menu closing.
+	 *********************************************************************/
 	void OnUpdate() override;
+
+	/*****************************************************************//**
+	 * \brief   Cleans up before destruction.
+	 *********************************************************************/
 	void OnDestroy() override;
 };

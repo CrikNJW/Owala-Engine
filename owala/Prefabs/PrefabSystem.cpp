@@ -30,6 +30,11 @@ namespace fs = std::filesystem;
 
 namespace Framework {
 
+    /*****************************************************************//**
+     * \brief   Loads all prefab JSON files from the given folder.
+     *
+     * \return  True if at least one prefab was loaded.
+     *********************************************************************/
     bool PrefabSystem::LoadPrefabsFromFolder(const std::string& folderPath) {
         prefabFolderPath_ = folderPath;
 
@@ -53,6 +58,11 @@ namespace Framework {
         return loadedCount > 0;
     }
 
+    /*****************************************************************//**
+     * \brief   Parses a single JSON file and stores it as a prefab.
+     *
+     * \return  True if successful.
+     *********************************************************************/
     bool PrefabSystem::LoadSinglePrefabFile(const std::string& filepath) {
         rapidjson::Document doc;
         if (!FileIOSystem::ReadFile(filepath, doc)) {
@@ -116,15 +126,24 @@ namespace Framework {
             prefab.layer_render_name = doc[Serialization::ENTITY_RENDER_LAYER_NAME].GetString();
         }
 
-        //Logger::Get().Info(DebugType::FileIOSystem) << "Loaded prefab: " << prefab.name << " from " << filepath << std::endl;
         prefabs_[prefab.name] = std::move(prefab);
         return true;
     }
 
+    /*****************************************************************//**
+     * \brief   Wrapper to load a single prefab file.
+     *
+     * \return  True if successful.
+     *********************************************************************/
     bool PrefabSystem::LoadPrefabFile(const std::string& filepath) {
         return LoadSinglePrefabFile(filepath);
     }
 
+    /*****************************************************************//**
+     * \brief   Clears loaded prefabs and reloads them from the directory.
+     *
+     * \return  True if reloading succeeded.
+     *********************************************************************/
     bool PrefabSystem::ReloadAllPrefabs() {
         if (prefabFolderPath_.empty()) {
             Logger::Get().Error(DebugType::FileIOSystem) << "No prefab folder path set" << std::endl;
@@ -134,6 +153,11 @@ namespace Framework {
         return LoadPrefabsFromFolder(prefabFolderPath_);
     }
 
+    /*****************************************************************//**
+     * \brief   Gets a list of all prefab file paths in the prefab directory.
+     *
+     * \return  A vector of file path strings.
+     *********************************************************************/
     std::vector<std::string> PrefabSystem::GetPrefabFileList() const {
         std::vector<std::string> files;
         if (prefabFolderPath_.empty() || !fs::exists(prefabFolderPath_)) {
@@ -147,6 +171,11 @@ namespace Framework {
         return files;
     }
 
+    /*****************************************************************//**
+     * \brief   Loads multiple prefabs from a single file containing an array.
+     *
+     * \return  True if successful.
+     *********************************************************************/
     bool PrefabSystem::LoadPrefabsFromFile(const std::string& filename) {
         rapidjson::Document doc;
         if (!FileIOSystem::ReadFile(filename, doc)) {
@@ -211,6 +240,9 @@ namespace Framework {
         return true;
     }
 
+    /*****************************************************************//**
+     * \brief   Extracts component type and data from a JSON object.
+     *********************************************************************/
     void PrefabSystem::ParseComponentData(const rapidjson::Value& compObj, ComponentData& outData) {
         outData.type = compObj["type"].GetString();
         if (compObj.HasMember("data") && compObj["data"].IsObject()) {
@@ -218,6 +250,11 @@ namespace Framework {
         }
     }
 
+    /*****************************************************************//**
+     * \brief   Spawns a new entity in the world using the specified prefab.
+     *
+     * \return  The ID of the new entity, or 0 if it failed.
+     *********************************************************************/
     Entity PrefabSystem::CreateEntityFromPrefab(EntityStorage& storage, const std::string& prefabName, const Vector2D& position) {
         auto it = prefabs_.find(prefabName);
         if (it == prefabs_.end()) {
@@ -315,6 +352,11 @@ namespace Framework {
         return entity;
     }
 
+    /*****************************************************************//**
+     * \brief   Serializes an entity and saves it as a new prefab JSON file.
+     *
+     * \return  True if successful.
+     *********************************************************************/
     bool PrefabSystem::SaveEntityAsPrefab(EntityStorage& storage, Entity entity, const std::string& prefabName, const std::string& customFolder) {
         using namespace Framework;
 
@@ -457,6 +499,12 @@ namespace Framework {
 
         return true;
     }
+
+    /*****************************************************************//**
+     * \brief   Deletes the prefab file from disk and removes it from memory.
+     *
+     * \return  True if successful.
+     *********************************************************************/
     bool PrefabSystem::DeletePrefab(const std::string& prefabName) {
         const EntityPrefab* prefab = GetPrefab(prefabName);
         if (!prefab) {
@@ -477,6 +525,9 @@ namespace Framework {
         return true;
     }
 
+    /*****************************************************************//**
+     * \brief   Adds the actual ECS component to the entity based on JSON data.
+     *********************************************************************/
     void PrefabSystem::DeserializeComponent(EntityStorage& storage, Entity entity, const ComponentData& compData) {
         EntityManager entityMgr(storage);
         const rapidjson::Document& data = compData.data;
@@ -565,18 +616,6 @@ namespace Framework {
                 entityMgr.AddComponent(entity, std::move(scripts));
             }
         }
-        /*else if (compData.type == Serialization::BIRD_AI_COMPONENT) {
-            BirdAIComponent birdAI;
-            if (EntitySerializer::DeserializeComponent(data, birdAI)) {
-                entityMgr.AddComponent(entity, birdAI);
-            }
-        }
-        else if (compData.type == Serialization::SKELETON_AI_COMPONENT) {
-            SkeletonAIComponent skelAI;
-            if (EntitySerializer::DeserializeComponent(data, skelAI)) {
-                entityMgr.AddComponent(entity, skelAI);
-            }
-        }*/
         else if (compData.type == Serialization::BUTTON_COMPONENT) {
             Button button;
             if (EntitySerializer::DeserializeComponent(data, button)) {
@@ -607,20 +646,40 @@ namespace Framework {
         }
 }
 
+    /*****************************************************************//**
+     * \brief   Checks if a prefab exists by name.
+     *
+     * \return  True if the prefab exists.
+     *********************************************************************/
     bool PrefabSystem::HasPrefab(const std::string& name) const {
         return prefabs_.find(name) != prefabs_.end();
     }
 
+    /*****************************************************************//**
+     * \brief   Returns a read-only pointer to the prefab if found.
+     *
+     * \return  A pointer to the prefab, or nullptr if not found.
+     *********************************************************************/
     const EntityPrefab* PrefabSystem::GetPrefab(const std::string& name) const {
         auto it = prefabs_.find(name);
         return (it != prefabs_.end()) ? &it->second : nullptr;
     }
 
+    /*****************************************************************//**
+     * \brief   Returns a mutable pointer to the prefab if found.
+     *
+     * \return  A pointer to the prefab, or nullptr if not found.
+     *********************************************************************/
     EntityPrefab* PrefabSystem::GetMutablePrefab(const std::string& name) {
         auto it = prefabs_.find(name);
         return (it != prefabs_.end()) ? &it->second : nullptr;
     }
 
+    /*****************************************************************//**
+     * \brief   Extracts platform-specific data from a prefab definition.
+     *
+     * \return  The extracted platform data struct.
+     *********************************************************************/
     PlatformPrefab PrefabSystem::ExtractPlatformData(const EntityPrefab& prefab) const {
         PlatformPrefab result;
         for (const auto& compData : prefab.components) {
@@ -640,6 +699,11 @@ namespace Framework {
         return result;
     }
 
+    /*****************************************************************//**
+     * \brief   Extracts trap-platform specific data from a prefab definition.
+     *
+     * \return  The extracted trap platform data struct.
+     *********************************************************************/
     TrapPlatformPrefab PrefabSystem::ExtractTrapPlatformData(const EntityPrefab& prefab) const {
         TrapPlatformPrefab result;
         for (const auto& compData : prefab.components) {
@@ -666,6 +730,11 @@ namespace Framework {
         return result;
     }
 
+    /*****************************************************************//**
+     * \brief   Gets a map of all prefabs that are standard platforms.
+     *
+     * \return  A map of platform properties.
+     *********************************************************************/
     std::unordered_map<std::string, PlatformPrefab> PrefabSystem::GetPlatformPrefabs() const {
         std::unordered_map<std::string, PlatformPrefab> platforms;
         for (const auto& pair : prefabs_) {
@@ -682,6 +751,11 @@ namespace Framework {
         return platforms;
     }
 
+    /*****************************************************************//**
+     * \brief   Gets a map of all prefabs that are trap platforms.
+     *
+     * \return  A map of trap platform properties.
+     *********************************************************************/
     std::unordered_map<std::string, TrapPlatformPrefab> PrefabSystem::GetTrapPlatformPrefabs() const {
         std::unordered_map<std::string, TrapPlatformPrefab> trapPlatforms;
         for (const auto& pair : prefabs_) {
@@ -695,6 +769,11 @@ namespace Framework {
         return trapPlatforms;
     }
 
+    /*****************************************************************//**
+     * \brief   Gets properties for a specific platform prefab by name.
+     *
+     * \return  A pointer to the properties, or nullptr if not found. Caller manages memory.
+     *********************************************************************/
     const PlatformPrefab* PrefabSystem::GetPlatformPrefab(const std::string& name) const {
         auto it = prefabs_.find(name);
         if (it == prefabs_.end()) return nullptr;
@@ -713,6 +792,11 @@ namespace Framework {
         return result;
     }
 
+    /*****************************************************************//**
+     * \brief   Gets properties for a specific trap platform prefab by name.
+     *
+     * \return  A pointer to the properties, or nullptr if not found. Caller manages memory.
+     *********************************************************************/
     const TrapPlatformPrefab* PrefabSystem::GetTrapPlatformPrefab(const std::string& name) const {
         auto it = prefabs_.find(name);
         if (it == prefabs_.end()) return nullptr;
@@ -727,6 +811,11 @@ namespace Framework {
         return nullptr;
     }
 
+    /*****************************************************************//**
+     * \brief   Updates the stored JSON data for a component in a prefab.
+     *
+     * \return  True if the component was found and updated.
+     *********************************************************************/
     bool PrefabSystem::UpdatePrefabComponentData(const std::string& prefabName,
         const std::string& componentType, const rapidjson::Value& newData) {
         auto it = prefabs_.find(prefabName);
@@ -741,6 +830,11 @@ namespace Framework {
         return false;
     }
 
+    /*****************************************************************//**
+     * \brief   Writes the currently loaded prefab modifications back to disk.
+     *
+     * \return  True if the file was written successfully.
+     *********************************************************************/
     bool PrefabSystem::SavePrefabToFile(const std::string& prefabName) {
         auto it = prefabs_.find(prefabName);
         if (it == prefabs_.end()) {
@@ -796,7 +890,6 @@ namespace Framework {
             rapidjson::Value tagsKey(Serialization::TAGS, alloc);
             doc.AddMember(tagsKey, tagsArray, alloc);
         }
-        //rapidjson::Document::AllocatorType& alloc = doc.GetAllocator();
 
         // Save collision layer ID
         if (doc.HasMember(Serialization::ENTITY_LAYER)) {

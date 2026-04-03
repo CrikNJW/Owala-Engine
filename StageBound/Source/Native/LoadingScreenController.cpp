@@ -26,7 +26,10 @@ namespace Framework {
 
     REGISTER_SCRIPT(LoadingScreenController, "LoadingScreenController")
 
-        void LoadingScreenController::OnCreate() {
+    /*****************************************************************//**
+     * \brief   Sets up the loading screen by hiding curtains and fading in.
+     *********************************************************************/
+    void LoadingScreenController::OnCreate() {
         // Hide curtains immediately on loading screen creation
         TransitionController::ForceHideAll();
         loadingDone = false;
@@ -36,6 +39,10 @@ namespace Framework {
         GameManager::GetInstance().FadeIn(0.5f);
     }
 
+    /*****************************************************************//**
+     * \brief   Updates loading progress text and handles scene transition 
+     *          when loading finishes.
+     *********************************************************************/
     void LoadingScreenController::OnUpdate() {
         // Get Systems
         ResourceManager& rsm_ = *GameManager::GetInstance().GetSystems().resourceManager_;
@@ -103,6 +110,9 @@ namespace Framework {
         }
     }
 
+    /*****************************************************************//**
+     * \brief   Cleans up loading states and resets fade behavior.
+     *********************************************************************/
     void LoadingScreenController::OnDestroy() {
         // Cleanup
         loadingDone = false;
