@@ -38,6 +38,10 @@ namespace {
         bool isLoaded = false;
     };
 
+    /*****************************************************************//**
+     * \brief   Loads and caches rope properties from the prefab JSON.
+     * \return  The cached rope prefab data.
+     *********************************************************************/
     const RopePrefabData& GetRopePrefabData() {
         static RopePrefabData data;
         static bool attemptedLoad = false;
@@ -156,6 +160,10 @@ namespace {
         return data;
     }
 
+    /*****************************************************************//**
+     * \brief   Calculates the visual offset for ropes attached to ceilings.
+     * \return  The calculated 2D offset vector.
+     *********************************************************************/
     Vector2D GetCeilingRenderOffset(const Vector2D& delta, float extraLength) {
         const float ropeLength = delta.Magnitude();
         if (ropeLength <= 0.001f || extraLength <= 0.0f) {
@@ -165,6 +173,10 @@ namespace {
         return (-delta / ropeLength) * (extraLength * 0.5f);
     }
 
+    /*****************************************************************//**
+     * \brief   Calculates the left edge of a platform's collider.
+     * \return  The X coordinate representing the left edge.
+     *********************************************************************/
     float GetPlatformColliderLeftEdge(EntityManager& entityMgr, Entity platformEntity, const Transform& platformTf, float fallbackLeftEdge) {
         if (!entityMgr.HasComponent(platformEntity, AABBColliderType)) {
             return fallbackLeftEdge;
@@ -185,6 +197,10 @@ namespace {
 // ---------------------------------------------------------------------------
 // Lifecycle Methods
 // ---------------------------------------------------------------------------
+
+/*****************************************************************//**
+ * \brief   Initializes script state and generates ropes.
+ *********************************************************************/
 void RopeScript::OnCreate() {
     platformEntity_ = GetEntity();
     EntityManager* entityMgr = GetEntityManager();
@@ -229,6 +245,9 @@ void RopeScript::OnCreate() {
     hasInitialized_ = true;
 }
 
+/*****************************************************************//**
+ * \brief   Updates rope rendering and positions every frame.
+ *********************************************************************/
 void RopeScript::OnUpdate() {
     if (!hasInitialized_) return;
 
@@ -296,6 +315,9 @@ void RopeScript::OnUpdate() {
     }
 }
 
+/*****************************************************************//**
+ * \brief   Cleans up ropes before the entity is destroyed.
+ *********************************************************************/
 void RopeScript::OnDestroy() {
     RemoveAllRopes();
 }
@@ -303,6 +325,11 @@ void RopeScript::OnDestroy() {
 // ---------------------------------------------------------------------------
 // Private Helper Methods
 // ---------------------------------------------------------------------------
+
+/*****************************************************************//**
+ * \brief   Gets a cached reference to the EntityManager.
+ * \return  A pointer to the EntityManager.
+ *********************************************************************/
 EntityManager* RopeScript::GetEntityManager() const {
     if (!GameManager::Exists()) return nullptr;
 
@@ -319,12 +346,20 @@ EntityManager* RopeScript::GetEntityManager() const {
     return cachedManager.get();
 }
 
+/*****************************************************************//**
+ * \brief   Checks if the platform requires two ropes.
+ * \return  True if dual ropes are needed, false otherwise.
+ *********************************************************************/
 bool RopeScript::HasTwoRopes(EntityManager& entityMgr) const {
     if (!entityMgr.HasComponent(platformEntity_, TextureComponentType)) return false;
     const TextureComponent& tex = entityMgr.GetComponent<TextureComponent>(platformEntity_);
     return tex.textureKey == "SB_TrapPlatform_Vertical.png";
 }
 
+/*****************************************************************//**
+ * \brief   Checks if the platform correctly uses ropes based on its type.
+ * \return  True if valid.
+ *********************************************************************/
 bool RopeScript::IsValidRopePlatform() const {
     bool isValid = (platformType_.find("Vertical") != std::string::npos ||
         platformType_.find("Horizontal") != std::string::npos) &&
@@ -332,10 +367,18 @@ bool RopeScript::IsValidRopePlatform() const {
     return isValid;
 }
 
+/*****************************************************************//**
+ * \brief   Identifies if the platform's movement aligns vertically.
+ * \return  True if vertical.
+ *********************************************************************/
 bool RopeScript::FallsVertically() const {
     return platformType_.find("Vertical") != std::string::npos;
 }
 
+/*****************************************************************//**
+ * \brief   Checks if ropes attach upwards toward the ceiling.
+ * \return  True if moving upwards to attach.
+ *********************************************************************/
 bool RopeScript::UsesCeilingTopRope(EntityManager& entityMgr) const {
     if (FallsVertically()) {
         return true;
@@ -349,6 +392,10 @@ bool RopeScript::UsesCeilingTopRope(EntityManager& entityMgr) const {
     return tex.textureKey == "SB_MovableBox_02.png";
 }
 
+/*****************************************************************//**
+ * \brief   Calculates the local attachment coordinate on the platform.
+ * \return  A global 2D point for rope attachment.
+ *********************************************************************/
 Vector2D RopeScript::CalculateTopColliderAttachment(EntityManager& entityMgr, int ropeIndex) const {
     const Transform& platformTf = entityMgr.GetComponent<Transform>(platformEntity_);
 
@@ -392,6 +439,9 @@ Vector2D RopeScript::CalculateTopColliderAttachment(EntityManager& entityMgr, in
     return platformTf.position + worldEdge;
 }
 
+/*****************************************************************//**
+ * \brief   Spawns required ropes based on platform configurations.
+ *********************************************************************/
 void RopeScript::InitializeRopesForPlatform() {
     // Remove any existing ropes first
     RemoveAllRopes();
@@ -406,6 +456,9 @@ void RopeScript::InitializeRopesForPlatform() {
     }
 }
 
+/*****************************************************************//**
+ * \brief   Deletes all ropes attached to this platform.
+ *********************************************************************/
 void RopeScript::RemoveAllRopes() {
     EntityManager* entityMgr = GetEntityManager();
     if (!entityMgr) return;
@@ -435,6 +488,10 @@ void RopeScript::RemoveAllRopes() {
     ropeEntities_.clear();
     ropeRuntimeData_.clear();
 }
+
+/*****************************************************************//**
+ * \brief   Creates a new rope unit entity and attaches it.
+ *********************************************************************/
 void RopeScript::CreateSingleRope(int ropeIndex) {
     EntityManager* entityMgr = GetEntityManager();
     if (!entityMgr) return;
@@ -615,6 +672,9 @@ void RopeScript::CreateSingleRope(int ropeIndex) {
         << ", " << ropeTf.position.y << "), Length: " << length << std::endl;
 }
 
+/*****************************************************************//**
+ * \brief   Synchronizes the rope's transform rendering to its parent platform.
+ *********************************************************************/
 void RopeScript::UpdateRopeTransform(Entity rope) const {
     EntityManager* entityMgr = GetEntityManager();
     if (!entityMgr) return;
@@ -791,6 +851,10 @@ void RopeScript::UpdateRopeTransform(Entity rope) const {
     }
 }
 
+/*****************************************************************//**
+ * \brief   Searches upwards to find a ceiling bounding box.
+ * \return  The local Y coordinate of the found ceiling.
+ *********************************************************************/
 float RopeScript::FindCeilingAnchorY(EntityManager& entityMgr, float attachX, float minY, float fallbackY) const {
     // First pass: Check platforms
     {
@@ -875,6 +939,10 @@ float RopeScript::FindCeilingAnchorY(EntityManager& entityMgr, float attachX, fl
     return fallbackY;
 }
 
+/*****************************************************************//**
+ * \brief   Searches sideways to find a wall bounding box.
+ * \return  The local X coordinate of the found wall.
+ *********************************************************************/
 float RopeScript::FindWallAnchorX(EntityManager& entityMgr, float attachY, float maxX, float fallbackX) const {
     auto GetWorldAABB = [&](const Transform& tf, const AABBCollider& col,
         float& outRight, float& outTop, float& outBottom) {
@@ -973,6 +1041,10 @@ float RopeScript::FindWallAnchorX(EntityManager& entityMgr, float attachY, float
     return fallbackX;
 }
 
+/*****************************************************************//**
+ * \brief   Gets the static anchor limit based on origin offsets.
+ * \return  The 2D fixed anchor location.
+ *********************************************************************/
 Vector2D RopeScript::CalculateFixedAnchor(const Vector2D& originalPosition,
     float halfWidth,
     float halfHeight,
@@ -997,6 +1069,10 @@ Vector2D RopeScript::CalculateFixedAnchor(const Vector2D& originalPosition,
     return anchor;
 }
 
+/*****************************************************************//**
+ * \brief   Gets the real-time dynamic attachment based on moving structures.
+ * \return  The calculated 2D dynamic anchor.
+ *********************************************************************/
 Vector2D RopeScript::CalculateDynamicAnchor(const Vector2D& currentPosition,
     float halfWidth,
     float halfHeight,

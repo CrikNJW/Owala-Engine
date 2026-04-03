@@ -24,10 +24,16 @@
 
 REGISTER_SCRIPT(SaveManager, "SaveManager")
 
+/*****************************************************************//**
+ * \brief   Checks if a given level index is unlocked.
+ *********************************************************************/
 bool SaveManager::IsUnlocked(int levelIndex) const {
 	return levelIndex <= highestUnlockedLevel_;
 }
 
+/*****************************************************************//**
+ * \brief   Unlocks a level and saves progress if it is a new highest level.
+ *********************************************************************/
 void SaveManager::Unlock(int levelIndex) {
 	if (levelIndex > highestUnlockedLevel_) {
 		highestUnlockedLevel_ = levelIndex;
@@ -35,6 +41,9 @@ void SaveManager::Unlock(int levelIndex) {
 	}
 }
 
+/*****************************************************************//**
+ * \brief   Directly sets the highest unlocked level and saves progress.
+ *********************************************************************/
 void SaveManager::SetUnlock(int levelIndex) {
 	highestUnlockedLevel_ = levelIndex;
 	if (highestUnlockedLevel_ <= 0) {
@@ -43,6 +52,9 @@ void SaveManager::SetUnlock(int levelIndex) {
 	Save();
 }
 
+/*****************************************************************//**
+ * \brief   Loads progress from the save file. Starts fresh if missing.
+ *********************************************************************/
 void SaveManager::Load() {
 	rapidjson::Document doc;
 
@@ -67,6 +79,9 @@ void SaveManager::Load() {
 	}
 }
 
+/*****************************************************************//**
+ * \brief   Writes current progress to the save file.
+ *********************************************************************/
 void SaveManager::Save() const {
 	rapidjson::Document doc;
 
@@ -79,6 +94,9 @@ void SaveManager::Save() const {
 	Framework::FileIOSystem::WriteFileJson(SAVE_FILEPATH, doc);
 }
 
+/*****************************************************************//**
+ * \brief   Initializes script, ensures persistence, and loads save data.
+ *********************************************************************/
 void SaveManager::OnCreate() {
 	Framework::SceneManager& sceneMgr = Framework::SceneManager::GetInstance();
 	
@@ -87,10 +105,16 @@ void SaveManager::OnCreate() {
 	Load();
 }
 
+/*****************************************************************//**
+ * \brief   Frame update logic.
+ *********************************************************************/
 void SaveManager::OnUpdate() {
 	// Per-Frame Logic Here
 }
 
+/*****************************************************************//**
+ * \brief   Cleanup before entity is destroyed.
+ *********************************************************************/
 void SaveManager::OnDestroy() {
 	// Logic to be called before Entity is deleted
 }

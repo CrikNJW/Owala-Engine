@@ -30,6 +30,10 @@
 
 using namespace Framework;
 
+/*****************************************************************//**
+ * \class   RopeScript
+ * \brief   Script that manages connecting ropes for moving platforms.
+ *********************************************************************/
 class RopeScript : public ScriptableEntity {
 public:
     static constexpr float MIN_ROPE_LENGTH = 20.0f;
@@ -37,11 +41,26 @@ public:
     static constexpr float HORIZONTAL_FALLBACK_LENGTH = 160.0f;
 
 protected:
+    /*****************************************************************//**
+     * \brief   Sets up initial values and geometry logic.
+     *********************************************************************/
     void OnCreate() override;
+
+    /*****************************************************************//**
+     * \brief   Updates connection lengths and positions each frame.
+     *********************************************************************/
     void OnUpdate() override;
+
+    /*****************************************************************//**
+     * \brief   Free allocations and destroys rope entities.
+     *********************************************************************/
     void OnDestroy() override;
 
 private:
+    /*****************************************************************//**
+     * \struct  RopeRuntimeData
+     * \brief   Tracks physical and visual state for an individual rope.
+     *********************************************************************/
     struct RopeRuntimeData {
         Entity attachedPlatform = 0;
         Entity renderEntity = 0;
@@ -62,33 +81,85 @@ private:
     };
 
     // Helper methods
+    
+    /*****************************************************************//**
+     * \brief   Retrieves the level's entity manager safely.
+     *********************************************************************/
     EntityManager* GetEntityManager() const;
-    RopeRuntimeData* FindRopeRuntime(Entity rope) const;
-    void DestroyTrackedRope(EntityManager& entityMgr, Entity rope, Entity renderRope) const;
-    void SyncRenderRope(EntityManager& entityMgr, const RopeRuntimeData& runtimeData,
-        const Transform& proxyTransform, float angleDeg) const;
+    //RopeRuntimeData* FindRopeRuntime(Entity rope) const;
+    //void DestroyTrackedRope(EntityManager& entityMgr, Entity rope, Entity renderRope) const;
+    //void SyncRenderRope(EntityManager& entityMgr, const RopeRuntimeData& runtimeData,
+    //    const Transform& proxyTransform, float angleDeg) const;
+
+    /*****************************************************************//**
+     * \brief   Confirms if this setup requires dual ropes.
+	 *********************************************************************/
     bool HasTwoRopes(EntityManager& entityMgr) const;
+
+    /*****************************************************************//**
+     * \brief   Confirms this specific object should generate connecting elements.
+     *********************************************************************/
     bool IsValidRopePlatform() const;
+
+    /*****************************************************************//**
+     * \brief   Confirms vertical movement routing for top anchoring.
+     *********************************************************************/
     bool FallsVertically() const;
+
+    /*****************************************************************//**
+     * \brief   Confirms if rope offsets align strictly to upward ceiling tiles.
+     *********************************************************************/
     bool UsesCeilingTopRope(EntityManager& entityMgr) const;
+
+    /*****************************************************************//**
+     * \brief   Resolves dynamic offsets based on platform dimensions.
+     *********************************************************************/
     Vector2D CalculateTopColliderAttachment(EntityManager& entityMgr, int ropeIndex) const;
 
+    /*****************************************************************//**
+     * \brief   Wipes old lines and calculates new ones.
+     *********************************************************************/
     void InitializeRopesForPlatform();
+
+    /*****************************************************************//**
+     * \brief   Purges spawned data directly from ECS.
+     *********************************************************************/
     void RemoveAllRopes();
+
+    /*****************************************************************//**
+     * \brief   Creates one indexed connecting line mapping variables sequentially.
+     *********************************************************************/
     void CreateSingleRope(int ropeIndex);
+
+    /*****************************************************************//**
+     * \brief   Computes physical adjustments updating lengths and rendering logic.
+     *********************************************************************/
     void UpdateRopeTransform(Entity rope) const;
 
+    /*****************************************************************//**
+     * \brief   Finds the fixed coordinate where the rope line anchors distantly.
+     *********************************************************************/
     Vector2D CalculateFixedAnchor(const Vector2D& originalPosition,
         float halfWidth,
         float halfHeight,
         int ropeIndex) const;
 
+    /*****************************************************************//**
+     * \brief   Finds the local coordinate where the rope meets the dynamic parent.
+     *********************************************************************/
     Vector2D CalculateDynamicAnchor(const Vector2D& currentPosition,
         float halfWidth,
         float halfHeight,
         int ropeIndex) const;
 
+    /*****************************************************************//**
+     * \brief   Raycasts upward looking for collision blocks to anchor.
+     *********************************************************************/
     float FindCeilingAnchorY(EntityManager& entityMgr, float attachX, float minY, float fallbackY) const;
+
+    /*****************************************************************//**
+     * \brief   Raycasts horizontally looking for collision blocks to anchor.
+     *********************************************************************/
     float FindWallAnchorX(EntityManager& entityMgr, float attachY, float maxX, float fallbackX) const;
 
     Entity platformEntity_ = 0;
