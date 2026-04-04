@@ -42,8 +42,9 @@ protected:
 private:
 	int highestUnlockedLevel_ = 1; //!< The highest level the player has reached.
 	bool skipIntro = false;        //!< Flag to skip the intro cutscene.
+	std::string saveFilePath_;     //!< Absolute path to the user save file in Documents/StageBound.
 
-	static constexpr const char* SAVE_FILEPATH = "Data/save.json";
+	static std::string BuildSaveFilePath();
 	static constexpr const char* KEY_HIGHEST_UNLOCKED = "highest_unlocked_level";
 	static constexpr const char* KEY_SKIP_INTRO = "skip_intro";
 public:

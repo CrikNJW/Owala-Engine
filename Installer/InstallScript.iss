@@ -8,12 +8,12 @@
 ; !!NOTE!!: The value of AppId uniquely identifies this application.
 ; Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click "Tools" | "Create GUID" inside the Visual Studio IDE.)
-AppId={{19DE85FA-9131-485A-9887-97E89D2F685E}
+AppId={{34AC05A6-B023-4248-98B4-E6AFB50E21E6}
 
 ; Standard app data stuff
 ; !!NOTE!!: Replace all instances of "StageBound" with your game name.
 AppName=StageBound
-AppVerName=StageBound Version 0.1
+AppVerName=StageBound Version 1.0
 AppPublisher=DigiPen Institute of Technology
 AppPublisherURL=http://www.digipen.edu/
 AppSupportURL=http://www.digipen.edu/

@@ -21,6 +21,35 @@
 #include "SceneManager.h"
 #include "GameManager.h"
 
+std::string SaveManager::BuildSaveFilePath() {
+	char path[MAX_PATH];
+	std::filesystem::path docsPath;
+	if (FAILED(SHGetFolderPathA(NULL, CSIDL_PERSONAL, NULL, 0, path))) {
+		DWORD userProfileLen = GetEnvironmentVariableA("USERPROFILE", path, MAX_PATH);
+		if (userProfileLen == 0 || userProfileLen >= MAX_PATH) {
+			Framework::Logger::Get().Error(DebugType::FileIOSystem)
+				<< "Unable to resolve user Documents directory for save data." << std::endl;
+			return "";
+		}
+
+		docsPath = std::filesystem::path(path) / "Documents";
+	}
+	else {
+		docsPath = std::filesystem::path(path);
+	}
+
+	std::filesystem::path saveDirPath = docsPath / "StageBound";
+	std::error_code saveDirEc;
+	std::filesystem::create_directories(saveDirPath, saveDirEc);
+	if (saveDirEc) {
+		Framework::Logger::Get().Error(DebugType::FileIOSystem)
+			<< "Unable to create save directory for save data: " << saveDirPath.string() << std::endl;
+		return "";
+	}
+
+	return (saveDirPath / "save.json").string();
+}
+
 
 REGISTER_SCRIPT(SaveManager, "SaveManager")
 
@@ -57,9 +86,14 @@ void SaveManager::SetUnlock(int levelIndex) {
  *********************************************************************/
 void SaveManager::Load() {
 	rapidjson::Document doc;
+	if (saveFilePath_.empty()) {
+		highestUnlockedLevel_ = 1;
+		skipIntro = false;
+		return;
+	}
 
 	// Check if file exists
-	if (!Framework::FileIOSystem::ReadFile(SAVE_FILEPATH, doc) || !doc.IsObject()) {
+	if (!Framework::FileIOSystem::ReadFile(saveFilePath_, doc) || !doc.IsObject()) {
 		highestUnlockedLevel_ = 1;
 		skipIntro = false;
 		Save();
@@ -83,6 +117,12 @@ void SaveManager::Load() {
  * \brief   Writes current progress to the save file.
  *********************************************************************/
 void SaveManager::Save() const {
+	if (saveFilePath_.empty()) {
+		Framework::Logger::Get().Error(DebugType::FileIOSystem)
+			<< "Save path is unavailable. Skipping save." << std::endl;
+		return;
+	}
+
 	rapidjson::Document doc;
 
 	doc.SetObject();
@@ -91,7 +131,7 @@ void SaveManager::Save() const {
 	doc.AddMember(rapidjson::StringRef(KEY_HIGHEST_UNLOCKED), highestUnlockedLevel_, alloc);
 	doc.AddMember(rapidjson::StringRef(KEY_SKIP_INTRO), skipIntro, alloc);
 
-	Framework::FileIOSystem::WriteFileJson(SAVE_FILEPATH, doc);
+	Framework::FileIOSystem::WriteFileJson(saveFilePath_, doc, false);
 }
 
 /*****************************************************************//**
@@ -102,6 +142,7 @@ void SaveManager::OnCreate() {
 	
 	// In case this isn't persistent.
 	sceneMgr.SetEntityAsPersistent(GetEntity(), true);
+	saveFilePath_ = BuildSaveFilePath();
 	Load();
 }
 

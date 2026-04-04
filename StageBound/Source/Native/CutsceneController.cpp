@@ -81,7 +81,9 @@ void CutsceneController::FinishCutscene() {
 	for (Entity entity : sceneEntities) {
 		if (!entityMgr.ValidateEntity(entity)) continue;
 		if (entityMgr.GetProperties(entity).name == "Ambience Audio") {
-			GameManager::GetInstance().GetSystems().audio_->StopAudio(entity);
+			if (auto* audioSystem = GameManager::GetInstance().GetSystems().audio_) {
+				audioSystem->StopAudio(entity);
+			}
 			break;
 		}
 	}
@@ -191,5 +193,11 @@ void CutsceneController::OnUpdate() {
  * \brief   Cleans up audio resources when destroyed.
  *********************************************************************/
 void CutsceneController::OnDestroy() {
-	GameManager::GetInstance().GetSystems().audio_->StopAudio(GetEntity());
+	if (!GameManager::Exists()) {
+		return;
+	}
+
+	if (auto* audioSystem = GameManager::GetInstance().GetSystems().audio_) {
+		audioSystem->StopAudio(GetEntity());
+	}
 }

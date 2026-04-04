@@ -291,9 +291,15 @@ void Portal::OnUpdate() {
 /**
  * @brief Cleans up when the portal entity is destroyed.
  *
- * Empty implementation as no cleanup is required.
+ * Stops portal audio if the audio system is still available during teardown.
  */
 void Portal::OnDestroy() {
     Entity self = GetEntity();
-    GameManager::GetInstance().GetSystems().audio_->StopAudio(self);
+    if (!GameManager::Exists()) {
+        return;
+    }
+
+    if (auto* audioSystem = GameManager::GetInstance().GetSystems().audio_) {
+        audioSystem->StopAudio(self);
+    }
 }
