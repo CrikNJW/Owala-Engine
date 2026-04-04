@@ -2576,9 +2576,11 @@ namespace Editor {
 								// Apply search filter
 								const std::string& eName = entityMgr.GetProperties(e).name;
 								std::string lowerName = eName;
-								std::transform(lowerName.begin(), lowerName.end(), lowerName.begin(), ::tolower);
+								std::transform(lowerName.begin(), lowerName.end(), lowerName.begin(),
+									[](unsigned char c) { return static_cast<char>(::tolower(c)); });
 								std::string lowerSearch = searchBuffer;
-								std::transform(lowerSearch.begin(), lowerSearch.end(), lowerSearch.begin(), ::tolower);
+								std::transform(lowerSearch.begin(), lowerSearch.end(), lowerSearch.begin(),
+									[](unsigned char c) { return static_cast<char>(::tolower(c)); });
 
 								if (lowerSearch.empty() || lowerName.find(lowerSearch) != std::string::npos) {
 									sceneEntities.push_back(e);
