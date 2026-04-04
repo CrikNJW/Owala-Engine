@@ -12,3 +12,6 @@ Installer/GAMEDIRECTORY/StageBound.exe
 /Installer/INSTALLER
 /build
 StageBound/Data/save.json
+/Installer/Owala_InstallerData
+/Owala_CustomEngine
+Owala_LevelEditor_Showcase.mp4
