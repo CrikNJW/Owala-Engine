@@ -20,8 +20,9 @@ Some platforms fall vertically, some horizontally, some on both axis.
 Rotate the world to move platforms out of the way with physics.
 Avoid alerting enemies, or drop platforms on them to kill them.
 
+----------------
 CONTROLS
-
+----------------
 W/Space - Jump
 A - Move Left
 D - Move Right
@@ -29,6 +30,16 @@ Q - Rotate Left 90 Degrees
 E - Rotate Right 90 Degrees
 F - Enter Portal
 
-DEBUG
+----------------
+DEBUG/SETTINGS
+----------------
 F1 - Show FPS
-C - Show Colliders
+F11 - Toggle between Full Screen and Windowed mode
+
+----------------
+CHEAT CODES
+----------------
+F6 - Skip to next level
+F7 - Skip to portal
+F8 - Toggle God Mode
+Num 1-6 (on Level Select screen) - Unlock corresponding levels
