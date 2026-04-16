@@ -21,6 +21,7 @@
 #include "CameraSystem.h"
 #include <bitset> //For a bitset to track which components an entity has
 #include <unordered_map> //For a hash map to store entity-component pairs
+#include <vector>
 
 /*	Hash maps to store key-value pairs of entity IDs 
 	and their respective components. 
@@ -78,12 +79,6 @@ namespace Framework {
 	};
 
 #pragma region COMPONENT TYPE DEFINITIONS
-	// --------------------------------------------------------------------------------
-	//							/!\	/!\	READ THIS /!\ /!\
-	//	         Whenever you create a new component or tag. Please add it in
-	//             enum and to the list of ComponentTypeTraits below - Jason
-	// --------------------------------------------------------------------------------
-
 	// Generic template
 	template <typename T>
 	struct ComponentTypeTrait;
@@ -126,41 +121,50 @@ namespace Framework {
 
 	using ComponentSignature = std::bitset<MAX_COMPONENTS>; // Bitset to track which components an entity has
 
+	struct ComponentSignatureHash {
+		std::size_t operator()(const ComponentSignature& signature) const noexcept {
+			return std::hash<std::string>{}(signature.to_string());
+		}
+	};
+
 	class EntityStorage{
 	private:
+		struct ArchetypeBucket {
+			ComponentSignature signature{};
+			std::vector<Entity> entities{};
+
+			std::vector<Transform> transform;
+			std::vector<Velocity> velocity;
+			std::vector<Acceleration> acceleration;
+			std::vector<Triangle> triangle;
+			std::vector<RigidBody> rigidBody;
+			std::vector<AABBCollider> colliders;
+			std::vector<PlayerState> playerState;
+			std::vector<RotationFlag> rotationFlag;
+			std::vector<TrapPlatformComponent> trapPlatform;
+			std::vector<Button> button;
+			std::vector<TextureComponent> tex;
+			std::vector<AudioComponent> audio;
+			std::vector<AnimationComponent> animatedTex;
+			std::vector<TextComponent> text;
+			std::vector<Camera> cameras;
+			std::vector<NativeScriptsComponent> nativeScripts;
+			std::vector<FSMComponent> fsmComponent;
+			std::vector<ParticleComponent> particleComponent;
+			std::vector<ParticleEmitterComponent> particleEmitterComponent;
+			std::vector<Slider> sliders;
+			std::vector<PlayerHealthComponent> playerHealth;
+			std::vector<SceneOwned> sceneOwned;
+		};
+
 		std::unordered_map<Entity, ComponentSignature> entitySignatures; // Track components of each entity
+		std::vector<ArchetypeBucket> archetypes;
+		std::unordered_map<ComponentSignature, std::size_t, ComponentSignatureHash> signatureToArchetype;
+		std::unordered_map<Entity, std::size_t> entityToArchetype;
+		std::unordered_map<Entity, std::size_t> entityToArchetypeSlot;
 		friend class EntityManager; // Allow EntityManager to access private members
 	private:
-		/* Basic Components */
 		std::unordered_map<Entity, EntityProperties> properties;
-		std::unordered_map<Entity, Transform>	 transform;
-		std::unordered_map<Entity, Velocity>     velocity;
-		std::unordered_map<Entity, Acceleration> acceleration;
-		std::unordered_map<Entity, Triangle>     triangle;
-		std::unordered_map<Entity, RigidBody>    rigidBody;    
-		std::unordered_map<Entity, AABBCollider> colliders;
-		std::unordered_map<Entity, PlayerState> playerState;
-		std::unordered_map<Entity, RotationFlag> rotationFlag;
-		std::unordered_map<Entity, TrapPlatformComponent> trapPlatform;
-		std::unordered_map<Entity, Button> button;
-
-		std::unordered_map<Entity, TextureComponent>      tex; //Texture Component
-		std::unordered_map<Entity, AudioComponent>        audio; //Audio Component
-		std::unordered_map<Entity, AnimationComponent> animatedTex; //Animated Texture Component
-		std::unordered_map<Entity, TextComponent>	text; // Text Component
-
-		std::unordered_map<Entity, FSMComponent> fsmComponent; //fsm compoenent
-		std::unordered_map<Entity, ParticleComponent> particleComponent;
-		std::unordered_map<Entity, ParticleEmitterComponent> particleEmitterComponent;
-		std::unordered_map<Entity, Slider> sliders;
-
-		std::unordered_map<Entity, Camera> cameras;//Camera
-
-		std::unordered_map<Entity, NativeScriptsComponent> nativeScripts; // Native Scripts
-		std::unordered_map<Entity, PlayerHealthComponent> playerHealth;
-
-		/* Scene Components */
-		std::unordered_map<Entity, SceneOwned>		sceneOwned; // Tag to indicate which scene this entity belongs to
 
 	public:
 		/* Constructors */
@@ -172,32 +176,5 @@ namespace Framework {
 		~EntityStorage();
 
 		void SwapWith(EntityStorage& other) noexcept;
-	};
-
-	// BELOW IS STILL WIP. DO NOT USE.
-
-	class WIPEntityStorage {
-	private:
-		// Archetypes is essentially a Set of components
-		struct Archetype {
-			ComponentSignature signature; // Components in this Archetype
-			std::vector<Entity> entities; // Entities that belong to this Archetype
-
-			std::vector<Velocity> velocities;
-			std::vector<Acceleration> accelerations;
-			std::vector<RigidBody> rigidBodies;
-			std::vector<AABBCollider> aabbColliders;
-			std::vector<Triangle> triangles;
-			std::vector<TextureComponent> textures;
-			std::vector<PlayerState> playerStates;
-			std::vector<RotationFlag> rotationFlags;
-			std::vector<SceneOwned> sceneOwned;
-		};
-
-		std::vector<Archetype> archetypes; // List of all archetypes
-		std::unordered_map<Entity, size_t> entityToArchetype; // Map entity to its archetype index
-		std::unordered_map<Entity, ComponentSignature> entitySignatures; // Track components of each entity
-
-		friend class WIPEntityManager; // Allow EntityManager to access private members
 	};
 }

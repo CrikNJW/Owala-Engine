@@ -27,6 +27,20 @@ namespace Framework {
 	class EntityManager {
 	private:
 		EntityStorage& ecs;
+		using ArchetypeBucket = EntityStorage::ArchetypeBucket;
+
+		std::size_t GetOrCreateArchetype(const ComponentSignature& signature);
+		void EraseRowFromArchetype(std::size_t archetypeIndex, std::size_t rowIndex);
+		void CopySharedComponents(const ArchetypeBucket& source, std::size_t sourceRow, ArchetypeBucket& target, const ComponentSignature& sharedSignature) const;
+		void AddComponentToBucket(ArchetypeBucket& bucket, ComponentType componentType, const void* componentData);
+		void RemoveComponentFromBucket(ArchetypeBucket& bucket, ComponentType componentType, std::size_t rowIndex);
+		void ReserveComponentSlotsForEntity(ArchetypeBucket& bucket, const ComponentSignature& signature);
+		void AddComponentInternal(Entity entity, ComponentType componentType, const void* componentData);
+		void RemoveComponentInternal(Entity entity, ComponentType componentType);
+
+		void RemoveEntityFromArchetype(Entity entity);
+		void MoveEntityToArchetype(Entity entity, const ComponentSignature& signature);
+		std::vector<Entity> CollectEntitiesBySignature(const ComponentSignature& requiredSignature, bool activeOnly) const;
 	public:
 		/* Constructors */
 		EntityManager(EntityStorage& entityStorage);
@@ -53,6 +67,10 @@ namespace Framework {
 
 		// Checks if the specified entity has the specified component type attached to it. Returns true if the component is present, false otherwise.
 		bool HasComponent(Entity entity, ComponentType componentType) const;
+		template <typename T>
+		bool HasComponent(Entity entity) const {
+			return HasComponent(entity, ComponentTypeTrait<T>::value);
+		}
 		// Adds a component of type T to the specified entity. The Component must be a valid component type defined in Components.h
 		template <typename T>
 		void AddComponent(Entity entity, const T& component) {
@@ -65,41 +83,16 @@ namespace Framework {
 			constexpr ComponentType type = ComponentTypeTrait<T>::value;
 
 			if (HasComponent(entity, type)) return;
-
-			if constexpr (std::is_same_v<T, Transform>) ecs.transform[entity] = component;
-			else if constexpr (std::is_same_v<T, Velocity>) ecs.velocity[entity] = component;
-			else if constexpr (std::is_same_v<T, Acceleration>) ecs.acceleration[entity] = component;
-			else if constexpr (std::is_same_v<T, Triangle>)  ecs.triangle[entity] = component;
-			else if constexpr (std::is_same_v<T, RigidBody>) ecs.rigidBody[entity] = component;
-			else if constexpr (std::is_same_v<T, AABBCollider>) ecs.colliders[entity] = component;
-			else if constexpr (std::is_same_v<T, PlayerState>) ecs.playerState[entity] = component;
-			else if constexpr (std::is_same_v<T, RotationFlag>) ecs.rotationFlag[entity] = component;
-			else if constexpr (std::is_same_v<T, TrapPlatformComponent>) ecs.trapPlatform[entity] = component;
-			else if constexpr (std::is_same_v<T, TextureComponent>) ecs.tex[entity] = component;
-			else if constexpr (std::is_same_v<T, AudioComponent>) ecs.audio[entity] = component;
-			else if constexpr (std::is_same_v<T, AnimationComponent>) ecs.animatedTex[entity] = component;
-			else if constexpr (std::is_same_v<T, TextComponent>) ecs.text[entity] = component;
-			else if constexpr (std::is_same_v<T, Button>) ecs.button[entity] = component;
-			else if constexpr (std::is_same_v<T, SceneOwned>) ecs.sceneOwned[entity] = component;
-			else if constexpr (std::is_same_v<T, Camera>) ecs.cameras[entity] = component;
-			else if constexpr (std::is_same_v<T, NativeScriptsComponent>) ecs.nativeScripts[entity] = component;
-			else if constexpr (std::is_same_v<T, FSMComponent>) ecs.fsmComponent[entity] = component;
-			else if constexpr (std::is_same_v<T, ParticleComponent>) ecs.particleComponent[entity] = component;
-			else if constexpr (std::is_same_v<T, ParticleEmitterComponent>) ecs.particleEmitterComponent[entity] = component;
-			else if constexpr (std::is_same_v<T, Slider>) ecs.sliders[entity] = component;
-			else if constexpr (std::is_same_v<T, PlayerHealthComponent>) ecs.playerHealth[entity] = component;
-
-			else {
-				// If this is a tag-only type, no storage is necessary.
-				static_assert(std::is_same_v<T, T>, "Unsupported component type"); // will never be triggered when all types are handled
-			}
-
-			ecs.entitySignatures.at(entity).set(type);
+			AddComponentInternal(entity, type, &component);
 		}
 		// Adds a empty component of specified ComponentType ID to the entity.
 		void AddComponent(Entity entity, ComponentType componentType);
 		// Removes a component of type T from the specified entity. The Component must be a valid component type defined in Components.h
 		void RemoveComponent(Entity entity, ComponentType componentType);
+		template <typename T>
+		void RemoveComponent(Entity entity) {
+			RemoveComponent(entity, ComponentTypeTrait<T>::value);
+		}
 		// Gets the component of type T attached to the specified entity. Throws an error if the entity does not have the component.
 		template <typename T>
 		T& GetComponent(Entity entity) {
@@ -120,33 +113,39 @@ namespace Framework {
 				throw std::runtime_error(errorMsg.str());
 			}
 
-			// Return a reference to the component in the map
-			if constexpr (std::is_same_v<T, Transform>) return ecs.transform.at(entity);
-			else if constexpr (std::is_same_v<T, Velocity>) return ecs.velocity.at(entity);
-			else if constexpr (std::is_same_v<T, Acceleration>) return ecs.acceleration.at(entity);
-			else if constexpr (std::is_same_v<T, Triangle>) return ecs.triangle.at(entity);
-			else if constexpr (std::is_same_v<T, RigidBody>) return ecs.rigidBody.at(entity);
-			else if constexpr (std::is_same_v<T, AABBCollider>) return ecs.colliders.at(entity);
-			else if constexpr (std::is_same_v<T, PlayerState>) return ecs.playerState.at(entity);
-			else if constexpr (std::is_same_v<T, RotationFlag>) return ecs.rotationFlag.at(entity);
-			else if constexpr (std::is_same_v<T, TrapPlatformComponent>) return ecs.trapPlatform.at(entity);
-			else if constexpr (std::is_same_v<T, TextureComponent>) return ecs.tex.at(entity);
-			else if constexpr (std::is_same_v<T, AudioComponent>) return ecs.audio.at(entity);
-			else if constexpr (std::is_same_v<T, AnimationComponent>) return ecs.animatedTex.at(entity);
-			else if constexpr (std::is_same_v<T, Button>) return ecs.button.at(entity);
-			else if constexpr (std::is_same_v<T, TextComponent>) return ecs.text.at(entity);
-			else if constexpr (std::is_same_v<T, SceneOwned>) return ecs.sceneOwned.at(entity);
-			else if constexpr (std::is_same_v<T, Camera>) return ecs.cameras.at(entity);
-			else if constexpr (std::is_same_v<T, NativeScriptsComponent>) return ecs.nativeScripts.at(entity);
-			else if constexpr (std::is_same_v<T, FSMComponent>) return ecs.fsmComponent.at(entity);
-			else if constexpr (std::is_same_v<T, ParticleComponent>) return ecs.particleComponent.at(entity);
-			else if constexpr (std::is_same_v<T, ParticleEmitterComponent>) return ecs.particleEmitterComponent.at(entity);
-			else if constexpr (std::is_same_v<T, Slider>) return ecs.sliders.at(entity);
-			else if constexpr (std::is_same_v<T, PlayerHealthComponent>) return ecs.playerHealth.at(entity);
+			const std::size_t archetypeIndex = ecs.entityToArchetype.at(entity);
+			const std::size_t rowIndex = ecs.entityToArchetypeSlot.at(entity);
+			ArchetypeBucket& archetype = ecs.archetypes[archetypeIndex];
 
-			else {
-				static_assert(!std::is_same_v<T, T>, "Unsupported component type");
-			}
+			if constexpr (std::is_same_v<T, Transform>) return archetype.transform[rowIndex];
+			else if constexpr (std::is_same_v<T, Velocity>) return archetype.velocity[rowIndex];
+			else if constexpr (std::is_same_v<T, Acceleration>) return archetype.acceleration[rowIndex];
+			else if constexpr (std::is_same_v<T, Triangle>) return archetype.triangle[rowIndex];
+			else if constexpr (std::is_same_v<T, RigidBody>) return archetype.rigidBody[rowIndex];
+			else if constexpr (std::is_same_v<T, AABBCollider>) return archetype.colliders[rowIndex];
+			else if constexpr (std::is_same_v<T, PlayerState>) return archetype.playerState[rowIndex];
+			else if constexpr (std::is_same_v<T, RotationFlag>) return archetype.rotationFlag[rowIndex];
+			else if constexpr (std::is_same_v<T, TrapPlatformComponent>) return archetype.trapPlatform[rowIndex];
+			else if constexpr (std::is_same_v<T, TextureComponent>) return archetype.tex[rowIndex];
+			else if constexpr (std::is_same_v<T, AudioComponent>) return archetype.audio[rowIndex];
+			else if constexpr (std::is_same_v<T, AnimationComponent>) return archetype.animatedTex[rowIndex];
+			else if constexpr (std::is_same_v<T, TextComponent>) return archetype.text[rowIndex];
+			else if constexpr (std::is_same_v<T, Button>) return archetype.button[rowIndex];
+			else if constexpr (std::is_same_v<T, SceneOwned>) return archetype.sceneOwned[rowIndex];
+			else if constexpr (std::is_same_v<T, Camera>) return archetype.cameras[rowIndex];
+			else if constexpr (std::is_same_v<T, NativeScriptsComponent>) return archetype.nativeScripts[rowIndex];
+			else if constexpr (std::is_same_v<T, FSMComponent>) return archetype.fsmComponent[rowIndex];
+			else if constexpr (std::is_same_v<T, ParticleComponent>) return archetype.particleComponent[rowIndex];
+			else if constexpr (std::is_same_v<T, ParticleEmitterComponent>) return archetype.particleEmitterComponent[rowIndex];
+			else if constexpr (std::is_same_v<T, Slider>) return archetype.sliders[rowIndex];
+			else if constexpr (std::is_same_v<T, PlayerHealthComponent>) return archetype.playerHealth[rowIndex];
+			else static_assert(!std::is_same_v<T, T>, "Unsupported component type");
+		}
+		template<typename T>
+		T* TryGetComponent(Entity entity) {
+			if (!ValidateEntity(entity)) return nullptr;
+			if (!HasComponent<T>(entity)) return nullptr;
+			return &GetComponent<T>(entity);
 		}
 		// Checks if given component is a Tag Component. Returns false if it is a regular component.
 		bool IsTagComponent(ComponentType componentType);
@@ -177,6 +176,10 @@ namespace Framework {
 		std::vector<Entity> GetAllEntitiesWithComponents(bool activeOnly, Args... componentTypes) const;
 		template<typename Func, typename... Types>
 		void ForEachEntityWithComponents(Func&& fn, bool activeOnly, Types... componentTypes);
+		template<typename... Types>
+		std::vector<Entity> QueryEntities(bool activeOnly = true) const {
+			return GetAllEntitiesWithComponents(activeOnly, ComponentTypeTrait<Types>::value...);
+		}
 		// Get entity signatures
 		inline const auto& GetEntitySignatures() const {
 			return ecs.entitySignatures;
@@ -259,24 +262,7 @@ namespace Framework {
 		// This sets a bit for each component type passed in
 		(requiredSignature.set(static_cast<size_t>(componentTypes)), ...);
 
-		std::vector<Entity> entities;
-		for (const auto& [entity, entitySignature] : ecs.entitySignatures) {
-			// Check if signatures match
-			if ((entitySignature & requiredSignature) != requiredSignature) continue;
-
-			// Check for Entity's existence
-			auto it = ecs.properties.find(entity);
-			if (it == ecs.properties.end()) continue;
-
-			if (ecs.properties.find(entity) == ecs.properties.end()) continue;
-
-			// Check if Entity is Active
-			if (activeOnly && !it->second.isActive) continue;
-
-			entities.push_back(entity);
-		}
-
-		return entities;
+		return CollectEntitiesBySignature(requiredSignature, activeOnly);
 	}
 
 	template <typename Func, typename... Types>
@@ -287,18 +273,7 @@ namespace Framework {
 		// This sets a bit for each component type passed in
 		(requiredSignature.set(static_cast<size_t>(componentTypes)), ...);
 
-		for (auto& [entity, entitySignature] : ecs.entitySignatures) {
-			// Check for signature
-			if ((entitySignature & requiredSignature) != requiredSignature) continue;
-
-			// Check for Entity's existence
-			auto it = ecs.properties.find(entity);
-			if (it == ecs.properties.end()) continue;
-
-			// Check if Entity is Active
-			if (activeOnly && !it->second.isActive) continue;
-
-			// Passed all checks. Can execute lambda.
+		for (Entity entity : CollectEntitiesBySignature(requiredSignature, activeOnly)) {
 			fn(entity);
 		}
 	}

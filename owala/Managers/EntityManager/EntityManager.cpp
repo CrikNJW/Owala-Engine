@@ -21,6 +21,259 @@ namespace Framework {
 	// ---------------------------------------------------------------------------
 	EntityManager::EntityManager(EntityStorage& entityStorage) : ecs(entityStorage) {};
 
+	std::size_t EntityManager::GetOrCreateArchetype(const ComponentSignature& signature) {
+		auto it = ecs.signatureToArchetype.find(signature);
+		if (it != ecs.signatureToArchetype.end()) {
+			return it->second;
+		}
+
+		const std::size_t archetypeIndex = ecs.archetypes.size();
+		ecs.archetypes.push_back({ signature, {} });
+		ecs.signatureToArchetype[signature] = archetypeIndex;
+		return archetypeIndex;
+	}
+
+	void EntityManager::ReserveComponentSlotsForEntity(ArchetypeBucket& bucket, const ComponentSignature& signature) {
+		if (signature.test(TransformType)) bucket.transform.emplace_back();
+		if (signature.test(VelocityType)) bucket.velocity.emplace_back();
+		if (signature.test(AccelerationType)) bucket.acceleration.emplace_back();
+		if (signature.test(TriangleType)) bucket.triangle.emplace_back();
+		if (signature.test(RigidBodyType)) bucket.rigidBody.emplace_back();
+		if (signature.test(AABBColliderType)) bucket.colliders.emplace_back();
+		if (signature.test(PlayerStateType)) bucket.playerState.emplace_back();
+		if (signature.test(RotationFlagType)) bucket.rotationFlag.emplace_back();
+		if (signature.test(TrapPlatformComponentType)) bucket.trapPlatform.emplace_back();
+		if (signature.test(ButtonType)) bucket.button.emplace_back();
+		if (signature.test(TextureComponentType)) bucket.tex.emplace_back();
+		if (signature.test(AudioComponentType)) bucket.audio.emplace_back();
+		if (signature.test(AnimationComponentType)) bucket.animatedTex.emplace_back();
+		if (signature.test(TextComponentType)) bucket.text.emplace_back();
+		if (signature.test(CameraType)) bucket.cameras.emplace_back();
+		if (signature.test(NativeScriptsComponentType)) bucket.nativeScripts.emplace_back();
+		if (signature.test(SceneOwnedType)) bucket.sceneOwned.emplace_back();
+		if (signature.test(FSMComponentType)) bucket.fsmComponent.emplace_back();
+		if (signature.test(ParticleComponentType)) bucket.particleComponent.emplace_back();
+		if (signature.test(ParticleEmitterComponentType)) bucket.particleEmitterComponent.emplace_back();
+		if (signature.test(SliderType)) bucket.sliders.emplace_back();
+		if (signature.test(PlayerHealthComponentType)) bucket.playerHealth.emplace_back();
+	}
+
+	void EntityManager::CopySharedComponents(const ArchetypeBucket& source, std::size_t sourceRow, ArchetypeBucket& target, const ComponentSignature& sharedSignature) const {
+		if (sharedSignature.test(TransformType)) target.transform.back() = source.transform[sourceRow];
+		if (sharedSignature.test(VelocityType)) target.velocity.back() = source.velocity[sourceRow];
+		if (sharedSignature.test(AccelerationType)) target.acceleration.back() = source.acceleration[sourceRow];
+		if (sharedSignature.test(TriangleType)) target.triangle.back() = source.triangle[sourceRow];
+		if (sharedSignature.test(RigidBodyType)) target.rigidBody.back() = source.rigidBody[sourceRow];
+		if (sharedSignature.test(AABBColliderType)) target.colliders.back() = source.colliders[sourceRow];
+		if (sharedSignature.test(PlayerStateType)) target.playerState.back() = source.playerState[sourceRow];
+		if (sharedSignature.test(RotationFlagType)) target.rotationFlag.back() = source.rotationFlag[sourceRow];
+		if (sharedSignature.test(TrapPlatformComponentType)) target.trapPlatform.back() = source.trapPlatform[sourceRow];
+		if (sharedSignature.test(ButtonType)) target.button.back() = source.button[sourceRow];
+		if (sharedSignature.test(TextureComponentType)) target.tex.back() = source.tex[sourceRow];
+		if (sharedSignature.test(AudioComponentType)) target.audio.back() = source.audio[sourceRow];
+		if (sharedSignature.test(AnimationComponentType)) target.animatedTex.back() = source.animatedTex[sourceRow];
+		if (sharedSignature.test(TextComponentType)) target.text.back() = source.text[sourceRow];
+		if (sharedSignature.test(CameraType)) target.cameras.back() = source.cameras[sourceRow];
+		if (sharedSignature.test(NativeScriptsComponentType)) target.nativeScripts.back() = source.nativeScripts[sourceRow];
+		if (sharedSignature.test(SceneOwnedType)) target.sceneOwned.back() = source.sceneOwned[sourceRow];
+		if (sharedSignature.test(FSMComponentType)) target.fsmComponent.back() = source.fsmComponent[sourceRow];
+		if (sharedSignature.test(ParticleComponentType)) target.particleComponent.back() = source.particleComponent[sourceRow];
+		if (sharedSignature.test(ParticleEmitterComponentType)) target.particleEmitterComponent.back() = source.particleEmitterComponent[sourceRow];
+		if (sharedSignature.test(SliderType)) target.sliders.back() = source.sliders[sourceRow];
+		if (sharedSignature.test(PlayerHealthComponentType)) target.playerHealth.back() = source.playerHealth[sourceRow];
+	}
+
+	void EntityManager::AddComponentToBucket(ArchetypeBucket& bucket, ComponentType componentType, const void* componentData) {
+		if (!componentData) return;
+
+		switch (componentType) {
+		case TransformType: bucket.transform.back() = *static_cast<const Transform*>(componentData); break;
+		case VelocityType: bucket.velocity.back() = *static_cast<const Velocity*>(componentData); break;
+		case AccelerationType: bucket.acceleration.back() = *static_cast<const Acceleration*>(componentData); break;
+		case TriangleType: bucket.triangle.back() = *static_cast<const Triangle*>(componentData); break;
+		case RigidBodyType: bucket.rigidBody.back() = *static_cast<const RigidBody*>(componentData); break;
+		case AABBColliderType: bucket.colliders.back() = *static_cast<const AABBCollider*>(componentData); break;
+		case PlayerStateType: bucket.playerState.back() = *static_cast<const PlayerState*>(componentData); break;
+		case RotationFlagType: bucket.rotationFlag.back() = *static_cast<const RotationFlag*>(componentData); break;
+		case TrapPlatformComponentType: bucket.trapPlatform.back() = *static_cast<const TrapPlatformComponent*>(componentData); break;
+		case ButtonType: bucket.button.back() = *static_cast<const Button*>(componentData); break;
+		case TextureComponentType: bucket.tex.back() = *static_cast<const TextureComponent*>(componentData); break;
+		case AudioComponentType: bucket.audio.back() = *static_cast<const AudioComponent*>(componentData); break;
+		case AnimationComponentType: bucket.animatedTex.back() = *static_cast<const AnimationComponent*>(componentData); break;
+		case TextComponentType: bucket.text.back() = *static_cast<const TextComponent*>(componentData); break;
+		case CameraType: bucket.cameras.back() = *static_cast<const Camera*>(componentData); break;
+		case NativeScriptsComponentType: bucket.nativeScripts.back() = *static_cast<const NativeScriptsComponent*>(componentData); break;
+		case SceneOwnedType: bucket.sceneOwned.back() = *static_cast<const SceneOwned*>(componentData); break;
+		case FSMComponentType: bucket.fsmComponent.back() = *static_cast<const FSMComponent*>(componentData); break;
+		case ParticleComponentType: bucket.particleComponent.back() = *static_cast<const ParticleComponent*>(componentData); break;
+		case ParticleEmitterComponentType: bucket.particleEmitterComponent.back() = *static_cast<const ParticleEmitterComponent*>(componentData); break;
+		case SliderType: bucket.sliders.back() = *static_cast<const Slider*>(componentData); break;
+		case PlayerHealthComponentType: bucket.playerHealth.back() = *static_cast<const PlayerHealthComponent*>(componentData); break;
+		default: break;
+		}
+	}
+
+	void EntityManager::RemoveComponentFromBucket(ArchetypeBucket& bucket, ComponentType componentType, std::size_t rowIndex) {
+		if (componentType == NativeScriptsComponentType && rowIndex < bucket.nativeScripts.size()) {
+			NativeScriptsComponent& scripts = bucket.nativeScripts[rowIndex];
+			for (NativeScriptsComponent::NativeScript& script : scripts.scripts) {
+				script.Reset();
+			}
+		}
+	}
+
+	void EntityManager::EraseRowFromArchetype(std::size_t archetypeIndex, std::size_t rowIndex) {
+		ArchetypeBucket& bucket = ecs.archetypes[archetypeIndex];
+		const std::size_t lastRow = bucket.entities.size() - 1;
+
+		if (rowIndex != lastRow) {
+			const Entity swappedEntity = bucket.entities[lastRow];
+			bucket.entities[rowIndex] = swappedEntity;
+			ecs.entityToArchetypeSlot[swappedEntity] = rowIndex;
+
+			if (bucket.signature.test(TransformType)) bucket.transform[rowIndex] = std::move(bucket.transform[lastRow]);
+			if (bucket.signature.test(VelocityType)) bucket.velocity[rowIndex] = std::move(bucket.velocity[lastRow]);
+			if (bucket.signature.test(AccelerationType)) bucket.acceleration[rowIndex] = std::move(bucket.acceleration[lastRow]);
+			if (bucket.signature.test(TriangleType)) bucket.triangle[rowIndex] = std::move(bucket.triangle[lastRow]);
+			if (bucket.signature.test(RigidBodyType)) bucket.rigidBody[rowIndex] = std::move(bucket.rigidBody[lastRow]);
+			if (bucket.signature.test(AABBColliderType)) bucket.colliders[rowIndex] = std::move(bucket.colliders[lastRow]);
+			if (bucket.signature.test(PlayerStateType)) bucket.playerState[rowIndex] = std::move(bucket.playerState[lastRow]);
+			if (bucket.signature.test(RotationFlagType)) bucket.rotationFlag[rowIndex] = std::move(bucket.rotationFlag[lastRow]);
+			if (bucket.signature.test(TrapPlatformComponentType)) bucket.trapPlatform[rowIndex] = std::move(bucket.trapPlatform[lastRow]);
+			if (bucket.signature.test(ButtonType)) bucket.button[rowIndex] = std::move(bucket.button[lastRow]);
+			if (bucket.signature.test(TextureComponentType)) bucket.tex[rowIndex] = std::move(bucket.tex[lastRow]);
+			if (bucket.signature.test(AudioComponentType)) bucket.audio[rowIndex] = std::move(bucket.audio[lastRow]);
+			if (bucket.signature.test(AnimationComponentType)) bucket.animatedTex[rowIndex] = std::move(bucket.animatedTex[lastRow]);
+			if (bucket.signature.test(TextComponentType)) bucket.text[rowIndex] = std::move(bucket.text[lastRow]);
+			if (bucket.signature.test(CameraType)) bucket.cameras[rowIndex] = std::move(bucket.cameras[lastRow]);
+			if (bucket.signature.test(NativeScriptsComponentType)) bucket.nativeScripts[rowIndex] = std::move(bucket.nativeScripts[lastRow]);
+			if (bucket.signature.test(SceneOwnedType)) bucket.sceneOwned[rowIndex] = std::move(bucket.sceneOwned[lastRow]);
+			if (bucket.signature.test(FSMComponentType)) bucket.fsmComponent[rowIndex] = std::move(bucket.fsmComponent[lastRow]);
+			if (bucket.signature.test(ParticleComponentType)) bucket.particleComponent[rowIndex] = std::move(bucket.particleComponent[lastRow]);
+			if (bucket.signature.test(ParticleEmitterComponentType)) bucket.particleEmitterComponent[rowIndex] = std::move(bucket.particleEmitterComponent[lastRow]);
+			if (bucket.signature.test(SliderType)) bucket.sliders[rowIndex] = std::move(bucket.sliders[lastRow]);
+			if (bucket.signature.test(PlayerHealthComponentType)) bucket.playerHealth[rowIndex] = std::move(bucket.playerHealth[lastRow]);
+		}
+
+		bucket.entities.pop_back();
+		if (bucket.signature.test(TransformType)) bucket.transform.pop_back();
+		if (bucket.signature.test(VelocityType)) bucket.velocity.pop_back();
+		if (bucket.signature.test(AccelerationType)) bucket.acceleration.pop_back();
+		if (bucket.signature.test(TriangleType)) bucket.triangle.pop_back();
+		if (bucket.signature.test(RigidBodyType)) bucket.rigidBody.pop_back();
+		if (bucket.signature.test(AABBColliderType)) bucket.colliders.pop_back();
+		if (bucket.signature.test(PlayerStateType)) bucket.playerState.pop_back();
+		if (bucket.signature.test(RotationFlagType)) bucket.rotationFlag.pop_back();
+		if (bucket.signature.test(TrapPlatformComponentType)) bucket.trapPlatform.pop_back();
+		if (bucket.signature.test(ButtonType)) bucket.button.pop_back();
+		if (bucket.signature.test(TextureComponentType)) bucket.tex.pop_back();
+		if (bucket.signature.test(AudioComponentType)) bucket.audio.pop_back();
+		if (bucket.signature.test(AnimationComponentType)) bucket.animatedTex.pop_back();
+		if (bucket.signature.test(TextComponentType)) bucket.text.pop_back();
+		if (bucket.signature.test(CameraType)) bucket.cameras.pop_back();
+		if (bucket.signature.test(NativeScriptsComponentType)) bucket.nativeScripts.pop_back();
+		if (bucket.signature.test(SceneOwnedType)) bucket.sceneOwned.pop_back();
+		if (bucket.signature.test(FSMComponentType)) bucket.fsmComponent.pop_back();
+		if (bucket.signature.test(ParticleComponentType)) bucket.particleComponent.pop_back();
+		if (bucket.signature.test(ParticleEmitterComponentType)) bucket.particleEmitterComponent.pop_back();
+		if (bucket.signature.test(SliderType)) bucket.sliders.pop_back();
+		if (bucket.signature.test(PlayerHealthComponentType)) bucket.playerHealth.pop_back();
+	}
+
+	void EntityManager::RemoveEntityFromArchetype(Entity entity) {
+		auto archetypeIt = ecs.entityToArchetype.find(entity);
+		auto slotIt = ecs.entityToArchetypeSlot.find(entity);
+		if (archetypeIt == ecs.entityToArchetype.end() || slotIt == ecs.entityToArchetypeSlot.end()) {
+			return;
+		}
+
+		EraseRowFromArchetype(archetypeIt->second, slotIt->second);
+		ecs.entityToArchetype.erase(archetypeIt);
+		ecs.entityToArchetypeSlot.erase(slotIt);
+	}
+
+	void EntityManager::MoveEntityToArchetype(Entity entity, const ComponentSignature& signature) {
+		RemoveEntityFromArchetype(entity);
+
+		const std::size_t archetypeIndex = GetOrCreateArchetype(signature);
+		EntityStorage::ArchetypeBucket& targetBucket = ecs.archetypes[archetypeIndex];
+		ecs.entityToArchetype[entity] = archetypeIndex;
+		ecs.entityToArchetypeSlot[entity] = targetBucket.entities.size();
+		targetBucket.entities.push_back(entity);
+		ReserveComponentSlotsForEntity(targetBucket, signature);
+	}
+
+	void EntityManager::AddComponentInternal(Entity entity, ComponentType componentType, const void* componentData) {
+		auto sigIt = ecs.entitySignatures.find(entity);
+		if (sigIt == ecs.entitySignatures.end()) return;
+		if (sigIt->second.test(componentType)) return;
+
+		const ComponentSignature oldSignature = sigIt->second;
+		ComponentSignature newSignature = oldSignature;
+		newSignature.set(componentType);
+
+		const std::size_t oldArchetypeIndex = ecs.entityToArchetype.at(entity);
+		const std::size_t oldRow = ecs.entityToArchetypeSlot.at(entity);
+		const std::size_t newArchetypeIndex = GetOrCreateArchetype(newSignature);
+
+		ArchetypeBucket& oldBucket = ecs.archetypes[oldArchetypeIndex];
+		ArchetypeBucket& newBucket = ecs.archetypes[newArchetypeIndex];
+		const std::size_t newRow = newBucket.entities.size();
+
+		newBucket.entities.push_back(entity);
+		ReserveComponentSlotsForEntity(newBucket, newSignature);
+		CopySharedComponents(oldBucket, oldRow, newBucket, oldSignature);
+		AddComponentToBucket(newBucket, componentType, componentData);
+
+		EraseRowFromArchetype(oldArchetypeIndex, oldRow);
+		ecs.entityToArchetype[entity] = newArchetypeIndex;
+		ecs.entityToArchetypeSlot[entity] = newRow;
+		sigIt->second = newSignature;
+	}
+
+	void EntityManager::RemoveComponentInternal(Entity entity, ComponentType componentType) {
+		auto sigIt = ecs.entitySignatures.find(entity);
+		if (sigIt == ecs.entitySignatures.end()) return;
+		if (!sigIt->second.test(componentType)) return;
+
+		const ComponentSignature oldSignature = sigIt->second;
+		ComponentSignature newSignature = oldSignature;
+		newSignature.reset(componentType);
+
+		const std::size_t oldArchetypeIndex = ecs.entityToArchetype.at(entity);
+		const std::size_t oldRow = ecs.entityToArchetypeSlot.at(entity);
+		const std::size_t newArchetypeIndex = GetOrCreateArchetype(newSignature);
+
+		ArchetypeBucket& oldBucket = ecs.archetypes[oldArchetypeIndex];
+		ArchetypeBucket& newBucket = ecs.archetypes[newArchetypeIndex];
+		const std::size_t newRow = newBucket.entities.size();
+
+		newBucket.entities.push_back(entity);
+		ReserveComponentSlotsForEntity(newBucket, newSignature);
+		CopySharedComponents(oldBucket, oldRow, newBucket, newSignature);
+		RemoveComponentFromBucket(oldBucket, componentType, oldRow);
+
+		EraseRowFromArchetype(oldArchetypeIndex, oldRow);
+		ecs.entityToArchetype[entity] = newArchetypeIndex;
+		ecs.entityToArchetypeSlot[entity] = newRow;
+		sigIt->second = newSignature;
+	}
+
+	std::vector<Entity> EntityManager::CollectEntitiesBySignature(const ComponentSignature& requiredSignature, bool activeOnly) const {
+		std::vector<Entity> entities;
+		for (const EntityStorage::ArchetypeBucket& bucket : ecs.archetypes) {
+			if ((bucket.signature & requiredSignature) != requiredSignature) continue;
+
+			for (Entity entity : bucket.entities) {
+				auto propsIt = ecs.properties.find(entity);
+				if (propsIt == ecs.properties.end()) continue;
+				if (activeOnly && !propsIt->second.isActive) continue;
+				entities.push_back(entity);
+			}
+		}
+		return entities;
+	}
+
 	// ---------------------------------------------------------------------------
 	// EntityManager APIs
 	// ---------------------------------------------------------------------------
@@ -28,6 +281,7 @@ namespace Framework {
 		ComponentSignature emptySignature; // New entity starts with no components
 		Entity newEntity = nextEntityID++;
 		ecs.entitySignatures[newEntity] = emptySignature;
+		MoveEntityToArchetype(newEntity, emptySignature);
 
 		std::string entityName = "GameObject (" + std::to_string(std::clamp(static_cast<unsigned>(newEntity), 0U, UINT_MAX)) + ")";
 		ecs.properties[newEntity] = EntityProperties{ entityName, CollisionLayer::Default };
@@ -39,6 +293,7 @@ namespace Framework {
 	Entity EntityManager::CreateEntityWithID(Entity entityID) {
 		ComponentSignature emptySignature; // New entity starts with no components
 		ecs.entitySignatures[entityID] = emptySignature;
+		MoveEntityToArchetype(entityID, emptySignature);
 
 		std::string entityName = "GameObject (" + std::to_string(std::clamp(static_cast<unsigned>(entityID), 0U, UINT_MAX)) + ")";
 		ecs.properties[entityID] = EntityProperties{ entityName, CollisionLayer::Default };
@@ -59,7 +314,6 @@ namespace Framework {
 		Entity newEntity = CreateEntity();
 		GetProperties(newEntity) = GetProperties(entity);
 		GetProperties(newEntity).uuid = GenerateUUID();
-		ComponentSignature otherSignature = ecs.entitySignatures[entity];
 
 		for (int i = 0; i < ComponentType::MAX_COMPONENTS; ++i) {
 			ComponentType componentType = static_cast<ComponentType>(i);
@@ -94,8 +348,6 @@ namespace Framework {
 			}
 		}
 
-		ecs.entitySignatures[newEntity] = otherSignature;
-
 		return newEntity;
 	}
 
@@ -109,6 +361,7 @@ namespace Framework {
 			}
 		}
 
+		RemoveEntityFromArchetype(entity);
 		ecs.entitySignatures.erase(entity);
 		ecs.properties.erase(entity);
 
@@ -159,32 +412,32 @@ namespace Framework {
 
 		switch (componentType)
 		{
-		case ComponentType::TransformType: AddComponent<Transform>(entity, Transform{}); break;
-		case ComponentType::VelocityType: AddComponent<Velocity>(entity, Velocity{}); break;
-		case ComponentType::AccelerationType: AddComponent<Acceleration>(entity, Acceleration{}); break;
-		case ComponentType::TriangleType: AddComponent<Triangle>(entity, Triangle{}); break;
-		case ComponentType::RigidBodyType: AddComponent<RigidBody>(entity, RigidBody{}); break;
-		case ComponentType::AABBColliderType: AddComponent<AABBCollider>(entity, AABBCollider{}); break;
-		case ComponentType::PlayerStateType: AddComponent<PlayerState>(entity, PlayerState{}); break;
-		case ComponentType::RotationFlagType: AddComponent<RotationFlag>(entity, RotationFlag{}); break;
-		case ComponentType::TrapPlatformComponentType: AddComponent<TrapPlatformComponent>(entity, TrapPlatformComponent{}); break;
-		case ComponentType::TextureComponentType: AddComponent<TextureComponent>(entity, TextureComponent{}); break;
-		case ComponentType::AudioComponentType: AddComponent<AudioComponent>(entity, AudioComponent{}); break;
-		case ComponentType::AnimationComponentType: AddComponent<AnimationComponent>(entity, AnimationComponent{}); break;
-		case ComponentType::TextComponentType: 	AddComponent<TextComponent>(entity, TextComponent{}); break;
-		case ComponentType::ButtonType: AddComponent<Button>(entity, Button{}); break;
-		case ComponentType::CameraType: AddComponent<Camera>(entity, Camera{}); break;
-		case ComponentType::NativeScriptsComponentType: AddComponent<NativeScriptsComponent>(entity, NativeScriptsComponent{}); break;
-		case ComponentType::FSMComponentType: AddComponent<FSMComponent>(entity, FSMComponent{}); break;
-		case ComponentType::ParticleComponentType: AddComponent<ParticleComponent>(entity, ParticleComponent{}); break;
-		case ComponentType::ParticleEmitterComponentType: AddComponent<ParticleEmitterComponent>(entity, ParticleEmitterComponent{}); break;
-		case ComponentType::SliderType: AddComponent<Slider>(entity, Slider{}); break;
-		case ComponentType::PlayerHealthComponentType: AddComponent<PlayerHealthComponent>(entity, PlayerHealthComponent{}); break;
+		case ComponentType::TransformType: { Transform c{}; AddComponentInternal(entity, componentType, &c); break; }
+		case ComponentType::VelocityType: { Velocity c{}; AddComponentInternal(entity, componentType, &c); break; }
+		case ComponentType::AccelerationType: { Acceleration c{}; AddComponentInternal(entity, componentType, &c); break; }
+		case ComponentType::TriangleType: { Triangle c{}; AddComponentInternal(entity, componentType, &c); break; }
+		case ComponentType::RigidBodyType: { RigidBody c{}; AddComponentInternal(entity, componentType, &c); break; }
+		case ComponentType::AABBColliderType: { AABBCollider c{}; AddComponentInternal(entity, componentType, &c); break; }
+		case ComponentType::PlayerStateType: { PlayerState c{}; AddComponentInternal(entity, componentType, &c); break; }
+		case ComponentType::RotationFlagType: { RotationFlag c{}; AddComponentInternal(entity, componentType, &c); break; }
+		case ComponentType::TrapPlatformComponentType: { TrapPlatformComponent c{}; AddComponentInternal(entity, componentType, &c); break; }
+		case ComponentType::TextureComponentType: { TextureComponent c{}; AddComponentInternal(entity, componentType, &c); break; }
+		case ComponentType::AudioComponentType: { AudioComponent c{}; AddComponentInternal(entity, componentType, &c); break; }
+		case ComponentType::AnimationComponentType: { AnimationComponent c{}; AddComponentInternal(entity, componentType, &c); break; }
+		case ComponentType::TextComponentType: { TextComponent c{}; AddComponentInternal(entity, componentType, &c); break; }
+		case ComponentType::ButtonType: { Button c{}; AddComponentInternal(entity, componentType, &c); break; }
+		case ComponentType::CameraType: { Camera c{}; AddComponentInternal(entity, componentType, &c); break; }
+		case ComponentType::NativeScriptsComponentType: { NativeScriptsComponent c{}; AddComponentInternal(entity, componentType, &c); break; }
+		case ComponentType::FSMComponentType: { FSMComponent c{}; AddComponentInternal(entity, componentType, &c); break; }
+		case ComponentType::ParticleComponentType: { ParticleComponent c{}; AddComponentInternal(entity, componentType, &c); break; }
+		case ComponentType::ParticleEmitterComponentType: { ParticleEmitterComponent c{}; AddComponentInternal(entity, componentType, &c); break; }
+		case ComponentType::SliderType: { Slider c{}; AddComponentInternal(entity, componentType, &c); break; }
+		case ComponentType::PlayerHealthComponentType: { PlayerHealthComponent c{}; AddComponentInternal(entity, componentType, &c); break; }
 		case ComponentType::PlayerTagType:
 		case ComponentType::PlatformTagType:
 		case ComponentType::BackgroundTagType:
 		case ComponentType::EnemyTagType: ; break;
-		case ComponentType::SceneOwnedType: AddComponent<SceneOwned>(entity, SceneOwned{}); break;
+		case ComponentType::SceneOwnedType: { SceneOwned c{}; AddComponentInternal(entity, componentType, &c); break; }
 		case ComponentType::PersistentTagType:
 		case ComponentType::LoadedTagType: break;
 		case ComponentType::GUITagType: break;
@@ -196,60 +449,13 @@ namespace Framework {
 			return;
 		}
 
-		ecs.entitySignatures.at(entity).set(componentType);
+		if (IsTagComponent(componentType)) {
+			AddComponentInternal(entity, componentType, nullptr);
+		}
 	}
 
 	void EntityManager::RemoveComponent(Entity entity, ComponentType componentType) {
-		if (!HasComponent(entity, componentType)) return;
-
-		switch (componentType) {
-			case TransformType:		ecs.transform.erase(entity); break;
-			case VelocityType:      ecs.velocity.erase(entity); break;
-			case AccelerationType:  ecs.acceleration.erase(entity); break;
-			case TriangleType:      ecs.triangle.erase(entity); break;
-			case RigidBodyType:     ecs.rigidBody.erase(entity); break;
-			case AABBColliderType:  ecs.colliders.erase(entity); break;
-			case PlayerStateType:   ecs.playerState.erase(entity); break;
-			case RotationFlagType:  ecs.rotationFlag.erase(entity); break;
-			case TrapPlatformComponentType: ecs.trapPlatform.erase(entity); break;
-			case TextureComponentType: ecs.tex.erase(entity); break;
-			case AudioComponentType: ecs.audio.erase(entity); break;
-			case AnimationComponentType: ecs.animatedTex.erase(entity); break;
-			case TextComponentType: ecs.text.erase(entity); break;
-			case CameraType: ecs.cameras.erase(entity); break;
-			case ParticleComponentType: ecs.particleComponent.erase(entity); break;
-			case ParticleEmitterComponentType: ecs.particleEmitterComponent.erase(entity); break;
-			case SliderType: ecs.sliders.erase(entity); break;
-			case PlayerHealthComponentType: ecs.playerHealth.erase(entity); break;
-			case NativeScriptsComponentType: {
-				std::unordered_map<Entity, NativeScriptsComponent>::iterator it = ecs.nativeScripts.find(entity);
-				if (it != ecs.nativeScripts.end()) {
-					NativeScriptsComponent& nativeScripts = it->second;
-					for (NativeScriptsComponent::NativeScript& script : nativeScripts.scripts) {
-						script.Reset();
-					}
-
-					ecs.nativeScripts.erase(entity);
-				}
-				break;
-			}
-			case ButtonType: ecs.button.erase(entity); break;
-			case FSMComponentType:ecs.fsmComponent.erase(entity); break;
-			case PlayerTagType:
-			case PlatformTagType:
-			case BackgroundTagType:
-			case EnemyTagType:; break;
-			case SceneOwnedType: ecs.sceneOwned.erase(entity); break;
-			case PersistentTagType:
-			case LoadedTagType: break;
-			case GUITagType: break;
-			case SpawnPointTagType: break;
-			case ViewportConstrainedTagType: break;default: 
-				Logger::Get().Error(DebugType::GameManager) << "AddComponent: Unsupported ComponentType " << static_cast<int>(componentType) << std::endl;
-				return;
-		}
-
-		ecs.entitySignatures[entity].reset(componentType);
+		RemoveComponentInternal(entity, componentType);
 	}
 
 	bool EntityManager::IsTagComponent(ComponentType componentType) {
@@ -357,26 +563,17 @@ case ComponentType::ViewportConstrainedTagType: return true;
 
 	std::vector<Entity> EntityManager::GetAllEntities() const {
 		std::vector<Entity> entities;
-		entities.reserve(ecs.entitySignatures.size());
-		for (const auto& pair : ecs.entitySignatures) {
+		entities.reserve(ecs.properties.size());
+		for (const auto& pair : ecs.properties) {
 			entities.push_back(pair.first);
 		}
 		return entities;
 	}
 
 	std::vector<Entity> EntityManager::GetAllEntitiesWithComponent(bool activeOnly, ComponentType componentType) const {
-		std::vector<Entity> entities;
-		for (const auto& [entity, signature] : ecs.entitySignatures) {
-			// Check if signature matches the component signature
-			if (!signature.test(componentType)) continue;
-
-			// Check if entity is active.
-			if (activeOnly && !IsActive(entity)) continue;
-
-			entities.push_back(entity);
-		}
-
-		return entities;
+		ComponentSignature requiredSignature;
+		requiredSignature.set(static_cast<std::size_t>(componentType));
+		return CollectEntitiesBySignature(requiredSignature, activeOnly);
 	}
 
 #pragma endregion
