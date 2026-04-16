@@ -20,6 +20,7 @@
 #include <bitset>
 #include <sstream>
 #include <type_traits>
+#include <utility>
 
 namespace Framework {
 
@@ -176,6 +177,10 @@ namespace Framework {
 		std::vector<Entity> GetAllEntitiesWithComponents(bool activeOnly, Args... componentTypes) const;
 		template<typename Func, typename... Types>
 		void ForEachEntityWithComponents(Func&& fn, bool activeOnly, Types... componentTypes);
+		template<typename Func, typename... Types>
+		void ForEachMatchingArchetype(Func&& fn, Types... componentTypes) const;
+		template<typename Func, typename... Components>
+		void ForEachArchetypeByTypes(Func&& fn) const;
 		template<typename... Types>
 		std::vector<Entity> QueryEntities(bool activeOnly = true) const {
 			return GetAllEntitiesWithComponents(activeOnly, ComponentTypeTrait<Types>::value...);
@@ -273,8 +278,32 @@ namespace Framework {
 		// This sets a bit for each component type passed in
 		(requiredSignature.set(static_cast<size_t>(componentTypes)), ...);
 
-		for (Entity entity : CollectEntitiesBySignature(requiredSignature, activeOnly)) {
-			fn(entity);
+		for (const ArchetypeBucket& bucket : ecs.archetypes) {
+			if ((bucket.signature & requiredSignature) != requiredSignature) continue;
+
+			for (Entity entity : bucket.entities) {
+				auto it = ecs.properties.find(entity);
+				if (it == ecs.properties.end()) continue;
+				if (activeOnly && !it->second.isActive) continue;
+
+				fn(entity);
+			}
 		}
+	}
+
+	template<typename Func, typename... Types>
+	void EntityManager::ForEachMatchingArchetype(Func&& fn, Types... componentTypes) const {
+		ComponentSignature requiredSignature;
+		(requiredSignature.set(static_cast<size_t>(componentTypes)), ...);
+
+		for (const ArchetypeBucket& bucket : ecs.archetypes) {
+			if ((bucket.signature & requiredSignature) != requiredSignature) continue;
+			fn(bucket.signature, bucket.entities);
+		}
+	}
+
+	template<typename Func, typename... Components>
+	void EntityManager::ForEachArchetypeByTypes(Func&& fn) const {
+		ForEachMatchingArchetype(std::forward<Func>(fn), ComponentTypeTrait<Components>::value...);
 	}
 }

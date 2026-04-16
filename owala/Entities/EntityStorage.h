@@ -123,7 +123,8 @@ namespace Framework {
 
 	struct ComponentSignatureHash {
 		std::size_t operator()(const ComponentSignature& signature) const noexcept {
-			return std::hash<std::string>{}(signature.to_string());
+			static_assert(MAX_COMPONENTS <= 64, "ComponentSignatureHash requires MAX_COMPONENTS <= 64");
+			return std::hash<unsigned long long>{}(signature.to_ullong());
 		}
 	};
 
@@ -162,6 +163,8 @@ namespace Framework {
 		std::unordered_map<ComponentSignature, std::size_t, ComponentSignatureHash> signatureToArchetype;
 		std::unordered_map<Entity, std::size_t> entityToArchetype;
 		std::unordered_map<Entity, std::size_t> entityToArchetypeSlot;
+		std::vector<uint32_t> entityGenerations;
+		std::vector<uint32_t> freeEntityIndices;
 		friend class EntityManager; // Allow EntityManager to access private members
 	private:
 		std::unordered_map<Entity, EntityProperties> properties;
@@ -176,5 +179,30 @@ namespace Framework {
 		~EntityStorage();
 
 		void SwapWith(EntityStorage& other) noexcept;
+	};
+
+	// BELOW IS STILL WIP. DO NOT USE.
+	class WIPEntityStorage {
+	private:
+		struct Archetype {
+			ComponentSignature signature;
+			std::vector<Entity> entities;
+
+			std::vector<Velocity> velocities;
+			std::vector<Acceleration> accelerations;
+			std::vector<RigidBody> rigidBodies;
+			std::vector<AABBCollider> aabbColliders;
+			std::vector<Triangle> triangles;
+			std::vector<TextureComponent> textures;
+			std::vector<PlayerState> playerStates;
+			std::vector<RotationFlag> rotationFlags;
+			std::vector<SceneOwned> sceneOwned;
+		};
+
+		std::vector<Archetype> archetypes;
+		std::unordered_map<Entity, size_t> entityToArchetype;
+		std::unordered_map<Entity, ComponentSignature> entitySignatures;
+
+		friend class WIPEntityManager;
 	};
 }

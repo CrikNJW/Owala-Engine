@@ -24,10 +24,10 @@
  /**
   * @brief Global counter for generating unique entity IDs.
   *
-  * Initialized to 1 because entity 0 is reserved as invalid/null.
-  * This ensures all created entities have valid IDs > 0.
+  * Initialized to 1 because index 0 is reserved as invalid/null.
+  * This acts as the next entity index seed for legacy ID generation.
   */
-Entity nextEntityID = 1; // 0 is reserved for invalid/null entity
+Entity nextEntityID = 1; // 0 index is reserved for invalid/null entity
 
 /**
  * @brief Creates a new unique entity ID.

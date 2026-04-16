@@ -107,6 +107,43 @@ void ResourceManager::clearAll() {
 	fontMap.clear();
 	animationMap.clear();
 	prefabMap.clear();
+	textureRefCounts_.clear();
+	sceneTextureDeps_.clear();
+	pinnedTextures_.clear();
+}
+
+void ResourceManager::RegisterSceneTextureDependencies(uint32_t sceneID, const std::vector<std::string>& textureKeys) {
+	ReleaseSceneTextureDependencies(sceneID);
+
+	std::unordered_set<std::string>& deps = sceneTextureDeps_[sceneID];
+	for (const std::string& key : textureKeys) {
+		if (key.empty()) continue;
+		if (!deps.insert(key).second) continue;
+		++textureRefCounts_[key];
+	}
+}
+
+void ResourceManager::ReleaseSceneTextureDependencies(uint32_t sceneID) {
+	auto depsIt = sceneTextureDeps_.find(sceneID);
+	if (depsIt == sceneTextureDeps_.end()) return;
+
+	for (const std::string& key : depsIt->second) {
+		auto refIt = textureRefCounts_.find(key);
+		if (refIt == textureRefCounts_.end()) continue;
+
+		if (refIt->second > 0) {
+			--refIt->second;
+		}
+
+		if (refIt->second == 0) {
+			textureRefCounts_.erase(refIt);
+			if (pinnedTextures_.find(key) == pinnedTextures_.end()) {
+				unload<Texture>(key);
+			}
+		}
+	}
+
+	sceneTextureDeps_.erase(depsIt);
 }
 
 // Scans a directory and maps asset filenames to their full paths

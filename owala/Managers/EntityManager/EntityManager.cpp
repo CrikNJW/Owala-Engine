@@ -12,6 +12,7 @@
 #include "EntityManager.h"
 #include "Logger.h"
 #include "ScriptRegistry.h"
+#include <algorithm>
 
 namespace Framework {
 #pragma region CURRENT ENTITYMANAGER
@@ -279,11 +280,35 @@ namespace Framework {
 	// ---------------------------------------------------------------------------
 	Entity EntityManager::CreateEntity() {
 		ComponentSignature emptySignature; // New entity starts with no components
-		Entity newEntity = nextEntityID++;
+
+		uint32_t entityIndex = 0u;
+		if (!ecs.freeEntityIndices.empty()) {
+			entityIndex = ecs.freeEntityIndices.back();
+			ecs.freeEntityIndices.pop_back();
+		}
+		else {
+			entityIndex = nextEntityID;
+			if (entityIndex == 0u || entityIndex > ENTITY_INDEX_MASK) {
+				throw std::runtime_error("CreateEntity: Entity index capacity exceeded.");
+			}
+			++nextEntityID;
+		}
+
+		if (ecs.entityGenerations.size() <= entityIndex) {
+			ecs.entityGenerations.resize(static_cast<std::size_t>(entityIndex) + 1u, 1u);
+		}
+
+		uint32_t generation = ecs.entityGenerations[entityIndex];
+		if (generation == 0u) {
+			generation = 1u;
+			ecs.entityGenerations[entityIndex] = generation;
+		}
+
+		Entity newEntity = MakeEntity(entityIndex, generation);
 		ecs.entitySignatures[newEntity] = emptySignature;
 		MoveEntityToArchetype(newEntity, emptySignature);
 
-		std::string entityName = "GameObject (" + std::to_string(std::clamp(static_cast<unsigned>(newEntity), 0U, UINT_MAX)) + ")";
+		std::string entityName = "GameObject (" + std::to_string(entityIndex) + ")";
 		ecs.properties[newEntity] = EntityProperties{ entityName, CollisionLayer::Default };
 		ecs.properties[newEntity].uuid = GenerateUUID();
 
@@ -291,19 +316,40 @@ namespace Framework {
 	}
 
 	Entity EntityManager::CreateEntityWithID(Entity entityID) {
-		ComponentSignature emptySignature; // New entity starts with no components
-		ecs.entitySignatures[entityID] = emptySignature;
-		MoveEntityToArchetype(entityID, emptySignature);
-
-		std::string entityName = "GameObject (" + std::to_string(std::clamp(static_cast<unsigned>(entityID), 0U, UINT_MAX)) + ")";
-		ecs.properties[entityID] = EntityProperties{ entityName, CollisionLayer::Default };
-		ecs.properties[entityID].uuid = GenerateUUID();
-
-		if (entityID >= nextEntityID) {
-			nextEntityID = entityID + 1;
+		if (entityID == INVALID_ENTITY) {
+			throw std::runtime_error("CreateEntityWithID: Invalid entity ID 0.");
 		}
 
-		return entityID;
+		uint32_t entityIndex = EntityToIndex(entityID);
+		uint32_t generation = EntityToGeneration(entityID);
+
+		// Backwards compatibility for legacy raw IDs with no generation bits.
+		if (generation == 0u) generation = 1u;
+		Entity normalizedEntity = MakeEntity(entityIndex, generation);
+
+		ComponentSignature emptySignature; // New entity starts with no components
+		ecs.entitySignatures[normalizedEntity] = emptySignature;
+		MoveEntityToArchetype(normalizedEntity, emptySignature);
+
+		std::string entityName = "GameObject (" + std::to_string(entityIndex) + ")";
+		ecs.properties[normalizedEntity] = EntityProperties{ entityName, CollisionLayer::Default };
+		ecs.properties[normalizedEntity].uuid = GenerateUUID();
+
+		if (ecs.entityGenerations.size() <= entityIndex) {
+			ecs.entityGenerations.resize(static_cast<std::size_t>(entityIndex) + 1u, 1u);
+		}
+		ecs.entityGenerations[entityIndex] = generation;
+
+		ecs.freeEntityIndices.erase(
+			std::remove(ecs.freeEntityIndices.begin(), ecs.freeEntityIndices.end(), entityIndex),
+			ecs.freeEntityIndices.end()
+		);
+
+		if (entityIndex >= nextEntityID) {
+			nextEntityID = entityIndex + 1u;
+		}
+
+		return normalizedEntity;
 	}
 
 	Entity EntityManager::CloneEntity(const Entity& entity) {
@@ -352,8 +398,13 @@ namespace Framework {
 	}
 
 	void EntityManager::DestroyEntity(Entity entity) {
+		auto signatureIt = ecs.entitySignatures.find(entity);
+		if (signatureIt == ecs.entitySignatures.end()) {
+			return;
+		}
+
 		// True Destruction of an entity
-		ComponentSignature signature = ecs.entitySignatures[entity];
+		ComponentSignature signature = signatureIt->second;
 		for (int i = 0; i < ComponentType::MAX_COMPONENTS; ++i) {
 			ComponentType componentType = static_cast<ComponentType>(i);
 			if (signature.test(componentType)) {
@@ -362,8 +413,21 @@ namespace Framework {
 		}
 
 		RemoveEntityFromArchetype(entity);
-		ecs.entitySignatures.erase(entity);
+		ecs.entitySignatures.erase(signatureIt);
 		ecs.properties.erase(entity);
+
+		const uint32_t entityIndex = EntityToIndex(entity);
+		if (entityIndex > 0u) {
+			if (ecs.entityGenerations.size() <= entityIndex) {
+				ecs.entityGenerations.resize(static_cast<std::size_t>(entityIndex) + 1u, 1u);
+			}
+
+			uint32_t& generation = ecs.entityGenerations[entityIndex];
+			if (generation >= ENTITY_GENERATION_MASK) generation = 1u;
+			else ++generation;
+
+			ecs.freeEntityIndices.push_back(entityIndex);
+		}
 
 		Logger::Get().Info(DebugType::GameManager) << "Destroyed Entity with ID: " << entity << std::endl;
 	}

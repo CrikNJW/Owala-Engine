@@ -31,6 +31,8 @@ namespace Framework {
 		signatureToArchetype = other.signatureToArchetype;
 		entityToArchetype = other.entityToArchetype;
 		entityToArchetypeSlot = other.entityToArchetypeSlot;
+		entityGenerations = other.entityGenerations;
+		freeEntityIndices = other.freeEntityIndices;
 		properties = other.properties;
 	}
 
@@ -58,6 +60,8 @@ namespace Framework {
 		signatureToArchetype = other.signatureToArchetype;
 		entityToArchetype = other.entityToArchetype;
 		entityToArchetypeSlot = other.entityToArchetypeSlot;
+		entityGenerations = other.entityGenerations;
+		freeEntityIndices = other.freeEntityIndices;
 		properties = other.properties;
 		return *this;
 	}
@@ -88,6 +92,8 @@ namespace Framework {
 		std::swap(signatureToArchetype, other.signatureToArchetype);
 		std::swap(entityToArchetype, other.entityToArchetype);
 		std::swap(entityToArchetypeSlot, other.entityToArchetypeSlot);
+		std::swap(entityGenerations, other.entityGenerations);
+		std::swap(freeEntityIndices, other.freeEntityIndices);
 		std::swap(properties, other.properties);
 	}
 }

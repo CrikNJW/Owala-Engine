@@ -102,6 +102,7 @@ namespace Framework {
 
 		ResourceManager* resourceManager = GameManager::GetInstance().GetSystems().resourceManager_;
 		if (resourceManager) {
+			resourceManager->RegisterSceneTextureDependencies(sceneIndex, preloadTextures);
 			for (const std::string& textureKey : preloadTextures) {
 				const std::string texturePath = resourceManager->GetAssetPath(textureKey);
 				if (!texturePath.empty() && !resourceManager->has<Texture>(textureKey)) {
@@ -482,6 +483,11 @@ namespace Framework {
 
 		RebuildLoadedTags();
 		Logger::Get().Info(DebugType::SceneManager) << "Unloaded Scene GUID: " << sceneIndex << std::endl;
+
+		ResourceManager* resourceManager = GameManager::GetInstance().GetSystems().resourceManager_;
+		if (resourceManager) {
+			resourceManager->ReleaseSceneTextureDependencies(sceneIndex);
+		}
 
 		// ===== TIMER INTEGRATION =====
 		// Reset timer when unloading gameplay scenes

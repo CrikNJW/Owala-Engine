@@ -18,6 +18,7 @@
 #pragma once
 
 #include <unordered_map>
+#include <unordered_set>
 #include <memory>
 #include <string>
 #include <variant>
@@ -50,7 +51,7 @@ namespace Framework {
         void operator()(Texture* texPtr) const noexcept;
     };
 
-    // Custom deleter for FMOD objects — calls release() instead of delete
+    // Custom deleter for FMOD objects ï¿½ calls release() instead of delete
     struct FMODDeleter {
         void operator()(FMOD::Sound* s) const noexcept;
     };
@@ -68,6 +69,10 @@ namespace Framework {
 		// Check how many items are left to load for progress tracking
         float GetLoadingProgress() const;
         bool IsLoadingComplete() const;
+
+        // Scene-aware texture residency
+        void RegisterSceneTextureDependencies(uint32_t sceneID, const std::vector<std::string>& textureKeys);
+        void ReleaseSceneTextureDependencies(uint32_t sceneID);
 
 		// Constructor
         ResourceManager() = default;
@@ -116,6 +121,9 @@ namespace Framework {
         void clear() {
 			if constexpr (std::is_same<ResourceType, Texture>::value) {
 				textureMap.clear(); // Clear texture map
+				textureRefCounts_.clear();
+				sceneTextureDeps_.clear();
+				pinnedTextures_.clear();
 			}
 			else if constexpr (std::is_same<ResourceType, Audio>::value) {
 				soundMap.clear(); // Clear sound map
@@ -174,6 +182,9 @@ namespace Framework {
 		std::unordered_map<std::string, std::unique_ptr<AnimationInfo>> animationMap; // Animation map
 		std::unordered_map<std::string, fs::path> assetPathMap_; // Map of asset names to file paths
 		std::unordered_map<std::string, std::unique_ptr<EntityPrefab>> prefabMap; // Prefab map
+		std::unordered_map<std::string, size_t> textureRefCounts_; // Refcount for scene-owned textures
+		std::unordered_map<uint32_t, std::unordered_set<std::string>> sceneTextureDeps_; // Scene -> texture keys
+		std::unordered_set<std::string> pinnedTextures_; // Textures that should never be auto-evicted
 
         // Structure to transfer data between threads
         struct AsyncTextureData {
