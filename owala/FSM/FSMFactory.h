@@ -51,7 +51,7 @@ namespace Framework {
 
     // --- MACROS FOR AUTO-REGISTRATION ---
 
-    // Use in .cpp files of your States: REGISTER_STATE("Chase", BirdChaseState)
+    // Use in .cpp files of your states: REGISTER_STATE("Chase", EnemyChaseState)
 #define REGISTER_STATE(NAME, CLASS) \
         static struct Register##CLASS { \
             Register##CLASS() { \

@@ -27,7 +27,7 @@ namespace Framework {
         // CSIDL_PERSONAL requests the "Documents" folder
         if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_PERSONAL, NULL, 0, path))) {
             // Create a subfolder
-            std::filesystem::path fullPath = std::filesystem::path(path) / "StageBound_Logs";
+            std::filesystem::path fullPath = std::filesystem::path(path) / "Owala_Logs";
 
             // Create directory if it doesn't exist
             std::error_code ec;

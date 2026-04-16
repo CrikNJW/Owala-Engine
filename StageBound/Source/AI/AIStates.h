@@ -182,6 +182,7 @@ namespace Framework {
 
         // Returns true once the death animation timer has elapsed.
         bool IsFinished() const override { return timer_ >= duration_; }
+        bool ShouldDestroyEntity() const override { return true; }
 
         float GetTimer() const { return timer_; }
         float GetDuration() const { return duration_; }
@@ -320,6 +321,7 @@ namespace Framework {
 
         // Allow AISystem to destroy the full entity once death timing completes.
         bool IsFinished() const override { return timer_ >= duration_; }
+        bool ShouldDestroyEntity() const override { return true; }
 
         float GetTimer() const { return timer_; }
         float GetDuration() const { return duration_; }

@@ -189,7 +189,7 @@ namespace Framework {
         
         if (mgr.HasComponent(entity, TransformType)) {
             Vector2D position = mgr.GetComponent<Transform>(entity).position;
-            MessageBus::Instance().Publish(BirdWakeEvent(entity, position));
+            MessageBus::Instance().Publish(EnemyWakeEvent(entity, position));
             MessageBus::Instance().Publish(PlaySound3DEvent{ "Bird_Wake", AudioType::SFX, 0.3f, true, false, position, 50.0f, 700.0f, entity });
         }
     }
@@ -503,7 +503,7 @@ namespace Framework {
             }
         }
 
-        MessageBus::Instance().Publish(BirdAttackEvent(entity, myPos));
+        MessageBus::Instance().Publish(EnemyAttackEvent(entity, myPos));
         MessageBus::Instance().Publish(PlaySound3DEvent{ "Bird_Attack", AudioType::SFX, 0.3f, true, false, myPos, 50.0f, 700.0f, entity });
     }
     void BirdAttackState::OnUpdate(Entity entity, EntityStorage& ecs, float dt) {
@@ -1179,6 +1179,7 @@ namespace Framework {
         if (mgr.HasComponent(entity, FSMComponentType)) {
             FSMComponent& fsm = mgr.GetComponent<FSMComponent>(entity);
             // Setup animated attack circle VFX
+            fsm.attackCircleVisualScale = 2048.0f / 1024.0f;
             fsm.attackCircleAnimated = true;
             fsm.attackCircleAnimTimer = 0.0f;
             fsm.attackCircleAnimFrame = 0;
@@ -1314,6 +1315,7 @@ namespace Framework {
             fsm.attackCircleAnimTimer = 0.0f;
             fsm.attackCircleAnimFrame = 0;
             fsm.attackCircleAnimTextures.clear();
+            fsm.attackCircleVisualScale = 1.0f;
         }
         currentRadius_ = 0.0f;
     }

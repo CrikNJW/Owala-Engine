@@ -161,18 +161,18 @@ namespace Framework {
 	struct PlayerDamageRequestEvent {
 		Entity      playerEntity;   /*!< Entity to damage */
 		Vector2D    sourcePos;      /*!< World position of the damage source (used for knockback direction) */
-		std::string damageSource;   /*!< Human-readable label, e.g. "witch attack" */
+		std::string damageSource;   /*!< Human-readable label, e.g. "enemy attack" */
 	};
 
 	struct PlayerLandEvent {};
 	struct CurtainsOpenEvent {};
 	struct CurtainsCloseEvent {};
 
-	struct BirdAttackEvent {
+	struct EnemyAttackEvent {
 		Entity entity;
 		Vector2D position;
 	};
-	struct BirdWakeEvent {
+	struct EnemyWakeEvent {
 		Entity entity;
 		Vector2D position;
 	};

@@ -569,6 +569,7 @@ void RopeScript::CreateSingleRope(int ropeIndex) {
         props.layer = static_cast<CollisionLayer>(ropePrefab.collisionLayer);
         props.collisionLayerName = ropePrefab.collisionLayerName;
         props.isActive = true;
+        props.serializeInScene = false;
         };
 
     ApplyRopeProperties(rope, ropeName);

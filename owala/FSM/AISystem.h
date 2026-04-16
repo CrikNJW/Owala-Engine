@@ -69,8 +69,8 @@ namespace Framework {
         
         bool debugVisualization = false;
         bool showNavigationGrid = false;
-        bool showBirdDebug = false;
-        bool showWitchDebug = false;
+        bool showFSMStateDebug = false;
+        bool showCombatDebug = false;
 #endif
 
     private:
@@ -80,13 +80,6 @@ namespace Framework {
 
         float gridRebuildTimer_ = 0.0f;
         const float gridRebuildInterval_ = 2.0f;
-
-        /*****************************************************************//**
-         * \brief   Finds and returns the active player entity ID.
-         * 
-         * \return  The player entity.
-         *********************************************************************/
-        Entity GetPlayer();
 
         // Helper to initialize FSMs for new entities
         /*****************************************************************//**
@@ -116,7 +109,7 @@ namespace Framework {
         void DrawFSMDebug(Entity entity, const FSMComponent& fsmComp, const Vector2D& pos, ImDrawList* drawList, Editor::Editor* editor, Entity cameraID);
         
         /*****************************************************************//**
-         * \brief   Draws specific debug information for the Witch enemy.
+         * \brief   Draws combat-oriented debug information for FSM entities.
          * 
          * \param   entity 
          * \param   fsmComp 
@@ -125,7 +118,7 @@ namespace Framework {
          * \param   editor 
          * \param   cameraID 
          *********************************************************************/
-        void DrawWitchDebug(Entity entity, const FSMComponent& fsmComp, const Vector2D& pos, ImDrawList* drawList, Editor::Editor* editor, Entity cameraID);
+        void DrawCombatDebug(Entity entity, const FSMComponent& fsmComp, const Vector2D& pos, ImDrawList* drawList, Editor::Editor* editor, Entity cameraID);
 #endif
     };
 }

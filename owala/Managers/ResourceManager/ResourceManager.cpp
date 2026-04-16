@@ -593,7 +593,7 @@ bool ResourceManager::LoadAnimationProfiles(const std::string& filepath) {
 
 	int profilesLoaded = 0;
 
-	// Iterate over profiles: "Player", "BirdEnemy"
+	// Iterate over animation profiles (e.g. "Player", "Enemy")
 	const auto& docObj = doc.GetObject();
 	for (auto it = docObj.MemberBegin(); it != docObj.MemberEnd(); ++it) {
 		std::string profileName = it->name.GetString();
@@ -604,7 +604,7 @@ bool ResourceManager::LoadAnimationProfiles(const std::string& filepath) {
 		const auto& stateObj = it->value.GetObject();
 		for (auto stateIt = stateObj.MemberBegin(); stateIt != stateObj.MemberEnd(); ++stateIt) {
 			std::string stateKey = stateIt->name.GetString();   // e.g. "CHASE"
-			std::string textureKey = stateIt->value.GetString(); // e.g. "Bird_Chase.png"
+			std::string textureKey = stateIt->value.GetString(); // e.g. "Enemy_Chase.png"
 
 			// Directly map the string state to the texture key
 			animationProfiles_[profileName][stateKey] = textureKey;

@@ -8472,8 +8472,8 @@ namespace Editor {
 
 			ImGui::Text("Visualization Options:");
 			ImGui::Checkbox("Show Navigation Grid", &aiSystem->showNavigationGrid);
-			ImGui::Checkbox("Show Bird Debug Info", &aiSystem->showBirdDebug);
-			ImGui::Checkbox("Show Witch Debug Info", &aiSystem->showWitchDebug);
+			ImGui::Checkbox("Show FSM State Labels", &aiSystem->showFSMStateDebug);
+			ImGui::Checkbox("Show Combat Radius Debug", &aiSystem->showCombatDebug);
 
 			ImGui::EndDisabled();
 

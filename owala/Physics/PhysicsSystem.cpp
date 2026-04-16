@@ -535,7 +535,7 @@ namespace Framework {
             return;
         }
 
-        // This prevents the trap from "resting" on the bird.
+        // This prevents the trap from "resting" on dynamic enemies.
         // We let them overlap so PlayerSystem can detect the kill.
         bool isE1Enemy = entityMgr.HasComponent(e1, EnemyTagType);
         bool isE2Enemy = entityMgr.HasComponent(e2, EnemyTagType);
@@ -623,8 +623,8 @@ namespace Framework {
                 // (handled by PlayerSystem or damage system, not physics)
                 return;
             } else {
-                // Static trap: Bird should collide with it as a solid platform
-                // Make trap static so the bird bounces off instead of pushing it
+                // Static trap: enemies should collide with it as a solid platform
+                // Make trap static so enemies bounce off instead of pushing it
                 if (e1IsTrap) e1IsDynamic = false;
                 if (e2IsTrap) e2IsDynamic = false;
                 // Keep enemy dynamic so it gets pushed out of the trap

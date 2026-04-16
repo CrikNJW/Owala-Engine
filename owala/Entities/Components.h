@@ -85,6 +85,8 @@ namespace Framework{
 		int customRenderOrder = 0; // Used when renderLayer is Custom
 		std::string renderLayerName = ""; // store name of dynamiclly created layers
 		bool isActive = true;
+		// Runtime/editor helper flag: if false, this entity is not written to scene JSON.
+		bool serializeInScene = true;
 
 		uint64_t uuid;
 	};
@@ -446,7 +448,7 @@ namespace Framework{
 	 */
 	struct FSMComponent {
 		// Serialized Data
-		std::string fsmDefinitionPath;  // e.g. "Assets/Config/BirdAI.json"
+		std::string fsmDefinitionPath;  // e.g. "Data/FSM/enemy.json"
 		std::string initialStateOverride;
 
 		// Runtime Data (Do not serialize the whole FSM object)
@@ -456,8 +458,14 @@ namespace Framework{
 		// Used during deserialization to restore state
 		std::string serializedState;
 
+		// Runtime debug visualization hints extracted from FSM config.
+		float debugDetectionRadius = 0.0f;
+		float debugMaxAttackRadius = 0.0f;
+
 		// Visual effect: active attack circle radius (0 = none)
 		float attackCircleRadius = 0.0f;
+		// Optional visual scale multiplier used when rendering attack circle textures.
+		float attackCircleVisualScale = 1.0f;
 		// Texture key for attack circle sprite (empty = fallback to red line circle)
 		std::string attackCircleTextureKey;
 		

@@ -87,6 +87,7 @@ namespace Framework::Serialization {
     static constexpr const char* ENTITY_RENDER_LAYER = "render_layer"; //!< Render layer assignment
     static constexpr const char* ENTITY_CUSTOM_RENDER_ORDER = "custom_render_order"; //!< Custom render order value
     static constexpr const char* ENTITY_IS_ACTIVE = "active";         //!< Whether entity starts active
+    static constexpr const char* ENTITY_SERIALIZE_IN_SCENE = "serialize_in_scene"; //!< Whether entity is saved to scene JSON
     static constexpr const char* ENTITY_RENDER_LAYER_NAME = "layer_render_name"; //!< Render layer name
     static constexpr const char* ENTITY_UUID = "uuid";                //!< Unique identifier for entity
 

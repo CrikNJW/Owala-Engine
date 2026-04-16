@@ -516,22 +516,14 @@ namespace Framework {
             Vector2D halfSize = Vector2D::Zero();
             if (!tryGetWorldAABB(e, rotatedBounds, colliderWorldPos, halfSize)) continue;
 
-            bool isBirdEnemy = false;
-            if (entityMgr.HasComponent(e, EnemyTagType)) {
-                const std::string& entityName = entityMgr.GetProperties(e).name;
-                isBirdEnemy = (entityName.find("bird") != std::string::npos || entityName.find("Bird") != std::string::npos);
-
-                if (!isBirdEnemy && entityMgr.HasComponent(e, FSMComponentType)) {
-                    const std::string& fsmPath = entityMgr.GetComponent<FSMComponent>(e).fsmDefinitionPath;
-                    isBirdEnemy = (fsmPath.find("bird") != std::string::npos || fsmPath.find("Bird") != std::string::npos);
-                }
-            }
+            const bool isAIEnemy = entityMgr.HasComponent(e, EnemyTagType) &&
+                                   entityMgr.HasComponent(e, FSMComponentType);
 
             bool touchingPlatform = false;
             Vector2D contactNormal = Vector2D::Zero();
             float bestPenetration = 0.0f;
 
-            if (isBirdEnemy) {
+            if (isAIEnemy) {
                 for (const Entity platform : platformEntities) {
                     if (platform == e) continue;
                     if (!entityMgr.HasComponent(platform, SceneOwnedType)) continue;
@@ -668,17 +660,15 @@ namespace Framework {
                         screenEdge = cameraSystem_->WorldToScreen(screenEdge, activeCamera);
                     }
                     float screenRadius = std::abs(screenEdge.x - screenCenter.x);
-                    // compensate for smaller VFX frame asset (old 2048 -> new 818)
-                    constexpr float kWitchCircleVisualScale = 2048.0f / 1024.0f; // ~2.5037
-                    Vector2D halfSize = { screenRadius * kWitchCircleVisualScale,
-                                          screenRadius * kWitchCircleVisualScale };
+                    const float visualScale = (fsm.attackCircleVisualScale > 0.0f) ? fsm.attackCircleVisualScale : 1.0f;
+                    Vector2D halfSize = { screenRadius * visualScale, screenRadius * visualScale };
 
                     // Handle animated attack circle VFX
                     if (fsm.attackCircleAnimated && !fsm.attackCircleAnimTextures.empty()) {
                         if (fsm.attackCircleAnimFrameCounts.empty() ||
                             fsm.attackCircleAnimFrameCounts.size() != fsm.attackCircleAnimTextures.size()) {
                             Logger::Get().Error(DebugType::SpriteRenderSystem)
-                                << "Invalid witch attack VFX data: frame-count metadata mismatch, falling back to static draw." << std::endl;
+                                << "Invalid attack VFX data: frame-count metadata mismatch, falling back to static draw." << std::endl;
                             gfx_.drawSprite(tex, screenCenter, halfSize);
                             continue;
                         }
@@ -706,7 +696,7 @@ namespace Framework {
                         // Frames are laid out horizontally in each spritesheet
                         if (framesInCurrentSheet <= 0) {
                             Logger::Get().Error(DebugType::SpriteRenderSystem)
-                                << "Invalid witch attack VFX data: frame count <= 0, falling back to static draw." << std::endl;
+                                << "Invalid attack VFX data: frame count <= 0, falling back to static draw." << std::endl;
                             gfx_.drawSprite(tex, screenCenter, halfSize);
                             continue;
                         }

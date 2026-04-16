@@ -31,15 +31,14 @@
 namespace {
 	using namespace Framework;
 
-	bool IsRuntimeRopeEntity(EntityManager& entityMgr, Entity entity) {
-		if (!entityMgr.HasComponent(entity, ComponentType::TextureComponentType)) {
-			return false;
-		}
-		const TextureComponent& tex = entityMgr.GetComponent<TextureComponent>(entity);
-		return tex.textureKey == "SB_PlatformRope.png";
+	bool IsRuntimeTransientEntity(EntityManager& entityMgr, Entity entity) {
+		const EntityProperties& props = entityMgr.GetProperties(entity);
+		return !props.serializeInScene;
 	}
 
-	bool IsRuntimeRopeJson(const rapidjson::Value& en) {
+	bool IsLegacyRuntimeGeneratedJson(const rapidjson::Value& en) {
+		// Backward compatibility: old runtime-generated rope entries may already
+		// exist in scene files and should still be skipped.
 		if (!en.HasMember(Serialization::COMPONENTS) || !en[Serialization::COMPONENTS].IsObject()) {
 			return false;
 		}
@@ -48,16 +47,12 @@ namespace {
 		if (componentLists.HasMember("RopeComponent")) {
 			return true;
 		}
-
-		if (!componentLists.HasMember(Serialization::TEXTURE_COMPONENT) ||
-			!componentLists[Serialization::TEXTURE_COMPONENT].IsObject()) {
+		
+		if (!en.HasMember(Serialization::ENTITY_NAME) || !en[Serialization::ENTITY_NAME].IsString()) {
 			return false;
 		}
-
-		const rapidjson::Value& texObj = componentLists[Serialization::TEXTURE_COMPONENT];
-		return texObj.HasMember(Serialization::TEXTURE_KEY) &&
-			texObj[Serialization::TEXTURE_KEY].IsString() &&
-			std::string(texObj[Serialization::TEXTURE_KEY].GetString()) == "SB_PlatformRope.png";
+		const std::string entityName = en[Serialization::ENTITY_NAME].GetString();
+		return entityName.find("_Rope") != std::string::npos;
 	}
 }
 
@@ -94,8 +89,7 @@ namespace Framework {
 		EntityManager entityMgr(ecs);
 		for (Entity entity : entities)
 		{
-			// Rope entities are runtime-generated from RopeScript and should never be persisted.
-			if (IsRuntimeRopeEntity(entityMgr, entity)) {
+			if (IsRuntimeTransientEntity(entityMgr, entity)) {
 				continue;
 			}
 
@@ -115,6 +109,7 @@ namespace Framework {
 		outData.AddMember(rapidjson::StringRef(Serialization::ENTITY_CUSTOM_RENDER_ORDER), properties.customRenderOrder, alloc);
 		outData.AddMember(rapidjson::StringRef(Serialization::ENTITY_RENDER_LAYER_NAME), rapidjson::StringRef(properties.renderLayerName.c_str()), alloc);
 		outData.AddMember(rapidjson::StringRef(Serialization::ENTITY_IS_ACTIVE), properties.isActive, alloc);
+		outData.AddMember(rapidjson::StringRef(Serialization::ENTITY_SERIALIZE_IN_SCENE), properties.serializeInScene, alloc);
 		outData.AddMember(rapidjson::StringRef(Serialization::ENTITY_UUID), rapidjson::Value().SetUint64(properties.uuid), alloc);
 	}
 
@@ -834,6 +829,9 @@ namespace Framework {
 		if (entityData.HasMember(Serialization::ENTITY_IS_ACTIVE) && entityData[Serialization::ENTITY_IS_ACTIVE].IsBool()) {
 			out.isActive = entityData[Serialization::ENTITY_IS_ACTIVE].GetBool();
 		}
+		if (entityData.HasMember(Serialization::ENTITY_SERIALIZE_IN_SCENE) && entityData[Serialization::ENTITY_SERIALIZE_IN_SCENE].IsBool()) {
+			out.serializeInScene = entityData[Serialization::ENTITY_SERIALIZE_IN_SCENE].GetBool();
+		}
 
 		if (entityData.HasMember(Serialization::ENTITY_UUID) && entityData[Serialization::ENTITY_UUID].IsUint64()) {
 			out.uuid = entityData[Serialization::ENTITY_UUID].GetUint64();
@@ -892,8 +890,8 @@ namespace Framework {
 
 			if (entitiesData.IsArray()) {
 				for (const rapidjson::Value& en : entitiesData.GetArray()) {
-					// Ignore runtime rope entities from scene files to prevent duplicate ropes on reload.
-					if (IsRuntimeRopeJson(en)) {
+					// Ignore legacy runtime-generated entities from older scene files.
+					if (IsLegacyRuntimeGeneratedJson(en)) {
 						continue;
 					}
 

@@ -93,6 +93,14 @@ namespace Framework {
         virtual bool IsFinished() const { return false; }
 
         /**
+         * \brief Indicates whether completing this state should destroy the owning entity.
+         *
+         * Keep this false for transient states. Override in terminal states that
+         * should remove the entity when IsFinished() becomes true.
+         */
+        virtual bool ShouldDestroyEntity() const { return false; }
+
+        /**
          * \brief Injects a NavigationGrid dependency for pathfinding states.
          * \param grid Pointer to the navigation grid; may be nullptr.
          */

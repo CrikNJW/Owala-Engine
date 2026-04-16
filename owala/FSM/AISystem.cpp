@@ -20,6 +20,7 @@
 #include "GameManager.h"
 #include "Logger.h"
 #include "OwalaTime.h"
+#include "FileUtility.h"
 
 #ifdef BUILD_EDITOR
 #include "Editor.h"
@@ -27,6 +28,37 @@
 #endif
 
 namespace Framework {
+    namespace {
+        void PopulateDebugRadiiFromFSM(const std::string& fsmPath, FSMComponent& fsmComp) {
+            fsmComp.debugDetectionRadius = 0.0f;
+            fsmComp.debugMaxAttackRadius = 0.0f;
+
+            rapidjson::Document doc;
+            if (!FileIOSystem::ReadFile(fsmPath, doc)) {
+                return;
+            }
+
+            if (!doc.IsObject() || !doc.HasMember("states") || !doc["states"].IsArray()) {
+                return;
+            }
+
+            for (const auto& stateVal : doc["states"].GetArray()) {
+                if (!stateVal.IsObject() || !stateVal.HasMember("parameters") || !stateVal["parameters"].IsObject()) {
+                    continue;
+                }
+
+                const auto& params = stateVal["parameters"];
+                if (params.HasMember("detectionRadius") && params["detectionRadius"].IsNumber()) {
+                    const float value = static_cast<float>(params["detectionRadius"].GetDouble());
+                    fsmComp.debugDetectionRadius = std::max(fsmComp.debugDetectionRadius, value);
+                }
+                if (params.HasMember("attackRadius") && params["attackRadius"].IsNumber()) {
+                    const float value = static_cast<float>(params["attackRadius"].GetDouble());
+                    fsmComp.debugMaxAttackRadius = std::max(fsmComp.debugMaxAttackRadius, value);
+                }
+            }
+        }
+    }
 
     // Builds the navigation grid and creates the FSM factory. Called once at system startup.
     void AISystem::Initialize() {
@@ -40,13 +72,6 @@ namespace Framework {
     // Shuts down the AI system. The FSM factory cleans up its own resources.
     void AISystem::Shutdown() {
         // Factory cleans itself up
-    }
-
-    // Returns the first entity tagged as the player, or 0 if none is found.
-    Entity AISystem::GetPlayer() {
-        EntityManager entityMgr(GameManager::GetInstance().GetECS());
-        auto players = entityMgr.GetAllEntitiesWithComponent(true, PlayerTagType);
-        return players.empty() ? 0 : players[0];
     }
 
     // Ticks every AI entity's FSM each frame.
@@ -92,11 +117,9 @@ namespace Framework {
             //fsm update loop 
             ai.fsm.Update(entity, GameManager::GetInstance().GetECS(), dt);
 
-            if (ai.fsm.GetCurrentState() == "Death") {
-                State* deathState = ai.fsm.GetState("Death");
-                if (deathState && deathState->IsFinished()) {
-                    entitiesToDestroy.push_back(entity);
-                }
+            State* activeState = ai.fsm.GetState(ai.fsm.GetCurrentState());
+            if (activeState && activeState->ShouldDestroyEntity() && activeState->IsFinished()) {
+                entitiesToDestroy.push_back(entity);
             }
         }
         for (Entity entity : entitiesToDestroy) {
@@ -114,6 +137,7 @@ namespace Framework {
 
         // JSON logic
         fsmComp.fsm = fsmFactory_->CreateFromFile(fsmComp.fsmDefinitionPath);
+        PopulateDebugRadiiFromFSM(fsmComp.fsmDefinitionPath, fsmComp);
 
         // Initialize 
         fsmComp.fsm.Initialize(entity, ecs);
@@ -149,11 +173,11 @@ namespace Framework {
             FSMComponent& ai = entityMgr.GetComponent<FSMComponent>(entity);
             Vector2D pos = entityMgr.GetComponent<Transform>(entity).position;
 
-            if (showBirdDebug) {
+            if (showFSMStateDebug) {
                 DrawFSMDebug(entity, ai, pos, drawList, editor, cameraToUse);
             }
-            if (showWitchDebug) {
-                DrawWitchDebug(entity, ai, pos, drawList, editor, cameraToUse);
+            if (showCombatDebug) {
+                DrawCombatDebug(entity, ai, pos, drawList, editor, cameraToUse);
             }
         }
     }
@@ -172,29 +196,24 @@ namespace Framework {
         // In progress
     }
 
-    // Editor-only: draws debug visualization for witch enemies including detection radius and attack hit radius.
-    void AISystem::DrawWitchDebug(Entity /*entity*/, const FSMComponent& ai, const Vector2D& pos, ImDrawList* drawList, Editor::Editor* editor, Entity cameraID) {
-        // Only draw for witch-type enemies (check FSM definition path)
-        if (ai.fsmDefinitionPath.find("witch") == std::string::npos &&
-            ai.fsmDefinitionPath.find("Witch") == std::string::npos) {
-            return;
-        }
-
+    // Editor-only: draws combat radii extracted from FSM parameters and runtime attack state.
+    void AISystem::DrawCombatDebug(Entity /*entity*/, const FSMComponent& ai, const Vector2D& pos, ImDrawList* drawList, Editor::Editor* editor, Entity cameraID) {
         std::string stateName = ai.fsm.GetCurrentState();
         ImVec2 screenPos = editor->WorldToImGuiScreen(pos, cameraID);
 
         // Draw state name above entity
         drawList->AddText(ImVec2(screenPos.x - 40, screenPos.y - 60), IM_COL32(200, 100, 255, 255), stateName.c_str());
 
-        // Draw detection radius (400 units from witch.json) - green circle
-        const float detectionRadius = 400.0f;
-        ImVec2 edgePos = editor->WorldToImGuiScreen({ pos.x + detectionRadius, pos.y }, cameraID);
-        float screenDetectionRadius = std::abs(edgePos.x - screenPos.x);
-        drawList->AddCircle(screenPos, screenDetectionRadius, IM_COL32(0, 255, 100, 100), 48, 2.0f);
-        
-        // Label for detection radius
-        ImVec2 labelPos = { screenPos.x + screenDetectionRadius + 5, screenPos.y - 10 };
-        drawList->AddText(labelPos, IM_COL32(0, 255, 100, 200), "Detection (400)");
+        if (ai.debugDetectionRadius > 0.0f) {
+            ImVec2 detectionEdgePos = editor->WorldToImGuiScreen({ pos.x + ai.debugDetectionRadius, pos.y }, cameraID);
+            float screenDetectionRadius = std::abs(detectionEdgePos.x - screenPos.x);
+            drawList->AddCircle(screenPos, screenDetectionRadius, IM_COL32(0, 255, 100, 100), 48, 2.0f);
+
+            ImVec2 detectionLabelPos = { screenPos.x + screenDetectionRadius + 5, screenPos.y - 10 };
+            char detectionLabel[64];
+            snprintf(detectionLabel, sizeof(detectionLabel), "Detection (%.1f)", ai.debugDetectionRadius);
+            drawList->AddText(detectionLabelPos, IM_COL32(0, 255, 100, 200), detectionLabel);
+        }
 
         // Draw attack hit radius if there's an active attack circle
         if (ai.attackCircleRadius > 0.0f) {
@@ -212,17 +231,18 @@ namespace Framework {
             drawList->AddText(hitLabelPos, IM_COL32(255, 0, 0, 255), hitLabel);
         }
 
-        // Draw max attack radius (200 from witch.json) when not attacking - blue circle  
-        if (ai.attackCircleRadius <= 0.0f) {
-            const float maxAttackRadius = 200.0f;
-            ImVec2 attackEdgePos = editor->WorldToImGuiScreen({ pos.x + maxAttackRadius, pos.y }, cameraID);
+        // Draw configured max attack radius when idle/non-attacking.
+        if (ai.attackCircleRadius <= 0.0f && ai.debugMaxAttackRadius > 0.0f) {
+            ImVec2 attackEdgePos = editor->WorldToImGuiScreen({ pos.x + ai.debugMaxAttackRadius, pos.y }, cameraID);
             float screenAttackRadius = std::abs(attackEdgePos.x - screenPos.x);
             drawList->AddCircle(screenPos, screenAttackRadius, IM_COL32(100, 150, 255, 80), 48, 1.5f);
             
             // Label for max attack radius
             ImVec2 attackLabelPos = { screenPos.x - screenAttackRadius - 80, screenPos.y };
-            drawList->AddText(attackLabelPos, IM_COL32(100, 150, 255, 200), "Max Attack (200)");
+            char attackLabel[64];
+            snprintf(attackLabel, sizeof(attackLabel), "Max Attack (%.1f)", ai.debugMaxAttackRadius);
+            drawList->AddText(attackLabelPos, IM_COL32(100, 150, 255, 200), attackLabel);
         }
     }
 #endif
-}
+} 
