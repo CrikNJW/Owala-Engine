@@ -15,3 +15,9 @@ StageBound/Data/save.json
 /Installer/Owala_InstallerData
 /Owala_CustomEngine
 Owala_LevelEditor_Showcase.mp4
+/StageBound/Data/Scripts/CSharp/Host/bin
+/StageBound/Data/Scripts/CSharp/Host/obj
+/StageBound/Source/CSharp/Host/bin
+/StageBound/Source/CSharp/Host/obj
+/StageBound/Source/CSharp/UserScripts/bin
+/StageBound/Source/CSharp/UserScripts/obj

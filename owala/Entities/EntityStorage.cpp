@@ -16,6 +16,7 @@
 #include "pch.h"
 #include "EntityStorage.h"
 #include "Components.h"
+#include "CSharpScriptEngine.h"
 
 namespace Framework {
 
@@ -48,8 +49,13 @@ namespace Framework {
 
 		// Reset all existing NativeScript instances before copying new data
 		for (ArchetypeBucket& archetype : archetypes) {
-			for (NativeScriptsComponent& scripts : archetype.nativeScripts) {
+			for (std::size_t row = 0; row < archetype.nativeScripts.size(); ++row) {
+				NativeScriptsComponent& scripts = archetype.nativeScripts[row];
+				const Entity owningEntity = (row < archetype.entities.size()) ? archetype.entities[row] : INVALID_ENTITY;
 				for (NativeScriptsComponent::NativeScript& script : scripts.scripts) {
+					if (owningEntity != INVALID_ENTITY) {
+						CSharpScriptEngine::Get().DestroyScriptInstance(owningEntity, script);
+					}
 					script.Reset();
 				}
 			}
@@ -68,8 +74,13 @@ namespace Framework {
 
 	EntityStorage::~EntityStorage() {
 		for (ArchetypeBucket& archetype : archetypes) {
-			for (NativeScriptsComponent& scripts : archetype.nativeScripts) {
+			for (std::size_t row = 0; row < archetype.nativeScripts.size(); ++row) {
+				NativeScriptsComponent& scripts = archetype.nativeScripts[row];
+				const Entity owningEntity = (row < archetype.entities.size()) ? archetype.entities[row] : INVALID_ENTITY;
 				for (NativeScriptsComponent::NativeScript& script : scripts.scripts) {
+					if (owningEntity != INVALID_ENTITY) {
+						CSharpScriptEngine::Get().DestroyScriptInstance(owningEntity, script);
+					}
 					script.Reset();
 				}
 			}

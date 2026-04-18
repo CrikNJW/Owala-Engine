@@ -1145,6 +1145,7 @@ namespace Framework {
 		for (const NativeScriptsComponent::NativeScript& script : nativeScripts.scripts) {
 			rapidjson::Value scriptObj(rapidjson::kObjectType);
 
+			const bool isCSharp = (script.backend == NativeScriptsComponent::ScriptBackend::CSharp);
 			const char* typeCStr = script.scriptName ? script.scriptName : script.serializedTypeName.c_str();
 			rapidjson::Value typeVal;
 			typeVal.SetString(typeCStr, static_cast<rapidjson::SizeType>(std::char_traits<char>::length(typeCStr)), alloc);
@@ -1152,6 +1153,21 @@ namespace Framework {
 			scriptObj.AddMember(rapidjson::StringRef(Serialization::SCRIPT_TYPE), typeVal, alloc);
 			scriptObj.AddMember(rapidjson::StringRef(Serialization::SCRIPT_ENABLED), script.enabled, alloc);
 			scriptObj.AddMember(rapidjson::StringRef(Serialization::SCRIPT_EXEC_IN_EDIT), script.executeInEditMode, alloc);
+			scriptObj.AddMember(
+				rapidjson::StringRef(Serialization::SCRIPT_BACKEND),
+				rapidjson::Value(isCSharp ? Serialization::SCRIPT_BACKEND_CSHARP : Serialization::SCRIPT_BACKEND_NATIVE, alloc).Move(),
+				alloc
+			);
+
+			if (isCSharp) {
+				rapidjson::Value csTypeVal;
+				csTypeVal.SetString(script.csharpTypeName.c_str(), static_cast<rapidjson::SizeType>(script.csharpTypeName.length()), alloc);
+				scriptObj.AddMember(rapidjson::StringRef(Serialization::SCRIPT_CS_TYPE), csTypeVal, alloc);
+
+				rapidjson::Value csPathVal;
+				csPathVal.SetString(script.csharpSourcePath.c_str(), static_cast<rapidjson::SizeType>(script.csharpSourcePath.length()), alloc);
+				scriptObj.AddMember(rapidjson::StringRef(Serialization::SCRIPT_CS_PATH), csPathVal, alloc);
+			}
 
 			scriptList.PushBack(scriptObj, alloc);
 		}
@@ -1765,6 +1781,9 @@ namespace Framework {
 			for (const rapidjson::Value& scriptObj : scriptsArr.GetArray()) {
 				if (!scriptObj.IsObject()) continue;
 				std::string typeName;
+				std::string backend = Serialization::SCRIPT_BACKEND_NATIVE;
+				std::string csharpTypeName;
+				std::string csharpSourcePath;
 				bool enabled = true;
 				bool executeInEdit = false;
 
@@ -1777,13 +1796,28 @@ namespace Framework {
 				if (scriptObj.HasMember(Serialization::SCRIPT_EXEC_IN_EDIT) && scriptObj[Serialization::SCRIPT_EXEC_IN_EDIT].IsBool()) {
 					executeInEdit = scriptObj[Serialization::SCRIPT_EXEC_IN_EDIT].GetBool();
 				}
+				if (scriptObj.HasMember(Serialization::SCRIPT_BACKEND) && scriptObj[Serialization::SCRIPT_BACKEND].IsString()) {
+					backend = scriptObj[Serialization::SCRIPT_BACKEND].GetString();
+				}
+				if (scriptObj.HasMember(Serialization::SCRIPT_CS_TYPE) && scriptObj[Serialization::SCRIPT_CS_TYPE].IsString()) {
+					csharpTypeName = scriptObj[Serialization::SCRIPT_CS_TYPE].GetString();
+				}
+				if (scriptObj.HasMember(Serialization::SCRIPT_CS_PATH) && scriptObj[Serialization::SCRIPT_CS_PATH].IsString()) {
+					csharpSourcePath = scriptObj[Serialization::SCRIPT_CS_PATH].GetString();
+				}
 
 				out.scripts.emplace_back();
 				NativeScriptsComponent::NativeScript& script = out.scripts.back();
 				script.enabled = enabled;
 				script.executeInEditMode = executeInEdit;
 
-				if (!typeName.empty()) {
+				const bool isCSharp = (backend == Serialization::SCRIPT_BACKEND_CSHARP);
+
+				if (isCSharp) {
+					const std::string resolvedType = !csharpTypeName.empty() ? csharpTypeName : typeName;
+					script.BindCSharp(resolvedType, csharpSourcePath);
+				}
+				else if (!typeName.empty()) {
 					const bool isGood = Framework::ScriptRegistry::Get().BindScriptByName(script, typeName);
 					if (!isGood) {
 						script.FlagMissing(typeName);

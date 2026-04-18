@@ -288,7 +288,7 @@ namespace Framework {
 			}
 		}
 
-		if (!silenceError) {
+		if (!silenceError && sceneName != INVALID_SCENENAME) {
 			Logger::Get().Error(DebugType::SceneManager) << "Scene with name '" << sceneName << "' does not exist." << std::endl;
 		}
 
@@ -657,9 +657,8 @@ namespace Framework {
 	}
 
 	std::vector<Entity> SceneManager::GetEntitiesInScene(const std::string& sceneName) const {
-		const SceneAsset& scene = GetSceneByName(sceneName);
+		const SceneAsset& scene = GetSceneByName(sceneName, true);
 		if (!scene.IsValid()) {
-			Logger::Get().Info(DebugType::SceneManager) << "GetEntitiesInScene: Scene is not valid!" << std::endl;
 			return {};
 		}
 

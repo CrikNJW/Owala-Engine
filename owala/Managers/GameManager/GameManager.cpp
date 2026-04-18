@@ -15,6 +15,7 @@
 
 //Core Engine headers for IMGUI
 #include "Core.h"
+#include "CSharpScriptEngine.h"
 
 namespace Framework {
 	// ---------------------------------------------------------------------------
@@ -87,10 +88,11 @@ namespace Framework {
 		EntityManager entityMgr(*systems_.ecs_);
 		//SceneManager& sceneMgr = SceneManager::GetInstance();
 		
-		// Get all entities with NativeScriptsComponent and ActiveTag to log them
-		std::vector<Entity> scriptEntities = entityMgr.GetAllEntitiesWithComponents(true, NativeScriptsComponentType, LoadedTagType);
+		// Run scripts on all active entities that have script components.
+		// LoadedTag filtering can miss editor-authored entities when entering play.
+		std::vector<Entity> scriptEntities = entityMgr.GetAllEntitiesWithComponent(true, NativeScriptsComponentType);
 		
-		for (Entity scriptableEntity : entityMgr.GetAllEntitiesWithComponents(true, NativeScriptsComponentType, LoadedTagType)) {
+		for (Entity scriptableEntity : scriptEntities) {
 			if (!entityMgr.ValidateEntity(scriptableEntity)) continue;
 			std::vector<NativeScriptsComponent::NativeScript>& nativeScripts = entityMgr.GetComponent<NativeScriptsComponent>(scriptableEntity).scripts;
 
@@ -102,6 +104,11 @@ namespace Framework {
 #ifdef BUILD_EDITOR
 				if (!script.executeInEditMode && !IsGamePlaying()) continue;
 #endif
+
+				if (script.backend == NativeScriptsComponent::ScriptBackend::CSharp) {
+					CSharpScriptEngine::Get().UpdateScript(scriptableEntity, script);
+					continue;
+				}
 
 				if (!script.Instance && script.InstantiateScript) {
 					// Create and Bind Entity
@@ -155,6 +162,7 @@ namespace Framework {
 	void GameManager::OnBeginPlay() {
 		CheckSystems();
 		if (hasECSSnapshot) return;
+		CSharpScriptEngine::Get().ResetRuntime();
 
 		// Snapshot editor world.
 		editorECS_ = systems_.ecs_;
@@ -181,6 +189,7 @@ namespace Framework {
 	void GameManager::OnEndPlay() {
 		CheckSystems();
 		if (!hasECSSnapshot) return;
+		CSharpScriptEngine::Get().ResetRuntime();
 
 		// Clear active camera
 		if (systems_.camera_) {

@@ -77,6 +77,7 @@ namespace Editor {
 		bool showInspector = true;
 		bool showGameViewport = true;
 		bool showAssetBrowser = true;
+		bool showDebugConsole = false;
 		bool showToolbar = true;
 		bool showPreferencesWindow = false;
 		bool showProjectSettingsWindow = false;
@@ -470,6 +471,11 @@ namespace Editor {
 		 * \param   droppedFiles
 		 *********************************************************************/
 		void ShowAssetBrowser(std::vector<std::filesystem::path>& droppedFiles);
+
+		/*********************************************************************//**
+		 * \brief   Renders the Debug Console panel.
+		 *********************************************************************/
+		void ShowDebugConsole();
 
 		/*********************************************************************//**
 		 * \brief   Renders the Game Viewport panel.

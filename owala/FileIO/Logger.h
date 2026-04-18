@@ -21,6 +21,7 @@
 #include <fstream>
 #include <sstream>  
 #include <ctime>
+#include <vector>
 #include "backward.hpp"
 #include <windows.h>
 
@@ -149,6 +150,9 @@ namespace Framework {
          * \param   type
          *********************************************************************/
         static std::ostream& Error(DebugType type);
+
+        // Returns a snapshot of recent console log lines.
+        static std::vector<std::string> GetRecentLogs();
         
         /*****************************************************************//**
          * \brief   Registers tracking configurations logically explicitly explicitly.

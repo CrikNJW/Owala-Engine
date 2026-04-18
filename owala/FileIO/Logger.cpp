@@ -18,8 +18,97 @@
  *********************************************************************/
 #include "pch.h"
 #include "Logger.h"
+#include <deque>
+#include <memory>
+#include <mutex>
 
 namespace Framework {
+    namespace {
+        constexpr std::size_t MAX_BUFFERED_LOG_LINES = 2000;
+
+        std::mutex gLogBufferMutex;
+        std::deque<std::string> gBufferedLogLines;
+
+        void AppendBufferedLine(std::string line) {
+            if (!line.empty() && line.back() == '\r') {
+                line.pop_back();
+            }
+            if (line.empty()) {
+                return;
+            }
+
+            std::lock_guard<std::mutex> lock(gLogBufferMutex);
+            gBufferedLogLines.push_back(std::move(line));
+            if (gBufferedLogLines.size() > MAX_BUFFERED_LOG_LINES) {
+                gBufferedLogLines.pop_front();
+            }
+        }
+
+        class TeeCaptureBuf final : public std::streambuf {
+        public:
+            explicit TeeCaptureBuf(std::streambuf* target) : target_(target) {}
+
+        protected:
+            int overflow(int ch) override {
+                if (ch == EOF) {
+                    return std::char_traits<char>::not_eof(ch);
+                }
+
+                const char c = static_cast<char>(ch);
+                if (target_ && target_->sputc(c) == EOF) {
+                    return EOF;
+                }
+
+                if (c == '\n') {
+                    AppendBufferedLine(currentLine_);
+                    currentLine_.clear();
+                }
+                else {
+                    currentLine_.push_back(c);
+                }
+                return ch;
+            }
+
+            std::streamsize xsputn(const char* s, std::streamsize count) override {
+                if (target_ && target_->sputn(s, count) != count) {
+                    return 0;
+                }
+
+                for (std::streamsize i = 0; i < count; ++i) {
+                    const char c = s[i];
+                    if (c == '\n') {
+                        AppendBufferedLine(currentLine_);
+                        currentLine_.clear();
+                    }
+                    else {
+                        currentLine_.push_back(c);
+                    }
+                }
+                return count;
+            }
+
+            int sync() override {
+                return target_ ? target_->pubsync() : 0;
+            }
+
+        private:
+            std::streambuf* target_ = nullptr;
+            std::string currentLine_;
+        };
+
+        std::once_flag gLogCaptureInitOnce;
+        std::unique_ptr<TeeCaptureBuf> gCoutCapture;
+        std::unique_ptr<TeeCaptureBuf> gCerrCapture;
+
+        void InitLogCapture() {
+            gCoutCapture = std::make_unique<TeeCaptureBuf>(std::cout.rdbuf());
+            std::cout.rdbuf(gCoutCapture.get());
+
+            gCerrCapture = std::make_unique<TeeCaptureBuf>(std::cerr.rdbuf());
+            std::cerr.rdbuf(gCerrCapture.get());
+        }
+    }
+
     const std::string Logger::LOGS_FILEEXT = "_crash.log";
     
     const std::string Logger::LOGS_FILEPATH = []() -> std::string {
@@ -148,6 +237,7 @@ namespace Framework {
      *********************************************************************/
     // Informative logging
     std::ostream& Logger::Info(DebugType type) {
+        std::call_once(gLogCaptureInitOnce, InitLogCapture);
         std::cout << GetDebugType(type) << ' ';
         return std::cout;
     }
@@ -160,7 +250,13 @@ namespace Framework {
      *********************************************************************/
     // Error logging
     std::ostream& Logger::Error(DebugType type) {
+        std::call_once(gLogCaptureInitOnce, InitLogCapture);
         std::cerr << "[ERROR] " << GetDebugType(type) << ' ';
         return std::cerr;
+    }
+
+    std::vector<std::string> Logger::GetRecentLogs() {
+        std::lock_guard<std::mutex> lock(gLogBufferMutex);
+        return { gBufferedLogLines.begin(), gBufferedLogLines.end() };
     }
 }

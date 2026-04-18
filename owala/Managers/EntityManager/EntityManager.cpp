@@ -12,6 +12,7 @@
 #include "EntityManager.h"
 #include "Logger.h"
 #include "ScriptRegistry.h"
+#include "CSharpScriptEngine.h"
 #include <algorithm>
 
 namespace Framework {
@@ -117,7 +118,11 @@ namespace Framework {
 	void EntityManager::RemoveComponentFromBucket(ArchetypeBucket& bucket, ComponentType componentType, std::size_t rowIndex) {
 		if (componentType == NativeScriptsComponentType && rowIndex < bucket.nativeScripts.size()) {
 			NativeScriptsComponent& scripts = bucket.nativeScripts[rowIndex];
+			const Entity owningEntity = (rowIndex < bucket.entities.size()) ? bucket.entities[rowIndex] : INVALID_ENTITY;
 			for (NativeScriptsComponent::NativeScript& script : scripts.scripts) {
+				if (owningEntity != INVALID_ENTITY) {
+					CSharpScriptEngine::Get().DestroyScriptInstance(owningEntity, script);
+				}
 				script.Reset();
 			}
 		}
@@ -381,7 +386,14 @@ namespace Framework {
 					case ComponentType::AnimationComponentType: AddComponent<AnimationComponent>(newEntity, GetComponent<AnimationComponent>(entity)); break;
 					case ComponentType::TextComponentType: AddComponent<TextComponent>(newEntity, GetComponent<TextComponent>(entity)); break;
 					case ComponentType::CameraType: AddComponent<Camera>(newEntity, GetComponent<Camera>(entity)); break;
-					case ComponentType::NativeScriptsComponentType: AddComponent<NativeScriptsComponent>(newEntity, GetComponent<NativeScriptsComponent>(entity)); break;
+					case ComponentType::NativeScriptsComponentType: {
+						NativeScriptsComponent copy = GetComponent<NativeScriptsComponent>(entity);
+						for (NativeScriptsComponent::NativeScript& script : copy.scripts) {
+							script.runtimeScriptId = NativeScriptsComponent::NativeScript::NextRuntimeScriptId();
+						}
+						AddComponent<NativeScriptsComponent>(newEntity, copy);
+						break;
+					}
 					case ComponentType::SceneOwnedType: AddComponent<SceneOwned>(newEntity, GetComponent<SceneOwned>(entity)); break;
 					case ComponentType::FSMComponentType: AddComponent<FSMComponent>(newEntity, GetComponent<FSMComponent>(entity)); break;
 					case ComponentType::ParticleComponentType: AddComponent<ParticleComponent>(newEntity, GetComponent<ParticleComponent>(entity)); break;
@@ -590,6 +602,26 @@ case ComponentType::ViewportConstrainedTagType: return true;
 		return nativeScripts.scripts.size() - 1;
 	}
 
+	std::size_t EntityManager::AttachCSharpScript(Entity entity, std::string typeName, std::string sourcePath, bool enabled) {
+		if (!HasComponent(entity, NativeScriptsComponentType)) {
+			AddComponent<NativeScriptsComponent>(entity, NativeScriptsComponent{});
+		}
+
+		NativeScriptsComponent& nativeScripts = GetComponent<NativeScriptsComponent>(entity);
+		nativeScripts.scripts.emplace_back();
+		NativeScriptsComponent::NativeScript& scriptToAdd = nativeScripts.scripts.back();
+		scriptToAdd.enabled = enabled;
+
+		if (typeName.empty()) {
+			nativeScripts.scripts.pop_back();
+			Logger::Get().Error(DebugType::GameManager) << "AttachCSharpScript: Script type cannot be empty." << std::endl;
+			return static_cast<std::size_t>(-1);
+		}
+
+		scriptToAdd.BindCSharp(typeName, sourcePath);
+		return nativeScripts.scripts.size() - 1;
+	}
+
 	void EntityManager::RemoveScriptAt(Entity entity, std::size_t index, bool removeComponentIfEmpty) {
 		if (!HasComponent(entity, NativeScriptsComponentType)) return;
 
@@ -602,6 +634,7 @@ case ComponentType::ViewportConstrainedTagType: return true;
 
 		NativeScriptsComponent::NativeScript& targetScript = nativeScripts.scripts[index];
 
+		CSharpScriptEngine::Get().DestroyScriptInstance(entity, targetScript);
 		targetScript.Reset();
 
 		nativeScripts.scripts.erase(nativeScripts.scripts.begin() + index);

@@ -161,6 +161,8 @@ namespace Framework {
 		std::size_t AttachScript(Entity entity, const char* displayName = nullptr, bool enabled = true);
 		// Attaches a custom C++ script to an entity.
 		std::size_t AttachScriptByName(Entity entity, std::string typeName, bool enabled = true);
+		// Attaches a C# script to an entity.
+		std::size_t AttachCSharpScript(Entity entity, std::string typeName, std::string sourcePath, bool enabled = true);
 		// Removes a custom C++ script at the provided script index from an entity.
 		void RemoveScriptAt(Entity entity, std::size_t index, bool removeComponentIfEmpty = true);
 		// Swaps the index of an existing script with another bounded script.

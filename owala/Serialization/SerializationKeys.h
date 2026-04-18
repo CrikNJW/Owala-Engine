@@ -229,6 +229,11 @@ namespace Framework::Serialization {
     static constexpr const char* SCRIPT_TYPE = "type";                    //!< Script type name
     static constexpr const char* SCRIPT_ENABLED = "enabled";              //!< Whether script is enabled
     static constexpr const char* SCRIPT_EXEC_IN_EDIT = "execute_in_edit"; //!< Run in editor mode
+    static constexpr const char* SCRIPT_BACKEND = "backend";              //!< Script backend type
+    static constexpr const char* SCRIPT_BACKEND_NATIVE = "native";        //!< Native C++ backend value
+    static constexpr const char* SCRIPT_BACKEND_CSHARP = "csharp";        //!< C# backend value
+    static constexpr const char* SCRIPT_CS_TYPE = "cs_type";              //!< C# type name
+    static constexpr const char* SCRIPT_CS_PATH = "cs_source_path";       //!< C# source path
 
     /* ----- Button Component ----- */
     static constexpr const char* BUTTON_COMPONENT = "ButtonComponent";    //!< Button component

@@ -25,6 +25,7 @@
 #include <memory> // for std::shared_ptr
 #include <vector> 
 #include <map>
+#include <atomic>
 #include "ScriptableEntity.h"
 #include "FSM.h"
 
@@ -327,29 +328,67 @@ namespace Framework{
 	};
 
 	struct NativeScriptsComponent {
+		enum class ScriptBackend : int {
+			Native = 0,
+			CSharp = 1
+		};
+
 		struct NativeScript {
 			ScriptableEntity* Instance = nullptr;
+			uint64_t runtimeScriptId = 0;
 
 			// Function Pointers
 			ScriptableEntity* (*InstantiateScript)() = nullptr;
 			void (*DestroyScript)(NativeScript*) = nullptr;
 
 			// Metadata
+			ScriptBackend backend = ScriptBackend::Native;
 			const char* scriptName = nullptr;
 			std::string serializedTypeName;
+			std::string csharpTypeName;
+			std::string csharpSourcePath;
 			bool missing = false;
 			bool enabled = true;
 			bool executeInEditMode = false;
 
+			static uint64_t NextRuntimeScriptId() {
+				static std::atomic<uint64_t> nextId{ 1 };
+				return nextId.fetch_add(1, std::memory_order_relaxed);
+			}
+
+			void EnsureRuntimeScriptId() {
+				if (runtimeScriptId == 0) {
+					runtimeScriptId = NextRuntimeScriptId();
+				}
+			}
+
 			template<typename T>
 			void Bind(const char* name) {
 				static_assert(std::is_base_of<ScriptableEntity, T>::value, "T must derive from ScriptableEntity");
+				EnsureRuntimeScriptId();
 
 				InstantiateScript = +[]() -> ScriptableEntity* { return new T(); };
 				DestroyScript = +[](NativeScript* script) { delete script->Instance; script->Instance = nullptr; };
 
+				backend = ScriptBackend::Native;
 				scriptName = name;
 				serializedTypeName = name;
+				csharpTypeName.clear();
+				csharpSourcePath.clear();
+				missing = false;
+			}
+
+			void BindCSharp(const std::string& typeName, const std::string& sourcePath) {
+				EnsureRuntimeScriptId();
+				Reset();
+				InstantiateScript = nullptr;
+				DestroyScript = +[](NativeScript* script) { delete script->Instance; script->Instance = nullptr; };
+
+				backend = ScriptBackend::CSharp;
+				scriptName = nullptr;
+				serializedTypeName = typeName;
+				csharpTypeName = typeName;
+				csharpSourcePath = sourcePath;
 				missing = false;
 			}
 
@@ -367,8 +406,11 @@ namespace Framework{
 				Reset();
 				InstantiateScript = nullptr;
 				DestroyScript = +[](NativeScript* script) { delete script->Instance; script->Instance = nullptr; };
+				backend = ScriptBackend::Native;
 				scriptName = nullptr;
 				serializedTypeName = jsonTypeName;
+				csharpTypeName.clear();
+				csharpSourcePath.clear();
 				missing = true;
 				enabled = executeInEditMode = false;
 			}
@@ -379,19 +421,23 @@ namespace Framework{
 			~NativeScript() { Reset(); }
 			
 			// Copy Ctor
-			NativeScript(const NativeScript& other) : Instance(nullptr), InstantiateScript(other.InstantiateScript), DestroyScript(other.DestroyScript), 
-				scriptName(other.scriptName), serializedTypeName(other.serializedTypeName), missing(other.missing), enabled(other.enabled),
-				executeInEditMode(other.executeInEditMode) {}
+			NativeScript(const NativeScript& other) : Instance(nullptr), runtimeScriptId(other.runtimeScriptId), InstantiateScript(other.InstantiateScript), DestroyScript(other.DestroyScript),
+				backend(other.backend), scriptName(other.scriptName), serializedTypeName(other.serializedTypeName), csharpTypeName(other.csharpTypeName),
+				csharpSourcePath(other.csharpSourcePath), missing(other.missing), enabled(other.enabled), executeInEditMode(other.executeInEditMode) {}
 
 			// Copy Assignment
 			NativeScript& operator=(const NativeScript& other) {
 				if (this == &other) return *this;
 
 				Reset();
+				runtimeScriptId = other.runtimeScriptId;
 				InstantiateScript = other.InstantiateScript;
 				DestroyScript = other.DestroyScript;
+				backend = other.backend;
 				scriptName = other.scriptName;
 				serializedTypeName = other.serializedTypeName;
+				csharpTypeName = other.csharpTypeName;
+				csharpSourcePath = other.csharpSourcePath;
 				missing = other.missing;
 				enabled = other.enabled;
 				executeInEditMode = other.executeInEditMode;
@@ -400,14 +446,19 @@ namespace Framework{
 			}
 
 			// Move Ctor
-			NativeScript(NativeScript&& other) noexcept	: Instance(other.Instance), InstantiateScript(other.InstantiateScript), DestroyScript(other.DestroyScript), 
-				scriptName(other.scriptName), serializedTypeName(std::move(other.serializedTypeName)), missing(other.missing), enabled(other.enabled),
+			NativeScript(NativeScript&& other) noexcept	: Instance(other.Instance), runtimeScriptId(other.runtimeScriptId), InstantiateScript(other.InstantiateScript), DestroyScript(other.DestroyScript),
+				backend(other.backend), scriptName(other.scriptName), serializedTypeName(std::move(other.serializedTypeName)),
+				csharpTypeName(std::move(other.csharpTypeName)), csharpSourcePath(std::move(other.csharpSourcePath)), missing(other.missing), enabled(other.enabled),
 				executeInEditMode(other.executeInEditMode) 
 			{
 				other.Instance = nullptr;
+				other.runtimeScriptId = 0;
 				other.InstantiateScript = nullptr;
 				other.DestroyScript = nullptr;
+				other.backend = ScriptBackend::Native;
 				other.scriptName = nullptr;
+				other.csharpTypeName.clear();
+				other.csharpSourcePath.clear();
 				other.missing = false;
 				other.enabled = true;
 				other.executeInEditMode = false;
@@ -418,19 +469,27 @@ namespace Framework{
 				if (this != &other) {
 					Reset();
 					Instance = other.Instance;
+					runtimeScriptId = other.runtimeScriptId;
 					InstantiateScript = other.InstantiateScript;
 					DestroyScript = other.DestroyScript;
+					backend = other.backend;
 					scriptName = other.scriptName;
 					serializedTypeName = std::move(other.serializedTypeName);
+					csharpTypeName = std::move(other.csharpTypeName);
+					csharpSourcePath = std::move(other.csharpSourcePath);
 					missing = other.missing;
 					enabled = other.enabled;
 					executeInEditMode = other.executeInEditMode;
 
 					other.Instance = nullptr;
+					other.runtimeScriptId = 0;
 					other.InstantiateScript = nullptr;
 					other.DestroyScript = nullptr;
+					other.backend = ScriptBackend::Native;
 					other.scriptName = nullptr;
 					other.serializedTypeName.clear();
+					other.csharpTypeName.clear();
+					other.csharpSourcePath.clear();
 					other.missing = false;
 					other.enabled = true;
 					other.executeInEditMode = false;

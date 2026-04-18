@@ -618,6 +618,7 @@ namespace Editor {
 
 				ImGuiID dock_bottom = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Down, 0.35f, nullptr, &dock_main_id);
 				ImGui::DockBuilderDockWindow("Asset Viewer", dock_bottom);
+				ImGui::DockBuilderDockWindow("Debug Console", dock_bottom);
 				ImGui::DockBuilderDockWindow("Prefab Palette", dock_bottom);
 				ImGui::DockBuilderDockWindow("Prefab Editor", dock_bottom);
 				ImGui::DockBuilderDockWindow("Tile Palette", dock_bottom);
@@ -722,6 +723,7 @@ namespace Editor {
 		if (settings.showInspector) ShowInspector();
 		if (settings.showDebugInfo) ShowPerformanceProfile();
 		if (settings.showAssetBrowser) ShowAssetBrowser(droppedFilePaths_);
+		if (settings.showDebugConsole) ShowDebugConsole();
 		if (settings.showHierarchy) ShowHierarchy();
 		if (settings.showLevelEditor) ShowLevelEditor();
 		if (settings.showLayerManager) ShowLayerManager();
@@ -1726,6 +1728,42 @@ namespace Editor {
 				ImGui::Spacing();
 				ImGui::Separator();
 			}
+		}
+		ImGui::End();
+	}
+#pragma endregion
+
+#pragma region DEBUG CONSOLE PANEL
+	void Editor::ShowDebugConsole() {
+		if (!ImGui::Begin("Debug Console", &settings.showDebugConsole)) {
+			ImGui::End();
+			return;
+		}
+
+		static bool autoScroll = true;
+		ImGui::Checkbox("Auto-scroll", &autoScroll);
+		ImGui::SameLine();
+		ImGui::TextDisabled("Drag to highlight, Ctrl+C to copy");
+
+		const std::vector<std::string> logs = Framework::Logger::GetRecentLogs();
+		static std::size_t lastLogCount = 0;
+		const std::size_t currentLogCount = logs.size();
+		const std::size_t newLines = (currentLogCount >= lastLogCount) ? (currentLogCount - lastLogCount) : currentLogCount;
+		lastLogCount = currentLogCount;
+		ImGui::Text("Buffered Lines: %zu  (+%zu)", currentLogCount, newLines);
+		ImGui::Separator();
+
+		static std::string consoleText;
+		consoleText.clear();
+		for (const std::string& line : logs) {
+			consoleText.append(line);
+			consoleText.push_back('\n');
+		}
+
+		const ImGuiInputTextFlags flags = ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_AllowTabInput;
+		ImGui::InputTextMultiline("##DebugConsoleText", &consoleText, ImVec2(-FLT_MIN, -FLT_MIN), flags);
+		if (autoScroll && newLines > 0) {
+			ImGui::SetScrollHereY(1.0f);
 		}
 		ImGui::End();
 	}
@@ -3639,7 +3677,7 @@ namespace Editor {
 		case ComponentType::NativeScriptsComponentType: {
 			NativeScriptsComponent& comp = entityMgr.GetComponent<NativeScriptsComponent>(selectedEntity);
 
-			ImGui::TextDisabled("Native Scripts");
+			ImGui::TextDisabled("Scripts");
 			ImGui::Separator();
 
 			std::vector<std::string> names;
@@ -3650,12 +3688,20 @@ namespace Editor {
 			std::vector<const char*> labels;
 			for (std::string& s : names) labels.push_back(s.c_str());
 
-			// Create New Script Button
+			namespace fs = std::filesystem;
+			const std::string& sourceDataDir = FileIOSystem::GetSourceDataDir();
+			const fs::path gameRootPath = !sourceDataDir.empty()
+				? fs::path(sourceDataDir).parent_path()
+				: fs::current_path();
+			const fs::path csharpScriptsDir = (gameRootPath / "Source" / "CSharp" / "UserScripts").lexically_normal();
+			const fs::path csharpProjectPath = csharpScriptsDir / "OwalaScripts.csproj";
+
+			// Create New Native Script Button
 			ImGui::SetNextItemWidth(160.f);
 			static char newScriptName[256] = "NewScript";
 			ImGui::InputText("##New Script Name", newScriptName, IM_ARRAYSIZE(newScriptName));
 			ImGui::SameLine();
-			if (ImGui::Button("Create New Script")) {
+			if (ImGui::Button("Create Native Script")) {
 				// Derive the game's Source/ folder from the active game's Data/ dir.
 				// Falls back to the legacy path when no game is imported.
 				std::string sourceDir;
@@ -3671,6 +3717,91 @@ namespace Editor {
 				gameManager_->GetSystems().input_->SetKeyboardLocked(true);
 				ImGui::OpenPopup("Script Result");
 				ImGui::SetNextWindowSize(ImVec2(300, 150), ImGuiCond_Appearing);
+			}
+
+			// Create New C# Script Button
+			ImGui::SetNextItemWidth(160.f);
+			static char newCSharpScriptName[256] = "NewCSharpScript";
+			ImGui::InputText("##New CSharp Script Name", newCSharpScriptName, IM_ARRAYSIZE(newCSharpScriptName));
+			ImGui::SameLine();
+			if (ImGui::Button("Create C# Script")) {
+				const fs::path scriptPath = csharpScriptsDir / (std::string(newCSharpScriptName) + ".cs");
+
+				try {
+					fs::create_directories(csharpScriptsDir);
+
+					if (!fs::exists(csharpProjectPath)) {
+						std::ofstream projectOut(csharpProjectPath, std::ios::binary);
+						projectOut
+							<< "<Project Sdk=\"Microsoft.NET.Sdk\">\n"
+							<< "  <PropertyGroup>\n"
+							<< "    <TargetFramework>net8.0</TargetFramework>\n"
+							<< "    <ImplicitUsings>enable</ImplicitUsings>\n"
+							<< "    <Nullable>enable</Nullable>\n"
+							<< "    <OutputType>Library</OutputType>\n"
+							<< "  </PropertyGroup>\n"
+							<< "  <ItemGroup>\n"
+							<< "    <Reference Include=\"OwalaScriptHost\">\n"
+							<< "      <HintPath>..\\Host\\bin\\Debug\\net8.0\\OwalaScriptHost.dll</HintPath>\n"
+							<< "      <Private>false</Private>\n"
+							<< "    </Reference>\n"
+							<< "  </ItemGroup>\n"
+							<< "</Project>\n";
+					}
+
+					if (!fs::exists(scriptPath)) {
+						std::ofstream scriptOut(scriptPath, std::ios::binary);
+						scriptOut
+							<< "using Owala.ScriptHost;\n\n"
+							<< "public class " << newCSharpScriptName << " : OwalaBehaviour\n"
+							<< "{\n"
+							<< "    public void OnCreate()\n"
+							<< "    {\n"
+							<< "        Log(\"" << newCSharpScriptName << " created\");\n"
+							<< "    }\n\n"
+							<< "    public void OnUpdate()\n"
+							<< "    {\n"
+							<< "        if (GetPosition(out float x, out float y))\n"
+							<< "        {\n"
+							<< "            SetPosition(x, y);\n"
+							<< "        }\n"
+							<< "    }\n"
+							<< "}\n";
+						popupMsg = "Created C# script at: " + scriptPath.string();
+					}
+					else {
+						popupMsg = "C# script already exists: " + scriptPath.string();
+					}
+				}
+				catch (const std::exception& e) {
+					popupMsg = std::string("Failed to create C# script: ") + e.what();
+				}
+
+				gameManager_->GetSystems().input_->SetKeyboardLocked(true);
+				ImGui::OpenPopup("Script Result");
+				ImGui::SetNextWindowSize(ImVec2(300, 150), ImGuiCond_Appearing);
+			}
+
+			std::vector<std::string> csharpTypeNames;
+			csharpTypeNames.emplace_back("- Select C# script -");
+			std::error_code scriptDirError;
+			if (fs::exists(csharpScriptsDir, scriptDirError) && !scriptDirError) {
+				for (const fs::directory_entry& entry : fs::directory_iterator(csharpScriptsDir, scriptDirError)) {
+					if (scriptDirError || !entry.is_regular_file()) {
+						continue;
+					}
+					const fs::path filePath = entry.path();
+					if (filePath.extension() == ".cs") {
+						csharpTypeNames.push_back(filePath.stem().string());
+					}
+				}
+				std::sort(csharpTypeNames.begin() + 1, csharpTypeNames.end());
+			}
+
+			std::vector<const char*> csharpTypeLabels;
+			csharpTypeLabels.reserve(csharpTypeNames.size());
+			for (std::string& name : csharpTypeNames) {
+				csharpTypeLabels.push_back(name.c_str());
 			}
 
 			// Popup after attempting to create script.
@@ -3707,6 +3838,33 @@ namespace Editor {
 				selectedScriptIndex = 0;
 			}
 
+			// Add C# Script
+			ImGui::SetNextItemWidth(240.f);
+			static int selectedCSharpScriptIndex = 0;
+			if (selectedCSharpScriptIndex >= static_cast<int>(csharpTypeLabels.size())) {
+				selectedCSharpScriptIndex = 0;
+			}
+			ImGui::Combo("##addCSharpScriptChoice", &selectedCSharpScriptIndex, csharpTypeLabels.data(), static_cast<int>(csharpTypeLabels.size()));
+			ImGui::SameLine();
+			if (ImGui::Button("Add C# Script") && selectedCSharpScriptIndex > 0) {
+				const std::string& typeName = csharpTypeNames[selectedCSharpScriptIndex];
+				const fs::path sourcePath = csharpScriptsDir / (typeName + ".cs");
+				std::string beforeJSON = EntitySerializer::SerializeComponentToString(selectedEntity, selectedComponent, *ecs);
+
+				std::size_t idx = entityMgr.AttachCSharpScript(selectedEntity, typeName, sourcePath.string(), true);
+				if (idx == (std::size_t)-1) {
+					Logger::Get().Error(DebugType::Editor) << "AttachCSharpScript failed for '" << typeName << "'";
+				}
+
+				std::string afterJSON = EntitySerializer::SerializeComponentToString(selectedEntity, selectedComponent, *ecs);
+				if (beforeJSON != afterJSON) {
+					std::stringstream ss;
+					ss << "Added " << typeName << " C# Script to " << entityMgr.GetProperties(selectedEntity).name << std::endl;
+					historyManager_.RecordModifyComponent(selectedEntity, ss.str(), beforeJSON, afterJSON, selectedComponent);
+				}
+				selectedCSharpScriptIndex = 0;
+			}
+
 			ImGui::Separator();
 
 			// Per Script Section
@@ -3714,9 +3872,13 @@ namespace Editor {
 				NativeScriptsComponent::NativeScript& script = comp.scripts[i];
 				ImGui::PushID(static_cast<int>(i));
 
-				const bool isMissing = script.missing || (script.InstantiateScript == nullptr);
+				const bool isCSharp = (script.backend == NativeScriptsComponent::ScriptBackend::CSharp);
+				const bool isMissing = isCSharp ? false : (script.missing || (script.InstantiateScript == nullptr));
 				const char* scriptName = script.scriptName ? script.scriptName : nullptr;
-				const char* fallbackName = script.serializedTypeName.empty() ? "(Unknown)" : script.serializedTypeName.c_str();
+				const std::string managedTypeName = script.csharpTypeName.empty() ? script.serializedTypeName : script.csharpTypeName;
+				const char* fallbackName = isCSharp
+					? (managedTypeName.empty() ? "(Unknown C#)" : managedTypeName.c_str())
+					: (script.serializedTypeName.empty() ? "(Unknown)" : script.serializedTypeName.c_str());
 				const char* headerLabel = isMissing ? fallbackName : (scriptName ? scriptName : fallbackName);
 
 				if (ImGui::CollapsingHeader(headerLabel, ImGuiTreeNodeFlags_DefaultOpen)) {
@@ -3772,31 +3934,33 @@ namespace Editor {
 						}
 					}
 
-					// Replace Script Button
-					ImGui::SetNextItemWidth(240.f);
-					ImGui::Combo("##replaceChoice", &selectedReplaceScriptIndex, labels.data(), static_cast<int>(labels.size()));
-					ImGui::SameLine();
-					if (ImGui::Button("Replace") && selectedReplaceScriptIndex > 0) {
-						const std::string& newType = names[selectedReplaceScriptIndex];
-						std::string beforeJSON = EntitySerializer::SerializeComponentToString(selectedEntity, selectedComponent, *ecs);
+					if (!isCSharp) {
+						// Replace Script Button
+						ImGui::SetNextItemWidth(240.f);
+						ImGui::Combo("##replaceChoice", &selectedReplaceScriptIndex, labels.data(), static_cast<int>(labels.size()));
+						ImGui::SameLine();
+						if (ImGui::Button("Replace") && selectedReplaceScriptIndex > 0) {
+							const std::string& newType = names[selectedReplaceScriptIndex];
+							std::string beforeJSON = EntitySerializer::SerializeComponentToString(selectedEntity, selectedComponent, *ecs);
 
-						std::size_t newIndex = entityMgr.AttachScriptByName(selectedEntity, newType, script.enabled);
-						if (newIndex == (std::size_t)-1) {
-							Logger::Get().Error(DebugType::Editor) << "Replace failed for '" << newType << "'";
-						}
-						else {
-							if (newIndex != i) entityMgr.SwapScripts(selectedEntity, newIndex, i);
-							entityMgr.RemoveScriptAt(selectedEntity, newIndex, true);
-						}
+							std::size_t newIndex = entityMgr.AttachScriptByName(selectedEntity, newType, script.enabled);
+							if (newIndex == (std::size_t)-1) {
+								Logger::Get().Error(DebugType::Editor) << "Replace failed for '" << newType << "'";
+							}
+							else {
+								if (newIndex != i) entityMgr.SwapScripts(selectedEntity, newIndex, i);
+								entityMgr.RemoveScriptAt(selectedEntity, newIndex, true);
+							}
 
-						std::string afterJSON = EntitySerializer::SerializeComponentToString(selectedEntity, selectedComponent, *ecs);
+							std::string afterJSON = EntitySerializer::SerializeComponentToString(selectedEntity, selectedComponent, *ecs);
 
-						if (beforeJSON != afterJSON) {
-							std::stringstream ss;
-							ss << "Replaced Native Script in " << entityMgr.GetProperties(selectedEntity).name << std::endl;
-							historyManager_.RecordModifyComponent(selectedEntity, ss.str(), beforeJSON, afterJSON, selectedComponent);
+							if (beforeJSON != afterJSON) {
+								std::stringstream ss;
+								ss << "Replaced Native Script in " << entityMgr.GetProperties(selectedEntity).name << std::endl;
+								historyManager_.RecordModifyComponent(selectedEntity, ss.str(), beforeJSON, afterJSON, selectedComponent);
+							}
+							selectedReplaceScriptIndex = 0;
 						}
-						selectedReplaceScriptIndex = 0;
 					}
 
 					// Reordering Buttons
@@ -3833,7 +3997,7 @@ namespace Editor {
 
 						if (beforeJSON != afterJSON) {
 							std::stringstream ss;
-							ss << "Removed " << scriptName << " Native Script from " << entityMgr.GetProperties(selectedEntity).name << std::endl;
+							ss << "Removed " << headerLabel << " Script from " << entityMgr.GetProperties(selectedEntity).name << std::endl;
 							historyManager_.RecordModifyComponent(selectedEntity, ss.str(), beforeJSON, afterJSON, selectedComponent);
 						}
 						ImGui::PopID();
@@ -3843,7 +4007,13 @@ namespace Editor {
 					// Debug Info
 					ImGui::Separator();
 					ImGui::TextDisabled("Runtime:");
-					ImGui::BulletText("Instance: %s", script.Instance ? "Created" : "Not created");
+					if (isCSharp) {
+						ImGui::BulletText("Backend: C#");
+						ImGui::BulletText("Source: %s", script.csharpSourcePath.empty() ? "(Unspecified)" : script.csharpSourcePath.c_str());
+					}
+					else {
+						ImGui::BulletText("Instance: %s", script.Instance ? "Created" : "Not created");
+					}
 				}
 
 				ImGui::PopID();
@@ -6263,6 +6433,7 @@ namespace Editor {
 				ImGui::MenuItem("FSM Enemy Editor", NULL, &isFSMEditorOpen_);
 				ImGui::MenuItem("Prefab Editor", NULL, &isPrefabEditorOpen_);
 				ImGui::MenuItem("Animation Editor", NULL, &settings.showAnimationEditor);
+				ImGui::MenuItem("Performance Profiler", NULL, &settings.showDebugInfo);
 
 				bool isAnalyzerOpen = buildSizeAnalyzer_.IsOpen();
 				if (ImGui::MenuItem("Build Size Analyzer", NULL, &isAnalyzerOpen)) {
@@ -6486,6 +6657,16 @@ namespace Editor {
 				ImGui::BeginDisabled();
 				ImGui::Button("Redo", historyControlBtnSize);
 				ImGui::EndDisabled();
+			}
+
+			ImGui::SameLine(0.f, historySpacing);
+			if (ImGui::Button(settings.showAssetBrowser ? "Hide Asset Viewer" : "Show Asset Viewer")) {
+				settings.showAssetBrowser = !settings.showAssetBrowser;
+			}
+
+			ImGui::SameLine(0.f, historySpacing);
+			if (ImGui::Button(settings.showDebugConsole ? "Hide Debug Console" : "Show Debug Console")) {
+				settings.showDebugConsole = !settings.showDebugConsole;
 			}
 		}
 		ImGui::End();
