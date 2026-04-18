@@ -334,6 +334,12 @@ namespace Framework{
 		};
 
 		struct NativeScript {
+			struct CSharpFieldValue {
+				std::string name;
+				std::string typeName;
+				std::string value;
+			};
+
 			ScriptableEntity* Instance = nullptr;
 			uint64_t runtimeScriptId = 0;
 
@@ -347,6 +353,8 @@ namespace Framework{
 			std::string serializedTypeName;
 			std::string csharpTypeName;
 			std::string csharpSourcePath;
+			std::vector<CSharpFieldValue> csharpFieldValues;
+			bool csharpFieldsDirty = false;
 			bool missing = false;
 			bool enabled = true;
 			bool executeInEditMode = false;
@@ -375,6 +383,8 @@ namespace Framework{
 				serializedTypeName = name;
 				csharpTypeName.clear();
 				csharpSourcePath.clear();
+				csharpFieldValues.clear();
+				csharpFieldsDirty = false;
 				missing = false;
 			}
 
@@ -389,6 +399,8 @@ namespace Framework{
 				serializedTypeName = typeName;
 				csharpTypeName = typeName;
 				csharpSourcePath = sourcePath;
+				csharpFieldValues.clear();
+				csharpFieldsDirty = false;
 				missing = false;
 			}
 
@@ -411,6 +423,8 @@ namespace Framework{
 				serializedTypeName = jsonTypeName;
 				csharpTypeName.clear();
 				csharpSourcePath.clear();
+				csharpFieldValues.clear();
+				csharpFieldsDirty = false;
 				missing = true;
 				enabled = executeInEditMode = false;
 			}
@@ -423,7 +437,7 @@ namespace Framework{
 			// Copy Ctor
 			NativeScript(const NativeScript& other) : Instance(nullptr), runtimeScriptId(other.runtimeScriptId), InstantiateScript(other.InstantiateScript), DestroyScript(other.DestroyScript),
 				backend(other.backend), scriptName(other.scriptName), serializedTypeName(other.serializedTypeName), csharpTypeName(other.csharpTypeName),
-				csharpSourcePath(other.csharpSourcePath), missing(other.missing), enabled(other.enabled), executeInEditMode(other.executeInEditMode) {}
+				csharpSourcePath(other.csharpSourcePath), csharpFieldValues(other.csharpFieldValues), csharpFieldsDirty(other.csharpFieldsDirty), missing(other.missing), enabled(other.enabled), executeInEditMode(other.executeInEditMode) {}
 
 			// Copy Assignment
 			NativeScript& operator=(const NativeScript& other) {
@@ -438,6 +452,8 @@ namespace Framework{
 				serializedTypeName = other.serializedTypeName;
 				csharpTypeName = other.csharpTypeName;
 				csharpSourcePath = other.csharpSourcePath;
+				csharpFieldValues = other.csharpFieldValues;
+				csharpFieldsDirty = other.csharpFieldsDirty;
 				missing = other.missing;
 				enabled = other.enabled;
 				executeInEditMode = other.executeInEditMode;
@@ -448,7 +464,7 @@ namespace Framework{
 			// Move Ctor
 			NativeScript(NativeScript&& other) noexcept	: Instance(other.Instance), runtimeScriptId(other.runtimeScriptId), InstantiateScript(other.InstantiateScript), DestroyScript(other.DestroyScript),
 				backend(other.backend), scriptName(other.scriptName), serializedTypeName(std::move(other.serializedTypeName)),
-				csharpTypeName(std::move(other.csharpTypeName)), csharpSourcePath(std::move(other.csharpSourcePath)), missing(other.missing), enabled(other.enabled),
+				csharpTypeName(std::move(other.csharpTypeName)), csharpSourcePath(std::move(other.csharpSourcePath)), csharpFieldValues(std::move(other.csharpFieldValues)), csharpFieldsDirty(other.csharpFieldsDirty), missing(other.missing), enabled(other.enabled),
 				executeInEditMode(other.executeInEditMode) 
 			{
 				other.Instance = nullptr;
@@ -459,6 +475,8 @@ namespace Framework{
 				other.scriptName = nullptr;
 				other.csharpTypeName.clear();
 				other.csharpSourcePath.clear();
+				other.csharpFieldValues.clear();
+				other.csharpFieldsDirty = false;
 				other.missing = false;
 				other.enabled = true;
 				other.executeInEditMode = false;
@@ -477,6 +495,8 @@ namespace Framework{
 					serializedTypeName = std::move(other.serializedTypeName);
 					csharpTypeName = std::move(other.csharpTypeName);
 					csharpSourcePath = std::move(other.csharpSourcePath);
+					csharpFieldValues = std::move(other.csharpFieldValues);
+					csharpFieldsDirty = other.csharpFieldsDirty;
 					missing = other.missing;
 					enabled = other.enabled;
 					executeInEditMode = other.executeInEditMode;
@@ -490,6 +510,8 @@ namespace Framework{
 					other.serializedTypeName.clear();
 					other.csharpTypeName.clear();
 					other.csharpSourcePath.clear();
+					other.csharpFieldValues.clear();
+					other.csharpFieldsDirty = false;
 					other.missing = false;
 					other.enabled = true;
 					other.executeInEditMode = false;

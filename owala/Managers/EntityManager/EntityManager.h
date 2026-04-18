@@ -32,7 +32,7 @@ namespace Framework {
 
 		std::size_t GetOrCreateArchetype(const ComponentSignature& signature);
 		void EraseRowFromArchetype(std::size_t archetypeIndex, std::size_t rowIndex);
-		void CopySharedComponents(const ArchetypeBucket& source, std::size_t sourceRow, ArchetypeBucket& target, const ComponentSignature& sharedSignature) const;
+		void CopySharedComponents(ArchetypeBucket& source, std::size_t sourceRow, ArchetypeBucket& target, const ComponentSignature& sharedSignature);
 		void AddComponentToBucket(ArchetypeBucket& bucket, ComponentType componentType, const void* componentData);
 		void RemoveComponentFromBucket(ArchetypeBucket& bucket, ComponentType componentType, std::size_t rowIndex);
 		void ReserveComponentSlotsForEntity(ArchetypeBucket& bucket, const ComponentSignature& signature);

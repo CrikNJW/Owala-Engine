@@ -187,14 +187,17 @@ bool ResourceManager::loadTexture(const std::string& name) {
 
 // OVERLOAD Loads a texture from file and stores it inside the resource manager
 bool ResourceManager::loadTexture(const std::string& name, const std::string& filepath) {
+	Logger::Get().Info(DebugType::ResourceManager)
+		<< "Attempting to load texture: " << filepath << std::endl;
+
 	Texture tex = GameManager::GetInstance().GetSystems().gfx_->loadTextureFromFile(filepath.c_str());
 
 	if (tex == 0) {
-		Logger::Get().Info(DebugType::ResourceManager) << "Failed to load texture from '" << filepath << "'" << std::endl;
+		Logger::Get().Error(DebugType::ResourceManager) << "Failed to load texture from '" << filepath << "'" << std::endl;
 		return false;
 	}
 
-	//Logger::Get().Info(DebugType::ResourceManager) << "Loaded texture '" << filepath << "'" << std::endl;
+	Logger::Get().Info(DebugType::ResourceManager) << "Loaded texture '" << filepath << "'" << std::endl;
 
 	add<Texture>(name, tex); // Add to resource manager's unordered_map
     return true;
@@ -325,7 +328,20 @@ bool ResourceManager::loadFont(const std::string& fontKey, const std::string& fo
 
 // Loads an animation info by name using the scanned asset paths
 bool ResourceManager::loadAnimationInfo(const std::string& name) {
-	auto it = assetPathMap_.find(name);
+	std::string lookupKey = name;
+	if (name.find('\\') != std::string::npos || name.find('/') != std::string::npos) {
+		lookupKey = fs::path(name).filename().string();
+	}
+
+	auto mappingIt = textureAnimationPathMap_.find(name);
+	if (mappingIt == textureAnimationPathMap_.end() && lookupKey != name) {
+		mappingIt = textureAnimationPathMap_.find(lookupKey);
+	}
+	if (mappingIt != textureAnimationPathMap_.end()) {
+		return loadAnimationInfo(name, mappingIt->second);
+	}
+
+	auto it = assetPathMap_.find(lookupKey);
 	if (it == assetPathMap_.end()) {
 		Logger::Get().Error(DebugType::ResourceManager)
 			<< "Cannot auto-load animation: Key '" << name << "' not found.\n";
@@ -514,6 +530,7 @@ bool ResourceManager::LoadTextureAnimationMappings(const std::string& mappingFil
 
 						// Load the SAME animation file for THIS texture key
 						add<AnimationInfo>(textureKey, std::make_unique<AnimationInfo>(cachedInfo));
+						textureAnimationPathMap_[textureKey] = animationPath;
 						loadedCount++;
 					}
 				}
@@ -522,6 +539,7 @@ bool ResourceManager::LoadTextureAnimationMappings(const std::string& mappingFil
 			else if (entry.HasMember("texture_key") && entry["texture_key"].IsString()) {
 				std::string textureKey = entry["texture_key"].GetString();
 				add<AnimationInfo>(textureKey, std::make_unique<AnimationInfo>(cachedInfo));
+				textureAnimationPathMap_[textureKey] = animationPath;
 				loadedCount++;
 			}
 		}

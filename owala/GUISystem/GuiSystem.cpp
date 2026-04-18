@@ -78,11 +78,17 @@ namespace Framework {
 
 		// Sort buttons so highest priority scene comes first
 		std::sort(allButtons.begin(), allButtons.end(), [&](Entity a, Entity b) {
-			if (!entityMgr.HasComponent(a, SceneOwnedType) || !entityMgr.HasComponent(b, SceneOwnedType)) return false;
-			SceneGUID sceneA = entityMgr.GetComponent<SceneOwned>(a).sceneIndex;
-			SceneGUID sceneB = entityMgr.GetComponent<SceneOwned>(b).sceneIndex;
+			const SceneGUID sceneA = entityMgr.HasComponent(a, SceneOwnedType)
+				? entityMgr.GetComponent<SceneOwned>(a).sceneIndex
+				: 0;
+			const SceneGUID sceneB = entityMgr.HasComponent(b, SceneOwnedType)
+				? entityMgr.GetComponent<SceneOwned>(b).sceneIndex
+				: 0;
 			int prioA = scenePriority.count(sceneA) ? scenePriority[sceneA] : -1;
 			int prioB = scenePriority.count(sceneB) ? scenePriority[sceneB] : -1;
+			if (prioA == prioB) {
+				return a > b;
+			}
 			return prioA > prioB; // descending: topmost scene first
 		});
 
@@ -91,15 +97,15 @@ namespace Framework {
 
 		// Loop through all active entities with Button, Position and AABB
 		for (const Entity& button : allButtons){
-			Button& buttonComponent = entityMgr.GetComponent<Button>(button);
-			Transform& transform = entityMgr.GetComponent<Transform>(button);
-			TextureComponent& tex = entityMgr.GetComponent<TextureComponent>(button);
+			Button* buttonComponent = &entityMgr.GetComponent<Button>(button);
+			Transform* transform = &entityMgr.GetComponent<Transform>(button);
+			TextureComponent* tex = &entityMgr.GetComponent<TextureComponent>(button);
 
 			// Calculate button bounds
-			double minX = static_cast<double>(transform.position.x - tex.HalfSize.x);
-			double maxX = static_cast<double>(transform.position.x + tex.HalfSize.x);
-			double minY = static_cast<double>(transform.position.y - tex.HalfSize.y);
-			double maxY = static_cast<double>(transform.position.y + tex.HalfSize.y);
+			double minX = static_cast<double>(transform->position.x - tex->HalfSize.x);
+			double maxX = static_cast<double>(transform->position.x + tex->HalfSize.x);
+			double minY = static_cast<double>(transform->position.y - tex->HalfSize.y);
+			double maxY = static_cast<double>(transform->position.y + tex->HalfSize.y);
 
 			// Check if mouse is hovering over the button
 			bool isHovering = (mouseX_ndc >= minX && mouseX_ndc <= maxX &&
@@ -112,7 +118,7 @@ namespace Framework {
 			}
 
 			// Update Button Hovering State
-			buttonComponent.isHovered = isHovering;
+			buttonComponent->isHovered = isHovering;
 
 			// Determine visual state
 			Button::ButtonVisualState newVisualState = Button::ButtonVisualState::DEFAULT;
@@ -125,20 +131,21 @@ namespace Framework {
 				newVisualState = Button::ButtonVisualState::HOVER;
 			}
 
-			// Switch textures when state changes
-			if (newVisualState != buttonComponent.currentVisualState) {
-				SwitchButtonTexture(button, buttonComponent, tex, newVisualState, entityMgr);
-				buttonComponent.currentVisualState = newVisualState;
-			}
+// Always run texture state sync so stale AnimationComponent can be cleaned up
+// even when the visual state did not change this frame.
+SwitchButtonTexture(button, *buttonComponent, *tex, newVisualState, entityMgr);
+buttonComponent = &entityMgr.GetComponent<Button>(button);
+tex = &entityMgr.GetComponent<TextureComponent>(button);
+buttonComponent->currentVisualState = newVisualState;
 
 			// Play hover sound on hover state change
-			if (isHovering && !buttonComponent.wasHoveredLastFrame) {
+			if (isHovering && !buttonComponent->wasHoveredLastFrame) {
 				// Just started hovering
-				if (!buttonComponent.hoverSoundKey.empty()) {
-					PlayButtonSound(buttonComponent.hoverSoundKey, buttonComponent.hoverSoundVolume);
+				if (!buttonComponent->hoverSoundKey.empty()) {
+					PlayButtonSound(buttonComponent->hoverSoundKey, buttonComponent->hoverSoundVolume);
 				}
 			}
-			buttonComponent.wasHoveredLastFrame = isHovering;
+			buttonComponent->wasHoveredLastFrame = isHovering;
 
 			// If mouse clicked while hovering, trigger button action
 			if (isHovering && mouseClicked) {
@@ -146,12 +153,12 @@ namespace Framework {
 					<< "Clicked: " << button << std::endl;
 				
 				// Play click sound
-				if (!buttonComponent.clickSoundKey.empty()) {
-					PlayButtonSound(buttonComponent.clickSoundKey, buttonComponent.clickSoundVolume);
+				if (!buttonComponent->clickSoundKey.empty()) {
+					PlayButtonSound(buttonComponent->clickSoundKey, buttonComponent->clickSoundVolume);
 				}
 				
 				// Reset button pressed state
-				buttonComponent.isPressed = false;
+				buttonComponent->isPressed = false;
 
 				// Consume the click so no lower-priority scene buttons fire this frame
 				clickConsumed = true;
@@ -160,20 +167,20 @@ namespace Framework {
 				// Pass the parameters from the component to the event
 				MessageBus::Instance().Publish(ButtonClickedEvent{
 						button,                     // Entity ID
-						buttonComponent.action,     // The Enum (SWITCH_SCENE, PLAYSOUND, etc.)
-						buttonComponent.targetString, // The payload (Scene Name or Sound Key)
-						buttonComponent.targetValue,   // The payload (Volume or other float)
-                        buttonComponent.sceneToUnloadOnClick // Scene to unload on click (may be empty)
+						buttonComponent->action,     // The Enum (SWITCH_SCENE, PLAYSOUND, etc.)
+						buttonComponent->targetString, // The payload (Scene Name or Sound Key)
+						buttonComponent->targetValue,   // The payload (Volume or other float)
+						buttonComponent->sceneToUnloadOnClick // Scene to unload on click (may be empty)
 					});
 			}
 
 			else if (isHovering && mouseDown) {
 				// For visual feedback, set isPressed while mouse is down
-				buttonComponent.isPressed = true;
+				buttonComponent->isPressed = true;
 			}
 
 			else {
-				buttonComponent.isPressed = false;
+				buttonComponent->isPressed = false;
 			}
 		}
 
@@ -426,8 +433,17 @@ namespace Framework {
             break;
         }
 
-        // Only switch if texture actually changed
-        if (newTextureKey.empty() || newTextureKey == tex.textureKey) {
+        if (newTextureKey.empty()) {
+            return;
+        }
+
+        // If the texture key is unchanged, still clear stale animation components
+        // when this state should be static (e.g. scene saved while button was hovered).
+        const std::string currentTextureKey = tex.textureKey;
+        if (newTextureKey == currentTextureKey) {
+            if (!shouldAnimate && entityMgr.HasComponent(button, AnimationComponentType)) {
+                entityMgr.RemoveComponent(button, AnimationComponentType);
+            }
             return;
         }
 
@@ -535,8 +551,9 @@ namespace Framework {
             }
         }
 
-        // Update the texture key (after animation setup is complete)
-        tex.textureKey = newTextureKey;
+        // Add/Remove animation can move archetypes, so re-fetch before writing texture key.
+        TextureComponent& updatedTexture = entityMgr.GetComponent<TextureComponent>(button);
+        updatedTexture.textureKey = newTextureKey;
     }
 
 }

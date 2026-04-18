@@ -44,6 +44,8 @@ namespace Framework {
             }
         }
 
+        std::once_flag gLogCaptureInitOnce;
+
         class TeeCaptureBuf final : public std::streambuf {
         public:
             explicit TeeCaptureBuf(std::streambuf* target) : target_(target) {}
@@ -55,10 +57,6 @@ namespace Framework {
                 }
 
                 const char c = static_cast<char>(ch);
-                if (target_ && target_->sputc(c) == EOF) {
-                    return EOF;
-                }
-
                 if (c == '\n') {
                     AppendBufferedLine(currentLine_);
                     currentLine_.clear();
@@ -66,14 +64,14 @@ namespace Framework {
                 else {
                     currentLine_.push_back(c);
                 }
+
+                if (target_) {
+                    target_->sputc(c); // Best effort mirror; do not fail capture if output sink is unavailable.
+                }
                 return ch;
             }
 
             std::streamsize xsputn(const char* s, std::streamsize count) override {
-                if (target_ && target_->sputn(s, count) != count) {
-                    return 0;
-                }
-
                 for (std::streamsize i = 0; i < count; ++i) {
                     const char c = s[i];
                     if (c == '\n') {
@@ -84,10 +82,17 @@ namespace Framework {
                         currentLine_.push_back(c);
                     }
                 }
+                if (target_) {
+                    target_->sputn(s, count); // Best effort mirror.
+                }
                 return count;
             }
 
             int sync() override {
+                if (!currentLine_.empty()) {
+                    AppendBufferedLine(currentLine_);
+                    currentLine_.clear();
+                }
                 return target_ ? target_->pubsync() : 0;
             }
 
@@ -96,16 +101,17 @@ namespace Framework {
             std::string currentLine_;
         };
 
-        std::once_flag gLogCaptureInitOnce;
         std::unique_ptr<TeeCaptureBuf> gCoutCapture;
         std::unique_ptr<TeeCaptureBuf> gCerrCapture;
 
         void InitLogCapture() {
             gCoutCapture = std::make_unique<TeeCaptureBuf>(std::cout.rdbuf());
             std::cout.rdbuf(gCoutCapture.get());
+            std::cout.clear();
 
             gCerrCapture = std::make_unique<TeeCaptureBuf>(std::cerr.rdbuf());
             std::cerr.rdbuf(gCerrCapture.get());
+            std::cerr.clear();
         }
     }
 
@@ -256,6 +262,7 @@ namespace Framework {
     }
 
     std::vector<std::string> Logger::GetRecentLogs() {
+        std::call_once(gLogCaptureInitOnce, InitLogCapture);
         std::lock_guard<std::mutex> lock(gLogBufferMutex);
         return { gBufferedLogLines.begin(), gBufferedLogLines.end() };
     }

@@ -2,7 +2,7 @@ using Owala.ScriptHost;
 
 public class Lamp : OwalaBehaviour
 {
-	float moveSpeed = 0.1f;
+	public float moveSpeed = 0.5f;
     public void OnCreate()
     {
         Log("Lamp created");

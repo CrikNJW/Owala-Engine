@@ -234,6 +234,10 @@ namespace Framework::Serialization {
     static constexpr const char* SCRIPT_BACKEND_CSHARP = "csharp";        //!< C# backend value
     static constexpr const char* SCRIPT_CS_TYPE = "cs_type";              //!< C# type name
     static constexpr const char* SCRIPT_CS_PATH = "cs_source_path";       //!< C# source path
+    static constexpr const char* SCRIPT_CS_FIELDS = "cs_fields";          //!< Serialized C# field values
+    static constexpr const char* SCRIPT_CS_FIELD_NAME = "name";           //!< C# field name
+    static constexpr const char* SCRIPT_CS_FIELD_TYPE = "field_type";     //!< C# field type name
+    static constexpr const char* SCRIPT_CS_FIELD_VALUE = "value";         //!< C# field value as string
 
     /* ----- Button Component ----- */
     static constexpr const char* BUTTON_COMPONENT = "ButtonComponent";    //!< Button component

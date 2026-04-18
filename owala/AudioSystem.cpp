@@ -34,8 +34,8 @@ namespace Framework {
      *********************************************************************/
     void AudioSystem::check(FMOD_RESULT r, const char* where) {
         if (r != FMOD_OK) {
-            std::fprintf(stderr, "[FMOD] %s failed: (%d) %s\n",
-                where, (int)r, FMOD_ErrorString(r));
+            Logger::Get().Error(DebugType::AudioSystem)
+                << "[FMOD] " << where << " failed: (" << static_cast<int>(r) << ") " << FMOD_ErrorString(r) << std::endl;
         }
     }
 
@@ -163,17 +163,20 @@ namespace Framework {
             if (ch && e.entity != 0) {
                 entity3DChannels_[e.entity] = ch;
                 // DEBUG: confirm the channel was registered and the spawn position
-                std::fprintf(stderr,
-                    "[Audio3D][REGISTERED] key='%s' entity=%llu ch=%p spawnPos=(%.1f, %.1f)\n",
-                    e.soundKey.c_str(), (unsigned long long)e.entity, (void*)ch,
-                    e.position.x, e.position.y);
+                Logger::Get().Info(DebugType::AudioSystem)
+                    << "[Audio3D][REGISTERED] key='" << e.soundKey
+                    << "' entity=" << static_cast<unsigned long long>(e.entity)
+                    << " ch=" << static_cast<void*>(ch)
+                    << " spawnPos=(" << e.position.x << ", " << e.position.y << ")" << std::endl;
             }
             else {
                 // DEBUG: find out why registration was skipped
-                std::fprintf(stderr,
-                    "[Audio3D][SKIP] key='%s' entity=%llu ch=%p  (ch==null? %s | entity==0? %s)\n",
-                    e.soundKey.c_str(), (unsigned long long)e.entity, (void*)ch,
-                    ch ? "no" : "YES", e.entity == 0 ? "YES" : "no");
+                Logger::Get().Info(DebugType::AudioSystem)
+                    << "[Audio3D][SKIP] key='" << e.soundKey
+                    << "' entity=" << static_cast<unsigned long long>(e.entity)
+                    << " ch=" << static_cast<void*>(ch)
+                    << " (ch==null? " << (ch ? "no" : "YES")
+                    << " | entity==0? " << (e.entity == 0 ? "YES" : "no") << ")" << std::endl;
             }
         });
 		// Subscribe to Animation Events (for frame-specific SFX)
@@ -373,7 +376,8 @@ namespace Framework {
             }
             catch (const GameException& e) {
                 (void)e;
-                std::fprintf(stderr, "[Audio] Sound '%s' not found in ResourceManager\n", comp.soundKey.c_str());
+                Logger::Get().Error(DebugType::AudioSystem)
+                    << "[Audio] Sound '" << comp.soundKey << "' not found in ResourceManager" << std::endl;
             }
         }
     }
@@ -422,7 +426,7 @@ namespace Framework {
         // Check if file exists
         FILE* test = fopen(path, "rb");
         if (!test) {
-            std::fprintf(stderr, "[Audio] File not found: %s\n", path);
+            Logger::Get().Error(DebugType::AudioSystem) << "[Audio] File not found: " << path << std::endl;
             return false;
         }
         fclose(test);
@@ -894,15 +898,15 @@ namespace Framework {
         static int s_frameCounter = 0;
         bool logThisFrame = (++s_frameCounter % 120 == 0);
         if (logThisFrame)
-            std::fprintf(stderr, "[Audio3D][UPDATE] entity3DChannels_ size=%zu\n", entity3DChannels_.size());
+            Logger::Get().Info(DebugType::AudioSystem) << "[Audio3D][UPDATE] entity3DChannels_ size=" << entity3DChannels_.size() << std::endl;
 
         for (auto it = entity3DChannels_.begin(); it != entity3DChannels_.end(); ) {
             Entity entity = it->first;
             FMOD::Channel* channel = it->second;
 
             if (!channel) {
-                std::fprintf(stderr, "[Audio3D][UPDATE] entity=%llu ERASED (null channel)\n",
-                    (unsigned long long)entity);
+                Logger::Get().Info(DebugType::AudioSystem)
+                    << "[Audio3D][UPDATE] entity=" << static_cast<unsigned long long>(entity) << " ERASED (null channel)" << std::endl;
                 it = entity3DChannels_.erase(it); continue;
             }
 
@@ -911,14 +915,14 @@ namespace Framework {
 
             if (!isPlaying) {
                 if (logThisFrame)
-                    std::fprintf(stderr, "[Audio3D][UPDATE] entity=%llu ERASED (stopped playing)\n",
-                        (unsigned long long)entity);
+                    Logger::Get().Info(DebugType::AudioSystem)
+                        << "[Audio3D][UPDATE] entity=" << static_cast<unsigned long long>(entity) << " ERASED (stopped playing)" << std::endl;
                 it = entity3DChannels_.erase(it); continue;
             }
 
             if (!entityMgr.HasComponent(entity, TransformType)) {
-                std::fprintf(stderr, "[Audio3D][UPDATE] entity=%llu SKIPPED (no TransformType)\n",
-                    (unsigned long long)entity);
+                Logger::Get().Info(DebugType::AudioSystem)
+                    << "[Audio3D][UPDATE] entity=" << static_cast<unsigned long long>(entity) << " SKIPPED (no TransformType)" << std::endl;
                 ++it; continue;
             }
 
@@ -929,9 +933,9 @@ namespace Framework {
             FMOD_RESULT r = channel->set3DAttributes(&fmodPos, &fmodVel);
 
             if (logThisFrame)
-                std::fprintf(stderr,
-                    "[Audio3D][UPDATE] entity=%llu pos=(%.1f, %.1f) set3DAttributes result=%d\n",
-                    (unsigned long long)entity, pos2D.x, pos2D.y, (int)r);
+                Logger::Get().Info(DebugType::AudioSystem)
+                    << "[Audio3D][UPDATE] entity=" << static_cast<unsigned long long>(entity)
+                    << " pos=(" << pos2D.x << ", " << pos2D.y << ") set3DAttributes result=" << static_cast<int>(r) << std::endl;
             ++it;
         }
 
@@ -939,9 +943,9 @@ namespace Framework {
         if (logThisFrame && system_) {
             FMOD_VECTOR lpos{}, lvel{}, lfwd{}, lup{};
             system_->get3DListenerAttributes(0, &lpos, &lvel, &lfwd, &lup);
-            std::fprintf(stderr,
-                "[Audio3D][LISTENER] pos=(%.1f, %.1f, %.1f) fwd=(%.2f, %.2f, %.2f)\n",
-                lpos.x, lpos.y, lpos.z, lfwd.x, lfwd.y, lfwd.z);
+            Logger::Get().Info(DebugType::AudioSystem)
+                << "[Audio3D][LISTENER] pos=(" << lpos.x << ", " << lpos.y << ", " << lpos.z
+                << ") fwd=(" << lfwd.x << ", " << lfwd.y << ", " << lfwd.z << ")" << std::endl;
         }
     }
 

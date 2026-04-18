@@ -6,6 +6,7 @@
 #include <future>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 namespace Framework {
 	class CSharpScriptEngine {
@@ -13,7 +14,11 @@ namespace Framework {
 		static CSharpScriptEngine& Get();
 		void UpdateScript(Entity entity, NativeScriptsComponent::NativeScript& script);
 		void DestroyScriptInstance(Entity entity, NativeScriptsComponent::NativeScript& script);
+		void SyncCSharpFieldValues(NativeScriptsComponent::NativeScript& script);
+		void TickEditorCompilation();
+		void NotifyEditorFocusRegained();
 		void ResetRuntime();
+		bool IsCompilingScripts() const;
 		~CSharpScriptEngine();
 
 	private:
@@ -43,6 +48,8 @@ namespace Framework {
 		using ManagedLoadScriptFn = int(__stdcall*)(const char*, const char*, const char*, char*, int);
 		using ManagedInvokeScriptFn = int(__stdcall*)(const char*, int, uint64_t, char*, int);
 		using ManagedDestroyScriptFn = int(__stdcall*)(const char*, uint64_t, char*, int);
+		using ManagedDescribeScriptFieldsFn = int(__stdcall*)(const char*, const char*, char*, int, char*, int);
+		using ManagedApplyScriptFieldsFn = int(__stdcall*)(const char*, const char*, char*, int);
 		using ManagedResetFn = int(__stdcall*)(char*, int);
 
 		bool hostBuilt_ = false;
@@ -51,6 +58,9 @@ namespace Framework {
 		bool compileRequested_ = true;
 		bool compileInFlight_ = false;
 		bool compileFailedLogged_ = false;
+		bool hasObservedSources_ = false;
+		std::filesystem::file_time_type observedLatestSourceWriteTime_{};
+		size_t observedSourceFileCount_ = 0;
 		std::future<int> compileFuture_;
 
 		std::unordered_map<std::string, ScriptState> states_;
@@ -65,6 +75,8 @@ namespace Framework {
 		ManagedLoadScriptFn managedLoadScript_ = nullptr;
 		ManagedInvokeScriptFn managedInvokeScript_ = nullptr;
 		ManagedDestroyScriptFn managedDestroyScript_ = nullptr;
+		ManagedDescribeScriptFieldsFn managedDescribeScriptFields_ = nullptr;
+		ManagedApplyScriptFieldsFn managedApplyScriptFields_ = nullptr;
 		ManagedResetFn managedReset_ = nullptr;
 		NativeApi nativeApi_{};
 
@@ -95,6 +107,9 @@ namespace Framework {
 		bool CallManagedLoad(const std::string& id, const std::filesystem::path& assemblyPath, const std::string& typeName, ScriptState& state);
 		bool CallManagedInvoke(const std::string& id, int methodId, Entity entity, ScriptState& state);
 		bool CallManagedDestroy(const std::string& id, Entity entity, ScriptState& state);
+		bool CallManagedDescribeFields(const std::filesystem::path& assemblyPath, const std::string& typeName, std::vector<NativeScriptsComponent::NativeScript::CSharpFieldValue>& outFields) const;
+		bool CallManagedApplyFields(const std::string& id, NativeScriptsComponent::NativeScript& script, ScriptState& state);
+		void CaptureScriptSourceSnapshot();
 
 		bool RunCommand(const std::string& command) const;
 		static std::wstring ToWide(const std::filesystem::path& path);

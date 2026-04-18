@@ -45,6 +45,7 @@
 #include "ScriptableEntity.h"
 #include "ScriptRegistry.h"
 #include "NativeScriptMaker.h"
+#include "CSharpScriptEngine.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -548,7 +549,18 @@ namespace Editor {
 			// Tell the InputSystem whether to lock gameplay input
 			Framework::InputSystem* input = gameManager_->GetSystems().input_;
 			input->SetCursorLocked(false);
+
+			GLFWwindow* editorWindow = gameManager_->GetSystems().win_ ? gameManager_->GetSystems().win_->window() : nullptr;
+			if (editorWindow) {
+				const bool isFocusedNow = glfwGetWindowAttrib(editorWindow, GLFW_FOCUSED) == GLFW_TRUE;
+				if (isFocusedNow && !wasWindowFocused_) {
+					CSharpScriptEngine::Get().NotifyEditorFocusRegained();
+				}
+				wasWindowFocused_ = isFocusedNow;
+			}
 		}
+
+		CSharpScriptEngine::Get().TickEditorCompilation();
 
 		if (!palettePrepared_ && resourceManager_) {
 			Framework::Logger::Get().Info(DebugType::Editor) << "Running PreparePaletteItems..." << std::endl;
@@ -746,6 +758,8 @@ namespace Editor {
 			}
 			ImGui::End();
 		}
+
+		ShowHotReloadOverlay();
 
 		// Set editor play/edit mode
 		if (isTileEditorActive_ || !isGamePlaying || (gizmoSystem_ && gizmoSystem_->IsGizmosToggled())) {
@@ -1766,6 +1780,62 @@ namespace Editor {
 			ImGui::SetScrollHereY(1.0f);
 		}
 		ImGui::End();
+	}
+
+	void Editor::ShowHotReloadOverlay() {
+		const bool isHotReloading = Framework::CSharpScriptEngine::Get().IsCompilingScripts();
+		if (!isHotReloading) {
+			if (hotReloadOverlayActive_) {
+				gameManager_->GetSystems().input_->SetKeyboardLocked(!isGamePlaying);
+				hotReloadOverlayActive_ = false;
+			}
+			return;
+		}
+
+		gameManager_->GetSystems().input_->SetKeyboardLocked(true);
+		hotReloadOverlayActive_ = true;
+
+		const ImGuiViewport* viewport = ImGui::GetMainViewport();
+		ImGui::SetNextWindowPos(viewport->Pos);
+		ImGui::SetNextWindowSize(viewport->Size);
+		ImGui::SetNextWindowViewport(viewport->ID);
+
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.f, 0.f, 0.f, 0.45f));
+
+		const ImGuiWindowFlags overlayFlags =
+			ImGuiWindowFlags_NoDecoration |
+			ImGuiWindowFlags_NoMove |
+			ImGuiWindowFlags_NoSavedSettings |
+			ImGuiWindowFlags_NoDocking |
+			ImGuiWindowFlags_NoScrollbar |
+			ImGuiWindowFlags_NoScrollWithMouse |
+			ImGuiWindowFlags_NoNav;
+
+		ImGui::Begin("##HotReloadOverlay", nullptr, overlayFlags);
+
+		const char* title = "Hot Reloading C# Scripts...";
+		const char* subtitle = "Please wait";
+		const float panelWidth = 420.0f;
+		const float panelHeight = 140.0f;
+		const ImVec2 center = ImVec2(viewport->Pos.x + viewport->Size.x * 0.5f, viewport->Pos.y + viewport->Size.y * 0.5f);
+		ImGui::SetCursorScreenPos(ImVec2(center.x - panelWidth * 0.5f, center.y - panelHeight * 0.5f));
+		ImGui::BeginChild("##HotReloadPanel", ImVec2(panelWidth, panelHeight), true, ImGuiWindowFlags_NoScrollbar);
+		ImGui::Spacing();
+		ImGui::SetCursorPosX((panelWidth - ImGui::CalcTextSize(title).x) * 0.5f);
+		ImGui::TextUnformatted(title);
+		ImGui::Spacing();
+		ImGui::SetCursorPosX((panelWidth - ImGui::CalcTextSize(subtitle).x) * 0.5f);
+		ImGui::TextDisabled("%s", subtitle);
+		ImGui::Spacing();
+		const float pulse = static_cast<float>((std::sin(ImGui::GetTime() * 4.0) + 1.0) * 0.5);
+		ImGui::ProgressBar(pulse, ImVec2(panelWidth - 40.0f, 0.0f), "");
+		ImGui::EndChild();
+
+		ImGui::End();
+		ImGui::PopStyleColor();
+		ImGui::PopStyleVar(2);
 	}
 #pragma endregion
 
@@ -4002,6 +4072,80 @@ namespace Editor {
 						}
 						ImGui::PopID();
 						break;
+					}
+
+					if (isCSharp && !isMissing) {
+						CSharpScriptEngine::Get().SyncCSharpFieldValues(script);
+						if (!script.csharpFieldValues.empty()) {
+							ImGui::Separator();
+							ImGui::Text("Script Variables");
+							for (NativeScriptsComponent::NativeScript::CSharpFieldValue& fieldValue : script.csharpFieldValues) {
+								ImGui::PushID(fieldValue.name.c_str());
+								std::string typeNameLower = fieldValue.typeName;
+								std::transform(typeNameLower.begin(), typeNameLower.end(), typeNameLower.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+								bool changed = false;
+								std::string nextValue = fieldValue.value;
+
+								if (typeNameLower.find("boolean") != std::string::npos || typeNameLower == "bool") {
+									bool boolValue = (fieldValue.value == "true" || fieldValue.value == "True" || fieldValue.value == "1");
+									if (ImGui::Checkbox(fieldValue.name.c_str(), &boolValue)) {
+										nextValue = boolValue ? "true" : "false";
+										changed = true;
+									}
+								}
+								else if (typeNameLower.find("single") != std::string::npos || typeNameLower.find("double") != std::string::npos || typeNameLower.find("decimal") != std::string::npos || typeNameLower == "float") {
+									float floatValue = 0.0f;
+									try {
+										floatValue = std::stof(fieldValue.value);
+									}
+									catch (...) {
+										floatValue = 0.0f;
+									}
+									if (ImGui::DragFloat(fieldValue.name.c_str(), &floatValue, 0.05f)) {
+										std::ostringstream stream;
+										stream << floatValue;
+										nextValue = stream.str();
+										changed = true;
+									}
+								}
+								else if (typeNameLower.find("int") != std::string::npos || typeNameLower.find("byte") != std::string::npos || typeNameLower.find("short") != std::string::npos || typeNameLower.find("long") != std::string::npos) {
+									int intValue = 0;
+									try {
+										intValue = std::stoi(fieldValue.value);
+									}
+									catch (...) {
+										intValue = 0;
+									}
+									if (ImGui::DragInt(fieldValue.name.c_str(), &intValue, 1.0f)) {
+										nextValue = std::to_string(intValue);
+										changed = true;
+									}
+								}
+								else {
+									char textBuffer[256]{};
+									const std::size_t copyCount = std::min(fieldValue.value.size(), sizeof(textBuffer) - 1);
+									std::memcpy(textBuffer, fieldValue.value.data(), copyCount);
+									if (ImGui::InputText(fieldValue.name.c_str(), textBuffer, sizeof(textBuffer), ImGuiInputTextFlags_EnterReturnsTrue)) {
+										nextValue = textBuffer;
+										changed = true;
+									}
+								}
+
+								if (changed && nextValue != fieldValue.value) {
+									std::string beforeJSON = EntitySerializer::SerializeComponentToString(selectedEntity, selectedComponent, *ecs);
+									fieldValue.value = nextValue;
+									script.csharpFieldsDirty = true;
+									std::string afterJSON = EntitySerializer::SerializeComponentToString(selectedEntity, selectedComponent, *ecs);
+
+									if (beforeJSON != afterJSON) {
+										std::stringstream ss;
+										ss << "Modified " << ComponentToString(selectedComponent) << " in " << entityMgr.GetProperties(selectedEntity).name << std::endl;
+										historyManager_.RecordModifyComponent(selectedEntity, ss.str(), beforeJSON, afterJSON, selectedComponent);
+									}
+								}
+								ImGui::PopID();
+							}
+						}
 					}
 
 					// Debug Info

@@ -188,6 +188,8 @@ namespace Editor {
 		bool firstUpdate = true;
 		bool isGamePlaying = false;
 		bool isGamePaused = false;
+		bool hotReloadOverlayActive_ = false;
+		bool wasWindowFocused_ = true;
 		//  Members for the system profiler display
 		float profilerUpdateTimer_ = 0.0f;
 		std::vector<Framework::SystemTime> profilerDisplayData_;
@@ -476,6 +478,11 @@ namespace Editor {
 		 * \brief   Renders the Debug Console panel.
 		 *********************************************************************/
 		void ShowDebugConsole();
+
+		/*********************************************************************//**
+		 * \brief   Renders a blocking translucent overlay while C# scripts hot-reload.
+		 *********************************************************************/
+		void ShowHotReloadOverlay();
 
 		/*********************************************************************//**
 		 * \brief   Renders the Game Viewport panel.

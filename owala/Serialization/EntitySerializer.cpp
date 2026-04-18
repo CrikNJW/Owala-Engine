@@ -1167,6 +1167,26 @@ namespace Framework {
 				rapidjson::Value csPathVal;
 				csPathVal.SetString(script.csharpSourcePath.c_str(), static_cast<rapidjson::SizeType>(script.csharpSourcePath.length()), alloc);
 				scriptObj.AddMember(rapidjson::StringRef(Serialization::SCRIPT_CS_PATH), csPathVal, alloc);
+
+				rapidjson::Value csFields(rapidjson::kArrayType);
+				for (const NativeScriptsComponent::NativeScript::CSharpFieldValue& fieldValue : script.csharpFieldValues) {
+					rapidjson::Value fieldObj(rapidjson::kObjectType);
+
+					rapidjson::Value fieldName;
+					fieldName.SetString(fieldValue.name.c_str(), static_cast<rapidjson::SizeType>(fieldValue.name.length()), alloc);
+					fieldObj.AddMember(rapidjson::StringRef(Serialization::SCRIPT_CS_FIELD_NAME), fieldName, alloc);
+
+					rapidjson::Value fieldType;
+					fieldType.SetString(fieldValue.typeName.c_str(), static_cast<rapidjson::SizeType>(fieldValue.typeName.length()), alloc);
+					fieldObj.AddMember(rapidjson::StringRef(Serialization::SCRIPT_CS_FIELD_TYPE), fieldType, alloc);
+
+					rapidjson::Value valueStr;
+					valueStr.SetString(fieldValue.value.c_str(), static_cast<rapidjson::SizeType>(fieldValue.value.length()), alloc);
+					fieldObj.AddMember(rapidjson::StringRef(Serialization::SCRIPT_CS_FIELD_VALUE), valueStr, alloc);
+
+					csFields.PushBack(fieldObj, alloc);
+				}
+				scriptObj.AddMember(rapidjson::StringRef(Serialization::SCRIPT_CS_FIELDS), csFields, alloc);
 			}
 
 			scriptList.PushBack(scriptObj, alloc);
@@ -1784,6 +1804,7 @@ namespace Framework {
 				std::string backend = Serialization::SCRIPT_BACKEND_NATIVE;
 				std::string csharpTypeName;
 				std::string csharpSourcePath;
+				std::vector<NativeScriptsComponent::NativeScript::CSharpFieldValue> csharpFieldValues;
 				bool enabled = true;
 				bool executeInEdit = false;
 
@@ -1805,6 +1826,26 @@ namespace Framework {
 				if (scriptObj.HasMember(Serialization::SCRIPT_CS_PATH) && scriptObj[Serialization::SCRIPT_CS_PATH].IsString()) {
 					csharpSourcePath = scriptObj[Serialization::SCRIPT_CS_PATH].GetString();
 				}
+				if (scriptObj.HasMember(Serialization::SCRIPT_CS_FIELDS) && scriptObj[Serialization::SCRIPT_CS_FIELDS].IsArray()) {
+					for (const rapidjson::Value& fieldObj : scriptObj[Serialization::SCRIPT_CS_FIELDS].GetArray()) {
+						if (!fieldObj.IsObject()) {
+							continue;
+						}
+						if (!fieldObj.HasMember(Serialization::SCRIPT_CS_FIELD_NAME) || !fieldObj[Serialization::SCRIPT_CS_FIELD_NAME].IsString()) {
+							continue;
+						}
+
+						NativeScriptsComponent::NativeScript::CSharpFieldValue fieldValue{};
+						fieldValue.name = fieldObj[Serialization::SCRIPT_CS_FIELD_NAME].GetString();
+						if (fieldObj.HasMember(Serialization::SCRIPT_CS_FIELD_TYPE) && fieldObj[Serialization::SCRIPT_CS_FIELD_TYPE].IsString()) {
+							fieldValue.typeName = fieldObj[Serialization::SCRIPT_CS_FIELD_TYPE].GetString();
+						}
+						if (fieldObj.HasMember(Serialization::SCRIPT_CS_FIELD_VALUE) && fieldObj[Serialization::SCRIPT_CS_FIELD_VALUE].IsString()) {
+							fieldValue.value = fieldObj[Serialization::SCRIPT_CS_FIELD_VALUE].GetString();
+						}
+						csharpFieldValues.push_back(std::move(fieldValue));
+					}
+				}
 
 				out.scripts.emplace_back();
 				NativeScriptsComponent::NativeScript& script = out.scripts.back();
@@ -1816,6 +1857,8 @@ namespace Framework {
 				if (isCSharp) {
 					const std::string resolvedType = !csharpTypeName.empty() ? csharpTypeName : typeName;
 					script.BindCSharp(resolvedType, csharpSourcePath);
+					script.csharpFieldValues = std::move(csharpFieldValues);
+					script.csharpFieldsDirty = true;
 				}
 				else if (!typeName.empty()) {
 					const bool isGood = Framework::ScriptRegistry::Get().BindScriptByName(script, typeName);

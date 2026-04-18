@@ -4,6 +4,9 @@
 #include "GameManager.h"
 #include "EntityManager.h"
 #include "FileUtility.h"
+#include "rapidjson/document.h"
+#include "rapidjson/stringbuffer.h"
+#include "rapidjson/writer.h"
 
 namespace Framework {
 	namespace {
@@ -150,7 +153,30 @@ namespace Framework {
 			state.loaded = false;
 			state.created = false;
 			state.invokeFailedLogged = false;
-			compileRequested_ = true;
+
+			bool requestCompile = false;
+			if (!hasWriteTime) {
+				requestCompile = true;
+			}
+			else if (state.hasWriteTime) {
+				requestCompile = (writeTime != state.lastWriteTime);
+			}
+			else {
+				std::error_code asmError;
+				const std::filesystem::path scriptsAssembly = GetScriptsAssemblyPath();
+				if (!std::filesystem::exists(scriptsAssembly, asmError) || asmError) {
+					requestCompile = true;
+				}
+				else {
+					asmError.clear();
+					const std::filesystem::file_time_type assemblyWriteTime = std::filesystem::last_write_time(scriptsAssembly, asmError);
+					requestCompile = asmError || (writeTime > assemblyWriteTime);
+				}
+			}
+
+			if (requestCompile) {
+				compileRequested_ = true;
+			}
 		}
 		if (hasWriteTime) {
 			state.lastWriteTime = writeTime;
@@ -167,12 +193,73 @@ namespace Framework {
 			state.created = false;
 		}
 
+		if (!CallManagedApplyFields(instanceKey, script, state)) {
+			return;
+		}
+
 		if (!state.created) {
 			if (!CallManagedInvoke(instanceKey, SCRIPT_METHOD_ON_CREATE, entity, state)) return;
 			state.created = true;
 		}
 
 		CallManagedInvoke(instanceKey, SCRIPT_METHOD_ON_UPDATE, entity, state);
+	}
+
+	void CSharpScriptEngine::SyncCSharpFieldValues(NativeScriptsComponent::NativeScript& script) {
+		if (script.backend != NativeScriptsComponent::ScriptBackend::CSharp) {
+			return;
+		}
+		if (script.csharpTypeName.empty()) {
+			script.csharpTypeName = script.serializedTypeName;
+		}
+		if (script.csharpTypeName.empty()) {
+			return;
+		}
+		if (script.csharpSourcePath.empty()) {
+			const std::filesystem::path defaultPath = GetScriptsRootPath() / (script.csharpTypeName + ".cs");
+			script.csharpSourcePath = defaultPath.string();
+		}
+
+		if (!EnsureHostBuilt() || !EnsureRuntimeInitialized() || !EnsureScriptsAssemblyUpToDate()) {
+			return;
+		}
+
+		std::vector<NativeScriptsComponent::NativeScript::CSharpFieldValue> reflectedFields;
+		if (!CallManagedDescribeFields(GetScriptsAssemblyPath(), script.csharpTypeName, reflectedFields)) {
+			return;
+		}
+
+		std::unordered_map<std::string, NativeScriptsComponent::NativeScript::CSharpFieldValue> existingByName;
+		existingByName.reserve(script.csharpFieldValues.size());
+		for (const NativeScriptsComponent::NativeScript::CSharpFieldValue& field : script.csharpFieldValues) {
+			existingByName[field.name] = field;
+		}
+
+		for (NativeScriptsComponent::NativeScript::CSharpFieldValue& reflected : reflectedFields) {
+			const auto existingIt = existingByName.find(reflected.name);
+			if (existingIt != existingByName.end()) {
+				reflected.value = existingIt->second.value;
+				if (reflected.typeName.empty()) {
+					reflected.typeName = existingIt->second.typeName;
+				}
+			}
+		}
+
+		script.csharpFieldValues = std::move(reflectedFields);
+	}
+
+	void CSharpScriptEngine::TickEditorCompilation() {
+		if (!EnsureHostBuilt()) {
+			return;
+		}
+		EnsureScriptsAssemblyUpToDate();
+		if (!hasObservedSources_) {
+			CaptureScriptSourceSnapshot();
+		}
+	}
+
+	void CSharpScriptEngine::NotifyEditorFocusRegained() {
+		CaptureScriptSourceSnapshot();
 	}
 
 	void CSharpScriptEngine::DestroyScriptInstance(Entity entity, NativeScriptsComponent::NativeScript& script) {
@@ -200,6 +287,10 @@ namespace Framework {
 			}
 		}
 		states_.clear();
+	}
+
+	bool CSharpScriptEngine::IsCompilingScripts() const {
+		return compileInFlight_;
 	}
 
 	std::string CSharpScriptEngine::ScriptInstanceKey(const NativeScriptsComponent::NativeScript& script) const {
@@ -309,8 +400,8 @@ namespace Framework {
 		std::error_code fsError;
 		std::filesystem::create_directories(projectPath.parent_path(), fsError);
 
-		std::ofstream out(projectPath, std::ios::binary);
-		out <<
+		std::ostringstream desired;
+		desired <<
 			"<Project Sdk=\"Microsoft.NET.Sdk\">\n"
 			"  <PropertyGroup>\n"
 			"    <TargetFramework>net8.0</TargetFramework>\n"
@@ -325,6 +416,20 @@ namespace Framework {
 			"    </Reference>\n"
 			"  </ItemGroup>\n"
 			"</Project>\n";
+
+		std::string existingContents;
+		if (std::filesystem::exists(projectPath, fsError) && !fsError) {
+			std::ifstream in(projectPath, std::ios::binary);
+			existingContents.assign(std::istreambuf_iterator<char>(in), std::istreambuf_iterator<char>());
+		}
+
+		const std::string desiredContents = desired.str();
+		if (existingContents == desiredContents) {
+			return;
+		}
+
+		std::ofstream out(projectPath, std::ios::binary | std::ios::trunc);
+		out << desiredContents;
 	}
 
 	bool CSharpScriptEngine::EnsureHostBuilt() {
@@ -382,8 +487,8 @@ namespace Framework {
 
 		if (compileRequested_) {
 			const std::string buildCommand = "dotnet build " + Quote(projectPath) + " --nologo --verbosity quiet";
-			compileFuture_ = std::async(std::launch::async, [buildCommand]() {
-				return std::system(buildCommand.c_str());
+			compileFuture_ = std::async(std::launch::async, [this, buildCommand]() {
+				return RunCommand(buildCommand) ? 0 : 1;
 			});
 			compileInFlight_ = true;
 			compileRequested_ = false;
@@ -396,6 +501,66 @@ namespace Framework {
 			return false;
 		}
 		return true;
+	}
+
+	void CSharpScriptEngine::CaptureScriptSourceSnapshot() {
+		const std::filesystem::path scriptsRoot = GetScriptsRootPath();
+		std::error_code fsError;
+		std::filesystem::file_time_type latestWriteTime{};
+		bool hasLatestWriteTime = false;
+		size_t sourceFileCount = 0;
+
+		if (std::filesystem::exists(scriptsRoot, fsError) && !fsError) {
+			for (const std::filesystem::directory_entry& entry : std::filesystem::recursive_directory_iterator(scriptsRoot, fsError)) {
+				if (fsError || !entry.is_regular_file()) {
+					continue;
+				}
+				const std::filesystem::path filePath = entry.path();
+				if (filePath.extension() != ".cs") {
+					continue;
+				}
+				++sourceFileCount;
+				const std::filesystem::file_time_type writeTime = std::filesystem::last_write_time(filePath, fsError);
+				if (fsError) {
+					continue;
+				}
+				if (!hasLatestWriteTime || writeTime > latestWriteTime) {
+					latestWriteTime = writeTime;
+					hasLatestWriteTime = true;
+				}
+			}
+		}
+		fsError.clear();
+
+		const std::filesystem::path scriptsProjectPath = GetScriptsProjectPath();
+		if (std::filesystem::exists(scriptsProjectPath, fsError) && !fsError) {
+			++sourceFileCount;
+			const std::filesystem::file_time_type projectWriteTime = std::filesystem::last_write_time(scriptsProjectPath, fsError);
+			if (!fsError && (!hasLatestWriteTime || projectWriteTime > latestWriteTime)) {
+				latestWriteTime = projectWriteTime;
+				hasLatestWriteTime = true;
+			}
+		}
+
+		if (!hasObservedSources_) {
+			hasObservedSources_ = true;
+			observedSourceFileCount_ = sourceFileCount;
+			if (hasLatestWriteTime) {
+				observedLatestSourceWriteTime_ = latestWriteTime;
+			}
+			return;
+		}
+
+		const bool countChanged = (sourceFileCount != observedSourceFileCount_);
+		const bool writeTimeChanged = hasLatestWriteTime && (latestWriteTime != observedLatestSourceWriteTime_);
+		const bool lostAllSources = (!hasLatestWriteTime && observedSourceFileCount_ > 0);
+		if (countChanged || writeTimeChanged || lostAllSources) {
+			compileRequested_ = true;
+			observedSourceFileCount_ = sourceFileCount;
+			if (hasLatestWriteTime) {
+				observedLatestSourceWriteTime_ = latestWriteTime;
+			}
+		}
 	}
 
 	void CSharpScriptEngine::MarkAllScriptsForReload() {
@@ -502,6 +667,16 @@ namespace Framework {
 		managedDestroyScript_ = reinterpret_cast<ManagedDestroyScriptFn>(fn);
 
 		fn = nullptr;
+		rc = loadAssemblyAndGetFunctionPointer_(hostAssemblyW.c_str(), MANAGED_BRIDGE_TYPE, L"DescribeScriptFields", UNMANAGEDCALLERSONLY_METHOD, nullptr, &fn);
+		if (rc != 0 || !fn) return false;
+		managedDescribeScriptFields_ = reinterpret_cast<ManagedDescribeScriptFieldsFn>(fn);
+
+		fn = nullptr;
+		rc = loadAssemblyAndGetFunctionPointer_(hostAssemblyW.c_str(), MANAGED_BRIDGE_TYPE, L"ApplyScriptFields", UNMANAGEDCALLERSONLY_METHOD, nullptr, &fn);
+		if (rc != 0 || !fn) return false;
+		managedApplyScriptFields_ = reinterpret_cast<ManagedApplyScriptFieldsFn>(fn);
+
+		fn = nullptr;
 		rc = loadAssemblyAndGetFunctionPointer_(hostAssemblyW.c_str(), MANAGED_BRIDGE_TYPE, L"ResetScripts", UNMANAGEDCALLERSONLY_METHOD, nullptr, &fn);
 		if (rc != 0 || !fn) return false;
 		managedReset_ = reinterpret_cast<ManagedResetFn>(fn);
@@ -544,6 +719,8 @@ namespace Framework {
 		managedLoadScript_ = nullptr;
 		managedInvokeScript_ = nullptr;
 		managedDestroyScript_ = nullptr;
+		managedDescribeScriptFields_ = nullptr;
+		managedApplyScriptFields_ = nullptr;
 		managedReset_ = nullptr;
 	}
 
@@ -590,9 +767,142 @@ namespace Framework {
 		return true;
 	}
 
+	bool CSharpScriptEngine::CallManagedDescribeFields(
+		const std::filesystem::path& assemblyPath,
+		const std::string& typeName,
+		std::vector<NativeScriptsComponent::NativeScript::CSharpFieldValue>& outFields) const
+	{
+		if (!managedDescribeScriptFields_) return false;
+
+		std::vector<char> jsonBuffer(64 * 1024, '\0');
+		char errorBuffer[2048]{};
+		const int rc = managedDescribeScriptFields_(
+			assemblyPath.string().c_str(),
+			typeName.c_str(),
+			jsonBuffer.data(),
+			static_cast<int>(jsonBuffer.size()),
+			errorBuffer,
+			static_cast<int>(sizeof(errorBuffer))
+		);
+		if (rc != 0) {
+			Logger::Get().Error(DebugType::GameManager) << "CSharpScriptEngine: Describe fields failed: " << errorBuffer << std::endl;
+			return false;
+		}
+
+		rapidjson::Document doc;
+		doc.Parse(jsonBuffer.data());
+		if (!doc.IsArray()) {
+			return false;
+		}
+
+		outFields.clear();
+		outFields.reserve(doc.Size());
+		for (const rapidjson::Value& field : doc.GetArray()) {
+			if (!field.IsObject()) {
+				continue;
+			}
+			if (!field.HasMember("name") || !field["name"].IsString()) {
+				continue;
+			}
+
+			NativeScriptsComponent::NativeScript::CSharpFieldValue fieldValue{};
+			fieldValue.name = field["name"].GetString();
+			if (field.HasMember("type") && field["type"].IsString()) {
+				fieldValue.typeName = field["type"].GetString();
+			}
+			if (field.HasMember("value") && field["value"].IsString()) {
+				fieldValue.value = field["value"].GetString();
+			}
+			outFields.push_back(std::move(fieldValue));
+		}
+		return true;
+	}
+
+	bool CSharpScriptEngine::CallManagedApplyFields(const std::string& id, NativeScriptsComponent::NativeScript& script, ScriptState& state) {
+		if (!managedApplyScriptFields_) return false;
+		if (!script.csharpFieldsDirty) return true;
+		if (script.csharpFieldValues.empty()) {
+			script.csharpFieldsDirty = false;
+			return true;
+		}
+
+		rapidjson::Document doc(rapidjson::kArrayType);
+		rapidjson::Document::AllocatorType& alloc = doc.GetAllocator();
+		for (const NativeScriptsComponent::NativeScript::CSharpFieldValue& fieldValue : script.csharpFieldValues) {
+			rapidjson::Value fieldObj(rapidjson::kObjectType);
+			rapidjson::Value name;
+			name.SetString(fieldValue.name.c_str(), static_cast<rapidjson::SizeType>(fieldValue.name.length()), alloc);
+			fieldObj.AddMember("name", name, alloc);
+
+			rapidjson::Value typeName;
+			typeName.SetString(fieldValue.typeName.c_str(), static_cast<rapidjson::SizeType>(fieldValue.typeName.length()), alloc);
+			fieldObj.AddMember("type", typeName, alloc);
+
+			rapidjson::Value value;
+			value.SetString(fieldValue.value.c_str(), static_cast<rapidjson::SizeType>(fieldValue.value.length()), alloc);
+			fieldObj.AddMember("value", value, alloc);
+
+			doc.PushBack(fieldObj, alloc);
+		}
+
+		rapidjson::StringBuffer buffer;
+		rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+		doc.Accept(writer);
+
+		char errorBuffer[2048]{};
+		const int rc = managedApplyScriptFields_(
+			id.c_str(),
+			buffer.GetString(),
+			errorBuffer,
+			static_cast<int>(sizeof(errorBuffer))
+		);
+		if (rc != 0) {
+			if (!state.invokeFailedLogged) {
+				Logger::Get().Error(DebugType::GameManager) << "CSharpScriptEngine: Apply fields failed: " << errorBuffer << std::endl;
+				state.invokeFailedLogged = true;
+			}
+			return false;
+		}
+		script.csharpFieldsDirty = false;
+		state.invokeFailedLogged = false;
+		return true;
+	}
+
 	bool CSharpScriptEngine::RunCommand(const std::string& command) const {
+#ifdef _WIN32
+		std::string cmdLine = "cmd.exe /C " + command;
+		STARTUPINFOA si{};
+		si.cb = sizeof(si);
+		si.dwFlags = STARTF_USESHOWWINDOW;
+		si.wShowWindow = SW_HIDE;
+
+		PROCESS_INFORMATION pi{};
+		const BOOL created = CreateProcessA(
+			nullptr,
+			cmdLine.data(),
+			nullptr,
+			nullptr,
+			FALSE,
+			CREATE_NO_WINDOW,
+			nullptr,
+			nullptr,
+			&si,
+			&pi
+		);
+		if (!created) {
+			return false;
+		}
+
+		WaitForSingleObject(pi.hProcess, INFINITE);
+		DWORD exitCode = 1;
+		GetExitCodeProcess(pi.hProcess, &exitCode);
+		CloseHandle(pi.hThread);
+		CloseHandle(pi.hProcess);
+		return exitCode == 0;
+#else
 		const int exitCode = std::system(command.c_str());
 		return exitCode == 0;
+#endif
 	}
 
 	std::wstring CSharpScriptEngine::ToWide(const std::filesystem::path& path) {

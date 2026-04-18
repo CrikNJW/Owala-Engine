@@ -60,7 +60,7 @@ namespace Framework {
 		if (signature.test(PlayerHealthComponentType)) bucket.playerHealth.emplace_back();
 	}
 
-	void EntityManager::CopySharedComponents(const ArchetypeBucket& source, std::size_t sourceRow, ArchetypeBucket& target, const ComponentSignature& sharedSignature) const {
+	void EntityManager::CopySharedComponents(ArchetypeBucket& source, std::size_t sourceRow, ArchetypeBucket& target, const ComponentSignature& sharedSignature) {
 		if (sharedSignature.test(TransformType)) target.transform.back() = source.transform[sourceRow];
 		if (sharedSignature.test(VelocityType)) target.velocity.back() = source.velocity[sourceRow];
 		if (sharedSignature.test(AccelerationType)) target.acceleration.back() = source.acceleration[sourceRow];
@@ -76,7 +76,7 @@ namespace Framework {
 		if (sharedSignature.test(AnimationComponentType)) target.animatedTex.back() = source.animatedTex[sourceRow];
 		if (sharedSignature.test(TextComponentType)) target.text.back() = source.text[sourceRow];
 		if (sharedSignature.test(CameraType)) target.cameras.back() = source.cameras[sourceRow];
-		if (sharedSignature.test(NativeScriptsComponentType)) target.nativeScripts.back() = source.nativeScripts[sourceRow];
+		if (sharedSignature.test(NativeScriptsComponentType)) target.nativeScripts.back() = std::move(source.nativeScripts[sourceRow]);
 		if (sharedSignature.test(SceneOwnedType)) target.sceneOwned.back() = source.sceneOwned[sourceRow];
 		if (sharedSignature.test(FSMComponentType)) target.fsmComponent.back() = source.fsmComponent[sourceRow];
 		if (sharedSignature.test(ParticleComponentType)) target.particleComponent.back() = source.particleComponent[sourceRow];

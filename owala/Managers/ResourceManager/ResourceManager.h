@@ -180,6 +180,7 @@ namespace Framework {
 		std::unordered_map<std::string, std::unique_ptr<Audio, FMODDeleter>> soundMap; // Sound map with custom deleter
         std::unordered_map<std::string, std::unique_ptr<Font>> fontMap; // font map
 		std::unordered_map<std::string, std::unique_ptr<AnimationInfo>> animationMap; // Animation map
+		std::unordered_map<std::string, std::string> textureAnimationPathMap_; // Texture key -> animation json path
 		std::unordered_map<std::string, fs::path> assetPathMap_; // Map of asset names to file paths
 		std::unordered_map<std::string, std::unique_ptr<EntityPrefab>> prefabMap; // Prefab map
 		std::unordered_map<std::string, size_t> textureRefCounts_; // Refcount for scene-owned textures
@@ -212,6 +213,8 @@ namespace Framework {
 			std::unordered_map<std::string, std::unique_ptr<Texture, TextureDeleter>>& map = getTextureMap();
             auto it = map.find(key);
             if (it == map.end()) {
+                Logger::Get().Info(DebugType::ResourceManager)
+                    << "Attempting to load texture: " << key << std::endl;
 				// Load automatically if missing
                 if (loadTexture(key)) {
                     it = map.find(key); // Try to find it again
