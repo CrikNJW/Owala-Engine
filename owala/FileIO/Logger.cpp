@@ -286,4 +286,10 @@ namespace Framework {
         std::lock_guard<std::mutex> lock(gLogBufferMutex);
         return { gBufferedLogLines.begin(), gBufferedLogLines.end() };
     }
+
+    void Logger::ClearRecentLogs() {
+        std::call_once(gLogCaptureInitOnce, InitLogCapture);
+        std::lock_guard<std::mutex> lock(gLogBufferMutex);
+        gBufferedLogLines.clear();
+    }
 }

@@ -71,13 +71,13 @@ namespace Editor {
 		int windowWidth = 1920;
 		int windowHeight = 1080;
 
-		bool showDebugInfo = true;
+		bool showDebugInfo = false;
 		bool showLevelEditor = true;
 		bool showHierarchy = true;
 		bool showInspector = true;
 		bool showGameViewport = true;
 		bool showAssetBrowser = true;
-		bool showDebugConsole = false;
+		bool showDebugConsole = true;
 		bool showToolbar = true;
 		bool showPreferencesWindow = false;
 		bool showProjectSettingsWindow = false;

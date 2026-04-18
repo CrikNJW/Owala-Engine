@@ -153,6 +153,8 @@ namespace Framework {
 
         // Returns a snapshot of recent console log lines.
         static std::vector<std::string> GetRecentLogs();
+        // Clears buffered log lines used by the in-editor debug console.
+        static void ClearRecentLogs();
         
         /*****************************************************************//**
          * \brief   Registers tracking configurations logically explicitly explicitly.

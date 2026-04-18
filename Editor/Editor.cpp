@@ -1757,6 +1757,10 @@ namespace Editor {
 		static bool autoScroll = true;
 		ImGui::Checkbox("Auto-scroll", &autoScroll);
 		ImGui::SameLine();
+		if (ImGui::Button("Clear Logs")) {
+			Framework::Logger::ClearRecentLogs();
+		}
+		ImGui::SameLine();
 		ImGui::TextDisabled("Drag to highlight, Ctrl+C to copy");
 
 		const std::vector<std::string> logs = Framework::Logger::GetRecentLogs();
@@ -1830,7 +1834,9 @@ namespace Editor {
 		ImGui::TextDisabled("%s", subtitle);
 		ImGui::Spacing();
 		const float pulse = static_cast<float>((std::sin(ImGui::GetTime() * 4.0) + 1.0) * 0.5);
-		ImGui::ProgressBar(pulse, ImVec2(panelWidth - 40.0f, 0.0f), "");
+		const float barWidth = panelWidth - 60.0f;
+		ImGui::SetCursorPosX((panelWidth - barWidth) * 0.5f);
+		ImGui::ProgressBar(pulse, ImVec2(barWidth, 0.0f), "");
 		ImGui::EndChild();
 
 		ImGui::End();
