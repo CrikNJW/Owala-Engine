@@ -74,7 +74,7 @@ set_target_properties(${CMAKE_PROJECT_NAME}_Engine PROPERTIES
     OUTPUT_NAME "owala_Engine"
 )
 
-# Hide legacy console window for the engine/editor build
+# Hide legacy console window for the engine/editor build.
 if(WIN32)
     set_target_properties(${CMAKE_PROJECT_NAME}_Engine PROPERTIES
         WIN32_EXECUTABLE TRUE

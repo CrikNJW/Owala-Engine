@@ -152,6 +152,11 @@ int main() {
 
     using namespace Framework;
 
+    // Initialize log capture at startup so early engine logs are buffered
+    // for the editor debug console.
+    (void)Logger::GetRecentLogs();
+    Logger::Get().Info(DebugType::Logger) << "Editor debug log capture initialized." << std::endl;
+
     Logger::InitSymbols();
     backward::SignalHandling sh;
 

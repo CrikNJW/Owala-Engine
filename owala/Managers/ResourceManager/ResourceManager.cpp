@@ -38,6 +38,8 @@ void Framework::FMODDeleter::operator()(FMOD::Sound* s) const noexcept {
 }
 
 void ResourceManager::Initialize() {
+	Logger::Get().Info(DebugType::ResourceManager) << "ResourceManager initialization started." << std::endl;
+
 	// Scan asset directories recursively to auto-map filenames to paths
 	try {
 		ScanAssetDirectory("Assets/Sprites");
@@ -89,7 +91,13 @@ void ResourceManager::Update() {
 			std::stringstream ss;
 			ss << "[Main Thread   " << std::this_thread::get_id() << "] Uploaded to GPU: " << item.name;
 			Logger::Get().Info(DebugType::ResourceManager) << ss.str() << "\n";
+			Logger::Get().Info(DebugType::ResourceManager)
+				<< "Loaded texture '" << item.name << "' from async upload." << std::endl;
 			add<Texture>(item.name, tex);
+		}
+		else {
+			Logger::Get().Error(DebugType::ResourceManager)
+				<< "Failed to create GPU texture from async data: " << item.name << std::endl;
 		}
 
 		// Free CPU memory
@@ -558,6 +566,9 @@ bool ResourceManager::LoadTextureAnimationMappings(const std::string& mappingFil
 
 // Adds a texture file to the async loading queue eg. when loading big assets
 void ResourceManager::LoadTextureAsync(const std::string& filepath) {
+	Logger::Get().Info(DebugType::ResourceManager)
+		<< "Attempting to load texture: " << filepath << std::endl;
+
 	std::lock_guard<std::mutex> lock(m_queueMutex);
 	m_filesToLoad.push(filepath);
 

@@ -49,9 +49,14 @@ namespace Framework {
         class TeeCaptureBuf final : public std::streambuf {
         public:
             explicit TeeCaptureBuf(std::streambuf* target) : target_(target) {}
+            void FlushPendingLine() {
+                std::lock_guard<std::mutex> lock(lineMutex_);
+                FlushPendingLineUnlocked();
+            }
 
         protected:
             int overflow(int ch) override {
+                std::lock_guard<std::mutex> lock(lineMutex_);
                 if (ch == EOF) {
                     return std::char_traits<char>::not_eof(ch);
                 }
@@ -72,6 +77,7 @@ namespace Framework {
             }
 
             std::streamsize xsputn(const char* s, std::streamsize count) override {
+                std::lock_guard<std::mutex> lock(lineMutex_);
                 for (std::streamsize i = 0; i < count; ++i) {
                     const char c = s[i];
                     if (c == '\n') {
@@ -89,29 +95,35 @@ namespace Framework {
             }
 
             int sync() override {
-                if (!currentLine_.empty()) {
-                    AppendBufferedLine(currentLine_);
-                    currentLine_.clear();
-                }
+                std::lock_guard<std::mutex> lock(lineMutex_);
                 return target_ ? target_->pubsync() : 0;
             }
 
         private:
+            void FlushPendingLineUnlocked() {
+                if (!currentLine_.empty()) {
+                    AppendBufferedLine(currentLine_);
+                    currentLine_.clear();
+                }
+            }
             std::streambuf* target_ = nullptr;
             std::string currentLine_;
+            std::mutex lineMutex_;
         };
 
         std::unique_ptr<TeeCaptureBuf> gCoutCapture;
         std::unique_ptr<TeeCaptureBuf> gCerrCapture;
+        std::unique_ptr<std::ostream> gCapturedCoutStream;
+        std::unique_ptr<std::ostream> gCapturedCerrStream;
 
         void InitLogCapture() {
             gCoutCapture = std::make_unique<TeeCaptureBuf>(std::cout.rdbuf());
             std::cout.rdbuf(gCoutCapture.get());
-            std::cout.clear();
+            gCapturedCoutStream = std::make_unique<std::ostream>(gCoutCapture.get());
 
             gCerrCapture = std::make_unique<TeeCaptureBuf>(std::cerr.rdbuf());
             std::cerr.rdbuf(gCerrCapture.get());
-            std::cerr.clear();
+            gCapturedCerrStream = std::make_unique<std::ostream>(gCerrCapture.get());
         }
     }
 
@@ -244,8 +256,11 @@ namespace Framework {
     // Informative logging
     std::ostream& Logger::Info(DebugType type) {
         std::call_once(gLogCaptureInitOnce, InitLogCapture);
-        std::cout << GetDebugType(type) << ' ';
-        return std::cout;
+        if (gCapturedCoutStream) {
+            gCapturedCoutStream->clear();
+        }
+        (*gCapturedCoutStream) << GetDebugType(type) << ' ';
+        return *gCapturedCoutStream;
     }
 
     /*****************************************************************//**
@@ -257,12 +272,17 @@ namespace Framework {
     // Error logging
     std::ostream& Logger::Error(DebugType type) {
         std::call_once(gLogCaptureInitOnce, InitLogCapture);
-        std::cerr << "[ERROR] " << GetDebugType(type) << ' ';
-        return std::cerr;
+        if (gCapturedCerrStream) {
+            gCapturedCerrStream->clear();
+        }
+        (*gCapturedCerrStream) << "[ERROR] " << GetDebugType(type) << ' ';
+        return *gCapturedCerrStream;
     }
 
     std::vector<std::string> Logger::GetRecentLogs() {
         std::call_once(gLogCaptureInitOnce, InitLogCapture);
+        if (gCoutCapture) gCoutCapture->FlushPendingLine();
+        if (gCerrCapture) gCerrCapture->FlushPendingLine();
         std::lock_guard<std::mutex> lock(gLogBufferMutex);
         return { gBufferedLogLines.begin(), gBufferedLogLines.end() };
     }
