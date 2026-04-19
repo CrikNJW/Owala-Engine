@@ -58,6 +58,9 @@ namespace Framework {
 		AnimationComponentType,
 		TextComponentType,
 		CameraType,
+		Transform3DType,
+		Primitive3DComponentType,
+		DirectionalLight3DType,
 		NativeScriptsComponentType,
 		PlayerTagType,
 		ButtonType,
@@ -98,6 +101,9 @@ namespace Framework {
 	template <> struct ComponentTypeTrait<AnimationComponent> { static constexpr ComponentType value = AnimationComponentType; };
 	template <> struct ComponentTypeTrait<TextComponent> { static constexpr ComponentType value = TextComponentType; };
 	template <> struct ComponentTypeTrait<Camera> { static constexpr ComponentType value = CameraType;};
+	template <> struct ComponentTypeTrait<Transform3D> { static constexpr ComponentType value = Transform3DType; };
+	template <> struct ComponentTypeTrait<Primitive3D> { static constexpr ComponentType value = Primitive3DComponentType; };
+	template <> struct ComponentTypeTrait<DirectionalLight3D> { static constexpr ComponentType value = DirectionalLight3DType; };
 	template <> struct ComponentTypeTrait<NativeScriptsComponent> { static constexpr ComponentType value = NativeScriptsComponentType; };
 	template <> struct ComponentTypeTrait<PlayerTag> { static constexpr ComponentType value = PlayerTagType; };
 	template <> struct ComponentTypeTrait<Button> { static constexpr ComponentType value = ButtonType; };
@@ -149,6 +155,9 @@ namespace Framework {
 			std::vector<AnimationComponent> animatedTex;
 			std::vector<TextComponent> text;
 			std::vector<Camera> cameras;
+			std::vector<Transform3D> transform3D;
+			std::vector<Primitive3D> primitive3D;
+			std::vector<DirectionalLight3D> directionalLights3D;
 			std::vector<NativeScriptsComponent> nativeScripts;
 			std::vector<FSMComponent> fsmComponent;
 			std::vector<ParticleComponent> particleComponent;

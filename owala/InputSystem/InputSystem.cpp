@@ -207,9 +207,22 @@ namespace Framework {
     // -----------------------------------------------------------------------
 
     void InputSystem::SetCursorLocked(bool locked) {
+        if (cursorLocked_ == locked) return;
         cursorLocked_ = locked;
         if (!window_) return;
+
+#ifdef GLFW_RAW_MOUSE_MOTION
+        if (glfwRawMouseMotionSupported()) {
+            glfwSetInputMode(window_, GLFW_RAW_MOUSE_MOTION, locked ? GLFW_TRUE : GLFW_FALSE);
+        }
+#endif
+
         glfwSetInputMode(window_, GLFW_CURSOR, locked ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+
+        // Reset mouse baseline on mode transitions to avoid one-frame jump spikes.
+        glfwGetCursorPos(window_, &mouseX_, &mouseY_);
+        prevMouseX_ = mouseX_;
+        prevMouseY_ = mouseY_;
     }
 
     void InputSystem::SetKeyboardLocked(bool locked) {

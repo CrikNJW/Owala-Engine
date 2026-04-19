@@ -228,6 +228,30 @@ namespace Framework {
 			componentList.AddMember(rapidjson::StringRef(Serialization::CAMERA_COMPONENT), value, alloc);
 		}
 
+		// Serialize Transform3D Component
+		if (entityMgr.HasComponent(entity, ComponentType::Transform3DType)) {
+			Transform3D& transform3DComp = entityMgr.GetComponent<Transform3D>(entity);
+			rapidjson::Value value(rapidjson::kObjectType);
+			SerializeComponent(transform3DComp, value, alloc);
+			componentList.AddMember(rapidjson::StringRef(Serialization::TRANSFORM3D_COMPONENT), value, alloc);
+		}
+
+		// Serialize Primitive3D Component
+		if (entityMgr.HasComponent(entity, ComponentType::Primitive3DComponentType)) {
+			Primitive3D& primitive3DComp = entityMgr.GetComponent<Primitive3D>(entity);
+			rapidjson::Value value(rapidjson::kObjectType);
+			SerializeComponent(primitive3DComp, value, alloc);
+			componentList.AddMember(rapidjson::StringRef(Serialization::PRIMITIVE3D_COMPONENT), value, alloc);
+		}
+
+		// Serialize DirectionalLight3D Component
+		if (entityMgr.HasComponent(entity, ComponentType::DirectionalLight3DType)) {
+			DirectionalLight3D& light3DComp = entityMgr.GetComponent<DirectionalLight3D>(entity);
+			rapidjson::Value value(rapidjson::kObjectType);
+			SerializeComponent(light3DComp, value, alloc);
+			componentList.AddMember(rapidjson::StringRef(Serialization::DIRECTIONAL_LIGHT3D_COMPONENT), value, alloc);
+		}
+
 		// Serialize Native Scripts that is attached to this entity.
 		if (entityMgr.HasComponent(entity, ComponentType::NativeScriptsComponentType)) {
 			NativeScriptsComponent& nativeScripts = entityMgr.GetComponent<NativeScriptsComponent>(entity);
@@ -443,6 +467,15 @@ namespace Framework {
 		case CameraType:
 			SerializeComponent(entityMgr.GetComponent<Camera>(entity), componentData, alloc);
 			break;
+		case Transform3DType:
+			SerializeComponent(entityMgr.GetComponent<Transform3D>(entity), componentData, alloc);
+			break;
+		case Primitive3DComponentType:
+			SerializeComponent(entityMgr.GetComponent<Primitive3D>(entity), componentData, alloc);
+			break;
+		case DirectionalLight3DType:
+			SerializeComponent(entityMgr.GetComponent<DirectionalLight3D>(entity), componentData, alloc);
+			break;
 		case NativeScriptsComponentType:
 			SerializeComponent(entityMgr.GetComponent<NativeScriptsComponent>(entity), componentData, alloc);
 			break;
@@ -645,6 +678,33 @@ namespace Framework {
 			Camera cameraComp;
 			if (DeserializeComponent(cameraData, cameraComp)) {
 				entityMgr.AddComponent<Camera>(loadedEntity, cameraComp);
+			}
+		}
+
+		// Deserialize Transform3D Component
+		if (componentLists.HasMember(Serialization::TRANSFORM3D_COMPONENT)) {
+			const rapidjson::Value& transform3DData = componentLists[Serialization::TRANSFORM3D_COMPONENT];
+			Transform3D transform3DComp;
+			if (DeserializeComponent(transform3DData, transform3DComp)) {
+				entityMgr.AddComponent<Transform3D>(loadedEntity, transform3DComp);
+			}
+		}
+
+		// Deserialize Primitive3D Component
+		if (componentLists.HasMember(Serialization::PRIMITIVE3D_COMPONENT)) {
+			const rapidjson::Value& primitive3DData = componentLists[Serialization::PRIMITIVE3D_COMPONENT];
+			Primitive3D primitive3DComp;
+			if (DeserializeComponent(primitive3DData, primitive3DComp)) {
+				entityMgr.AddComponent<Primitive3D>(loadedEntity, primitive3DComp);
+			}
+		}
+
+		// Deserialize DirectionalLight3D Component
+		if (componentLists.HasMember(Serialization::DIRECTIONAL_LIGHT3D_COMPONENT)) {
+			const rapidjson::Value& light3DData = componentLists[Serialization::DIRECTIONAL_LIGHT3D_COMPONENT];
+			DirectionalLight3D light3DComp;
+			if (DeserializeComponent(light3DData, light3DComp)) {
+				entityMgr.AddComponent<DirectionalLight3D>(loadedEntity, light3DComp);
 			}
 		}
 
@@ -1137,6 +1197,55 @@ namespace Framework {
 		outData.AddMember(rapidjson::StringRef(Serialization::TARGET_ENTITY), cameraComp.targetEntity, alloc);
 		outData.AddMember(rapidjson::StringRef(Serialization::FOLLOW_SPEED), cameraComp.followSpeed, alloc);
 		outData.AddMember(rapidjson::StringRef(Serialization::IS_ACTIVE), cameraComp.isActive, alloc);
+	}
+
+	// Transform3D Component
+	void EntitySerializer::SerializeComponent(const Transform3D& transform3DComp, rapidjson::Value& outData, rapidjson::Document::AllocatorType& alloc) {
+		rapidjson::Value posObj(rapidjson::kObjectType);
+		posObj.AddMember(rapidjson::StringRef(Serialization::VEC2_X), transform3DComp.position.x, alloc);
+		posObj.AddMember(rapidjson::StringRef(Serialization::VEC2_Y), transform3DComp.position.y, alloc);
+		posObj.AddMember(rapidjson::StringRef(Serialization::VEC3_Z), transform3DComp.position.z, alloc);
+		outData.AddMember(rapidjson::StringRef(Serialization::TRANSFORM3D_POSITION), posObj, alloc);
+
+		rapidjson::Value rotObj(rapidjson::kObjectType);
+		rotObj.AddMember(rapidjson::StringRef(Serialization::VEC2_X), transform3DComp.rotationDegrees.x, alloc);
+		rotObj.AddMember(rapidjson::StringRef(Serialization::VEC2_Y), transform3DComp.rotationDegrees.y, alloc);
+		rotObj.AddMember(rapidjson::StringRef(Serialization::VEC3_Z), transform3DComp.rotationDegrees.z, alloc);
+		outData.AddMember(rapidjson::StringRef(Serialization::TRANSFORM3D_ROTATION), rotObj, alloc);
+
+		rapidjson::Value scaleObj(rapidjson::kObjectType);
+		scaleObj.AddMember(rapidjson::StringRef(Serialization::VEC2_X), transform3DComp.scale.x, alloc);
+		scaleObj.AddMember(rapidjson::StringRef(Serialization::VEC2_Y), transform3DComp.scale.y, alloc);
+		scaleObj.AddMember(rapidjson::StringRef(Serialization::VEC3_Z), transform3DComp.scale.z, alloc);
+		outData.AddMember(rapidjson::StringRef(Serialization::TRANSFORM3D_SCALE), scaleObj, alloc);
+	}
+
+	// Primitive3D Component
+	void EntitySerializer::SerializeComponent(const Primitive3D& primitive3DComp, rapidjson::Value& outData, rapidjson::Document::AllocatorType& alloc) {
+		outData.AddMember(rapidjson::StringRef(Serialization::PRIMITIVE3D_SHAPE), static_cast<int>(primitive3DComp.type), alloc);
+		outData.AddMember(rapidjson::StringRef(Serialization::PRIMITIVE3D_TEXTURE_KEY), rapidjson::StringRef(primitive3DComp.textureKey.c_str()), alloc);
+
+		rapidjson::Value colorList(rapidjson::kArrayType);
+		colorList.PushBack(primitive3DComp.tint.r, alloc).PushBack(primitive3DComp.tint.g, alloc);
+		colorList.PushBack(primitive3DComp.tint.b, alloc).PushBack(primitive3DComp.tint.a, alloc);
+		outData.AddMember(rapidjson::StringRef(Serialization::PRIMITIVE3D_COLOR), colorList, alloc);
+		outData.AddMember(rapidjson::StringRef(Serialization::PRIMITIVE3D_CAST_SHADOW), primitive3DComp.castShadow, alloc);
+	}
+
+	// DirectionalLight3D Component
+	void EntitySerializer::SerializeComponent(const DirectionalLight3D& light3DComp, rapidjson::Value& outData, rapidjson::Document::AllocatorType& alloc) {
+		rapidjson::Value directionObj(rapidjson::kObjectType);
+		directionObj.AddMember(rapidjson::StringRef(Serialization::VEC2_X), light3DComp.direction.x, alloc);
+		directionObj.AddMember(rapidjson::StringRef(Serialization::VEC2_Y), light3DComp.direction.y, alloc);
+		directionObj.AddMember(rapidjson::StringRef(Serialization::VEC3_Z), light3DComp.direction.z, alloc);
+		outData.AddMember(rapidjson::StringRef(Serialization::DIRECTIONAL_LIGHT3D_DIRECTION), directionObj, alloc);
+
+		rapidjson::Value colorList(rapidjson::kArrayType);
+		colorList.PushBack(light3DComp.color.r, alloc).PushBack(light3DComp.color.g, alloc);
+		colorList.PushBack(light3DComp.color.b, alloc).PushBack(light3DComp.color.a, alloc);
+		outData.AddMember(rapidjson::StringRef(Serialization::DIRECTIONAL_LIGHT3D_COLOR), colorList, alloc);
+		outData.AddMember(rapidjson::StringRef(Serialization::DIRECTIONAL_LIGHT3D_INTENSITY), light3DComp.intensity, alloc);
+		outData.AddMember(rapidjson::StringRef(Serialization::DIRECTIONAL_LIGHT3D_AMBIENT), light3DComp.ambient, alloc);
 	}
 
 	// NativeScripts Component
@@ -1787,6 +1896,88 @@ namespace Framework {
 		}
 		if (componentData.HasMember(Serialization::IS_ACTIVE) && componentData[Serialization::IS_ACTIVE].IsBool()) {
 			out.isActive = componentData[Serialization::IS_ACTIVE].GetBool();
+		}
+		return true;
+	}
+
+	// Transform3D Component
+	bool EntitySerializer::DeserializeComponent(const rapidjson::Value& componentData, Transform3D& out) {
+		if (!componentData.IsObject()) return false;
+
+		auto readVec3 = [](const rapidjson::Value& value, glm::vec3& target) {
+			if (!value.IsObject()) return;
+			if (value.HasMember(Serialization::VEC2_X) && value[Serialization::VEC2_X].IsNumber()) target.x = value[Serialization::VEC2_X].GetFloat();
+			if (value.HasMember(Serialization::VEC2_Y) && value[Serialization::VEC2_Y].IsNumber()) target.y = value[Serialization::VEC2_Y].GetFloat();
+			if (value.HasMember(Serialization::VEC3_Z) && value[Serialization::VEC3_Z].IsNumber()) target.z = value[Serialization::VEC3_Z].GetFloat();
+		};
+
+		if (componentData.HasMember(Serialization::TRANSFORM3D_POSITION)) {
+			readVec3(componentData[Serialization::TRANSFORM3D_POSITION], out.position);
+		}
+		if (componentData.HasMember(Serialization::TRANSFORM3D_ROTATION)) {
+			readVec3(componentData[Serialization::TRANSFORM3D_ROTATION], out.rotationDegrees);
+		}
+		if (componentData.HasMember(Serialization::TRANSFORM3D_SCALE)) {
+			readVec3(componentData[Serialization::TRANSFORM3D_SCALE], out.scale);
+		}
+		return true;
+	}
+
+	// Primitive3D Component
+	bool EntitySerializer::DeserializeComponent(const rapidjson::Value& componentData, Primitive3D& out) {
+		if (!componentData.IsObject()) return false;
+
+		if (componentData.HasMember(Serialization::PRIMITIVE3D_SHAPE) && componentData[Serialization::PRIMITIVE3D_SHAPE].IsInt()) {
+			const int shapeType = componentData[Serialization::PRIMITIVE3D_SHAPE].GetInt();
+			out.type = shapeType == static_cast<int>(Primitive3DType::Circle) ? Primitive3DType::Circle : Primitive3DType::Cube;
+		}
+
+		if (componentData.HasMember(Serialization::PRIMITIVE3D_TEXTURE_KEY) && componentData[Serialization::PRIMITIVE3D_TEXTURE_KEY].IsString()) {
+			out.textureKey = componentData[Serialization::PRIMITIVE3D_TEXTURE_KEY].GetString();
+		}
+
+		if (componentData.HasMember(Serialization::PRIMITIVE3D_COLOR) && componentData[Serialization::PRIMITIVE3D_COLOR].IsArray()) {
+			const rapidjson::Value& colorArr = componentData[Serialization::PRIMITIVE3D_COLOR];
+			if (colorArr.Size() >= 4) {
+				out.tint.r = colorArr[0].GetFloat();
+				out.tint.g = colorArr[1].GetFloat();
+				out.tint.b = colorArr[2].GetFloat();
+				out.tint.a = colorArr[3].GetFloat();
+			}
+		}
+
+		if (componentData.HasMember(Serialization::PRIMITIVE3D_CAST_SHADOW) && componentData[Serialization::PRIMITIVE3D_CAST_SHADOW].IsBool()) {
+			out.castShadow = componentData[Serialization::PRIMITIVE3D_CAST_SHADOW].GetBool();
+		}
+		return true;
+	}
+
+	// DirectionalLight3D Component
+	bool EntitySerializer::DeserializeComponent(const rapidjson::Value& componentData, DirectionalLight3D& out) {
+		if (!componentData.IsObject()) return false;
+
+		if (componentData.HasMember(Serialization::DIRECTIONAL_LIGHT3D_DIRECTION) && componentData[Serialization::DIRECTIONAL_LIGHT3D_DIRECTION].IsObject()) {
+			const rapidjson::Value& directionData = componentData[Serialization::DIRECTIONAL_LIGHT3D_DIRECTION];
+			if (directionData.HasMember(Serialization::VEC2_X) && directionData[Serialization::VEC2_X].IsNumber()) out.direction.x = directionData[Serialization::VEC2_X].GetFloat();
+			if (directionData.HasMember(Serialization::VEC2_Y) && directionData[Serialization::VEC2_Y].IsNumber()) out.direction.y = directionData[Serialization::VEC2_Y].GetFloat();
+			if (directionData.HasMember(Serialization::VEC3_Z) && directionData[Serialization::VEC3_Z].IsNumber()) out.direction.z = directionData[Serialization::VEC3_Z].GetFloat();
+		}
+
+		if (componentData.HasMember(Serialization::DIRECTIONAL_LIGHT3D_COLOR) && componentData[Serialization::DIRECTIONAL_LIGHT3D_COLOR].IsArray()) {
+			const rapidjson::Value& colorArr = componentData[Serialization::DIRECTIONAL_LIGHT3D_COLOR];
+			if (colorArr.Size() >= 4) {
+				out.color.r = colorArr[0].GetFloat();
+				out.color.g = colorArr[1].GetFloat();
+				out.color.b = colorArr[2].GetFloat();
+				out.color.a = colorArr[3].GetFloat();
+			}
+		}
+
+		if (componentData.HasMember(Serialization::DIRECTIONAL_LIGHT3D_INTENSITY) && componentData[Serialization::DIRECTIONAL_LIGHT3D_INTENSITY].IsNumber()) {
+			out.intensity = componentData[Serialization::DIRECTIONAL_LIGHT3D_INTENSITY].GetFloat();
+		}
+		if (componentData.HasMember(Serialization::DIRECTIONAL_LIGHT3D_AMBIENT) && componentData[Serialization::DIRECTIONAL_LIGHT3D_AMBIENT].IsNumber()) {
+			out.ambient = componentData[Serialization::DIRECTIONAL_LIGHT3D_AMBIENT].GetFloat();
 		}
 		return true;
 	}

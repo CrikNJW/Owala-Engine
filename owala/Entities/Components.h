@@ -26,6 +26,7 @@
 #include <vector> 
 #include <map>
 #include <atomic>
+#include <glm/vec3.hpp>
 #include "ScriptableEntity.h"
 #include "FSM.h"
 
@@ -75,6 +76,11 @@ namespace Framework{
 		MASTER_VOLUME,
 		MUSIC_VOLUME,
 		SFX_VOLUME
+	};
+
+	enum class Primitive3DType : int {
+		Cube = 0,
+		Circle = 1
 	};
 
 	// Main Data Component that should exist in all objects. Stores core attributes for the entity. THIS IS ALWAYS ON A GAMEOBJECT.
@@ -193,6 +199,26 @@ namespace Framework{
 
 		bool zoomInitialized = false;  // ADD THIS LINE
 
+	};
+
+	struct Transform3D {
+		glm::vec3 position{ 0.0f, 0.0f, 0.0f };
+		glm::vec3 rotationDegrees{ 0.0f, 0.0f, 0.0f };
+		glm::vec3 scale{ 1.0f, 1.0f, 1.0f };
+	};
+
+	struct Primitive3D {
+		Primitive3DType type = Primitive3DType::Cube;
+		std::string textureKey{};
+		Color tint = { 1.0f, 1.0f, 1.0f, 1.0f };
+		bool castShadow = true;
+	};
+
+	struct DirectionalLight3D {
+		glm::vec3 direction{ -0.45f, -1.0f, -0.35f };
+		Color color = { 1.0f, 1.0f, 1.0f, 1.0f };
+		float intensity = 1.0f;
+		float ambient = 0.22f;
 	};
 
 	struct TextureComponent {

@@ -134,6 +134,9 @@ namespace Framework {
 			else if constexpr (std::is_same_v<T, Button>) return archetype.button[rowIndex];
 			else if constexpr (std::is_same_v<T, SceneOwned>) return archetype.sceneOwned[rowIndex];
 			else if constexpr (std::is_same_v<T, Camera>) return archetype.cameras[rowIndex];
+			else if constexpr (std::is_same_v<T, Transform3D>) return archetype.transform3D[rowIndex];
+			else if constexpr (std::is_same_v<T, Primitive3D>) return archetype.primitive3D[rowIndex];
+			else if constexpr (std::is_same_v<T, DirectionalLight3D>) return archetype.directionalLights3D[rowIndex];
 			else if constexpr (std::is_same_v<T, NativeScriptsComponent>) return archetype.nativeScripts[rowIndex];
 			else if constexpr (std::is_same_v<T, FSMComponent>) return archetype.fsmComponent[rowIndex];
 			else if constexpr (std::is_same_v<T, ParticleComponent>) return archetype.particleComponent[rowIndex];

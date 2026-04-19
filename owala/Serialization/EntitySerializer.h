@@ -86,6 +86,9 @@ namespace Framework {
         static void SerializeComponent(const AnimationComponent& animComp, rapidjson::Value& outData, rapidjson::Document::AllocatorType& alloc);
         static void SerializeComponent(const TextComponent& textComp, rapidjson::Value& outData, rapidjson::Document::AllocatorType& alloc);
         static void SerializeComponent(const Camera& cameraComp, rapidjson::Value& outData, rapidjson::Document::AllocatorType& alloc);
+        static void SerializeComponent(const Transform3D& transform3DComp, rapidjson::Value& outData, rapidjson::Document::AllocatorType& alloc);
+        static void SerializeComponent(const Primitive3D& primitive3DComp, rapidjson::Value& outData, rapidjson::Document::AllocatorType& alloc);
+        static void SerializeComponent(const DirectionalLight3D& light3DComp, rapidjson::Value& outData, rapidjson::Document::AllocatorType& alloc);
         static void SerializeComponent(const NativeScriptsComponent& nativeScripts, rapidjson::Value& outData, rapidjson::Document::AllocatorType& alloc);
         static void SerializeComponent(const FSMComponent& fsm, rapidjson::Value& outData, rapidjson::Document::AllocatorType& alloc);
         static void SerializeComponent(const Button& button, rapidjson::Value& outData, rapidjson::Document::AllocatorType& alloc);
@@ -112,6 +115,9 @@ namespace Framework {
 		static bool DeserializeComponent(const rapidjson::Value& componentData, AnimationComponent& out);
 		static bool DeserializeComponent(const rapidjson::Value& componentData, TextComponent& out);
 		static bool DeserializeComponent(const rapidjson::Value& componentData, Camera& out);
+        static bool DeserializeComponent(const rapidjson::Value& componentData, Transform3D& out);
+        static bool DeserializeComponent(const rapidjson::Value& componentData, Primitive3D& out);
+        static bool DeserializeComponent(const rapidjson::Value& componentData, DirectionalLight3D& out);
         static bool DeserializeComponent(const rapidjson::Value& componentData, NativeScriptsComponent& out);
         static bool DeserializeComponent(const rapidjson::Value& componentData, FSMComponent& out);
 		static bool DeserializeComponent(const rapidjson::Value& componentData, Button& out);

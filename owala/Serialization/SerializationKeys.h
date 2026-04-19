@@ -72,6 +72,7 @@ namespace Framework::Serialization {
      * ====================================================================== */
     static constexpr const char* VEC2_X = "x";                        //!< X component of vector
     static constexpr const char* VEC2_Y = "y";                        //!< Y component of vector
+    static constexpr const char* VEC3_Z = "z";                        //!< Z component of vector
 
     /* ======================================================================
      * Generic Color JSON Labels
@@ -222,6 +223,24 @@ namespace Framework::Serialization {
     static constexpr const char* TARGET_ENTITY = "target_entity";         //!< Entity to follow
     static constexpr const char* FOLLOW_SPEED = "follow_speed";           //!< Camera follow speed
     static constexpr const char* IS_ACTIVE = "is_active";                 //!< Whether camera is active
+
+    /* ----- 3D Components ----- */
+    static constexpr const char* TRANSFORM3D_COMPONENT = "Transform3D";   //!< 3D transform component
+    static constexpr const char* TRANSFORM3D_POSITION = "position";       //!< 3D position vector
+    static constexpr const char* TRANSFORM3D_ROTATION = "rotation";       //!< 3D euler rotation in degrees
+    static constexpr const char* TRANSFORM3D_SCALE = "scale";             //!< 3D scale vector
+
+    static constexpr const char* PRIMITIVE3D_COMPONENT = "Primitive3D";   //!< 3D primitive component
+    static constexpr const char* PRIMITIVE3D_SHAPE = "shape";             //!< Primitive shape enum value
+    static constexpr const char* PRIMITIVE3D_TEXTURE_KEY = "texture_key"; //!< Primitive texture key
+    static constexpr const char* PRIMITIVE3D_COLOR = "color";             //!< Primitive tint color
+    static constexpr const char* PRIMITIVE3D_CAST_SHADOW = "cast_shadow"; //!< Primitive cast shadow flag
+
+    static constexpr const char* DIRECTIONAL_LIGHT3D_COMPONENT = "DirectionalLight3D"; //!< Directional light component
+    static constexpr const char* DIRECTIONAL_LIGHT3D_DIRECTION = "direction";           //!< Directional light direction
+    static constexpr const char* DIRECTIONAL_LIGHT3D_COLOR = "color";                   //!< Directional light color
+    static constexpr const char* DIRECTIONAL_LIGHT3D_INTENSITY = "intensity";           //!< Directional light intensity
+    static constexpr const char* DIRECTIONAL_LIGHT3D_AMBIENT = "ambient";               //!< Ambient light term
 
     /* ----- Native Scripts Component ----- */
     static constexpr const char* NATIVE_SCRIPTS_COMPONENT = "NativeScripts"; //!< Native scripts

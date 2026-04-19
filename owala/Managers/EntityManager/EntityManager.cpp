@@ -51,6 +51,9 @@ namespace Framework {
 		if (signature.test(AnimationComponentType)) bucket.animatedTex.emplace_back();
 		if (signature.test(TextComponentType)) bucket.text.emplace_back();
 		if (signature.test(CameraType)) bucket.cameras.emplace_back();
+		if (signature.test(Transform3DType)) bucket.transform3D.emplace_back();
+		if (signature.test(Primitive3DComponentType)) bucket.primitive3D.emplace_back();
+		if (signature.test(DirectionalLight3DType)) bucket.directionalLights3D.emplace_back();
 		if (signature.test(NativeScriptsComponentType)) bucket.nativeScripts.emplace_back();
 		if (signature.test(SceneOwnedType)) bucket.sceneOwned.emplace_back();
 		if (signature.test(FSMComponentType)) bucket.fsmComponent.emplace_back();
@@ -76,6 +79,9 @@ namespace Framework {
 		if (sharedSignature.test(AnimationComponentType)) target.animatedTex.back() = source.animatedTex[sourceRow];
 		if (sharedSignature.test(TextComponentType)) target.text.back() = source.text[sourceRow];
 		if (sharedSignature.test(CameraType)) target.cameras.back() = source.cameras[sourceRow];
+		if (sharedSignature.test(Transform3DType)) target.transform3D.back() = source.transform3D[sourceRow];
+		if (sharedSignature.test(Primitive3DComponentType)) target.primitive3D.back() = source.primitive3D[sourceRow];
+		if (sharedSignature.test(DirectionalLight3DType)) target.directionalLights3D.back() = source.directionalLights3D[sourceRow];
 		if (sharedSignature.test(NativeScriptsComponentType)) target.nativeScripts.back() = std::move(source.nativeScripts[sourceRow]);
 		if (sharedSignature.test(SceneOwnedType)) target.sceneOwned.back() = source.sceneOwned[sourceRow];
 		if (sharedSignature.test(FSMComponentType)) target.fsmComponent.back() = source.fsmComponent[sourceRow];
@@ -104,6 +110,9 @@ namespace Framework {
 		case AnimationComponentType: bucket.animatedTex.back() = *static_cast<const AnimationComponent*>(componentData); break;
 		case TextComponentType: bucket.text.back() = *static_cast<const TextComponent*>(componentData); break;
 		case CameraType: bucket.cameras.back() = *static_cast<const Camera*>(componentData); break;
+		case Transform3DType: bucket.transform3D.back() = *static_cast<const Transform3D*>(componentData); break;
+		case Primitive3DComponentType: bucket.primitive3D.back() = *static_cast<const Primitive3D*>(componentData); break;
+		case DirectionalLight3DType: bucket.directionalLights3D.back() = *static_cast<const DirectionalLight3D*>(componentData); break;
 		case NativeScriptsComponentType: bucket.nativeScripts.back() = *static_cast<const NativeScriptsComponent*>(componentData); break;
 		case SceneOwnedType: bucket.sceneOwned.back() = *static_cast<const SceneOwned*>(componentData); break;
 		case FSMComponentType: bucket.fsmComponent.back() = *static_cast<const FSMComponent*>(componentData); break;
@@ -152,6 +161,9 @@ namespace Framework {
 			if (bucket.signature.test(AnimationComponentType)) bucket.animatedTex[rowIndex] = std::move(bucket.animatedTex[lastRow]);
 			if (bucket.signature.test(TextComponentType)) bucket.text[rowIndex] = std::move(bucket.text[lastRow]);
 			if (bucket.signature.test(CameraType)) bucket.cameras[rowIndex] = std::move(bucket.cameras[lastRow]);
+			if (bucket.signature.test(Transform3DType)) bucket.transform3D[rowIndex] = std::move(bucket.transform3D[lastRow]);
+			if (bucket.signature.test(Primitive3DComponentType)) bucket.primitive3D[rowIndex] = std::move(bucket.primitive3D[lastRow]);
+			if (bucket.signature.test(DirectionalLight3DType)) bucket.directionalLights3D[rowIndex] = std::move(bucket.directionalLights3D[lastRow]);
 			if (bucket.signature.test(NativeScriptsComponentType)) bucket.nativeScripts[rowIndex] = std::move(bucket.nativeScripts[lastRow]);
 			if (bucket.signature.test(SceneOwnedType)) bucket.sceneOwned[rowIndex] = std::move(bucket.sceneOwned[lastRow]);
 			if (bucket.signature.test(FSMComponentType)) bucket.fsmComponent[rowIndex] = std::move(bucket.fsmComponent[lastRow]);
@@ -177,6 +189,9 @@ namespace Framework {
 		if (bucket.signature.test(AnimationComponentType)) bucket.animatedTex.pop_back();
 		if (bucket.signature.test(TextComponentType)) bucket.text.pop_back();
 		if (bucket.signature.test(CameraType)) bucket.cameras.pop_back();
+		if (bucket.signature.test(Transform3DType)) bucket.transform3D.pop_back();
+		if (bucket.signature.test(Primitive3DComponentType)) bucket.primitive3D.pop_back();
+		if (bucket.signature.test(DirectionalLight3DType)) bucket.directionalLights3D.pop_back();
 		if (bucket.signature.test(NativeScriptsComponentType)) bucket.nativeScripts.pop_back();
 		if (bucket.signature.test(SceneOwnedType)) bucket.sceneOwned.pop_back();
 		if (bucket.signature.test(FSMComponentType)) bucket.fsmComponent.pop_back();
@@ -386,6 +401,9 @@ namespace Framework {
 					case ComponentType::AnimationComponentType: AddComponent<AnimationComponent>(newEntity, GetComponent<AnimationComponent>(entity)); break;
 					case ComponentType::TextComponentType: AddComponent<TextComponent>(newEntity, GetComponent<TextComponent>(entity)); break;
 					case ComponentType::CameraType: AddComponent<Camera>(newEntity, GetComponent<Camera>(entity)); break;
+					case ComponentType::Transform3DType: AddComponent<Transform3D>(newEntity, GetComponent<Transform3D>(entity)); break;
+					case ComponentType::Primitive3DComponentType: AddComponent<Primitive3D>(newEntity, GetComponent<Primitive3D>(entity)); break;
+					case ComponentType::DirectionalLight3DType: AddComponent<DirectionalLight3D>(newEntity, GetComponent<DirectionalLight3D>(entity)); break;
 					case ComponentType::NativeScriptsComponentType: {
 						NativeScriptsComponent copy = GetComponent<NativeScriptsComponent>(entity);
 						for (NativeScriptsComponent::NativeScript& script : copy.scripts) {
@@ -503,6 +521,9 @@ namespace Framework {
 		case ComponentType::TextComponentType: { TextComponent c{}; AddComponentInternal(entity, componentType, &c); break; }
 		case ComponentType::ButtonType: { Button c{}; AddComponentInternal(entity, componentType, &c); break; }
 		case ComponentType::CameraType: { Camera c{}; AddComponentInternal(entity, componentType, &c); break; }
+		case ComponentType::Transform3DType: { Transform3D c{}; AddComponentInternal(entity, componentType, &c); break; }
+		case ComponentType::Primitive3DComponentType: { Primitive3D c{}; AddComponentInternal(entity, componentType, &c); break; }
+		case ComponentType::DirectionalLight3DType: { DirectionalLight3D c{}; AddComponentInternal(entity, componentType, &c); break; }
 		case ComponentType::NativeScriptsComponentType: { NativeScriptsComponent c{}; AddComponentInternal(entity, componentType, &c); break; }
 		case ComponentType::FSMComponentType: { FSMComponent c{}; AddComponentInternal(entity, componentType, &c); break; }
 		case ComponentType::ParticleComponentType: { ParticleComponent c{}; AddComponentInternal(entity, componentType, &c); break; }

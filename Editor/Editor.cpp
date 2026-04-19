@@ -46,6 +46,10 @@
 #include "ScriptRegistry.h"
 #include "NativeScriptMaker.h"
 #include "CSharpScriptEngine.h"
+#include <glm/gtc/type_ptr.hpp>
+#include <algorithm>
+#include <cmath>
+#include <limits>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -78,6 +82,9 @@ namespace Editor {
 		case ComponentType::AnimationComponentType:			return "Animation";
 		case ComponentType::TextComponentType:				return "Text";
 		case ComponentType::CameraType:						return "Camera";
+		case ComponentType::Transform3DType:				return "Transform3D";
+		case ComponentType::Primitive3DComponentType:		return "Primitive3D";
+		case ComponentType::DirectionalLight3DType:			return "DirectionalLight3D";
 		case ComponentType::NativeScriptsComponentType:		return "Scripts";
 		case ComponentType::ButtonType:						return "Button";
 		case ComponentType::FSMComponentType:				return "FSM";
@@ -250,6 +257,58 @@ namespace Editor {
 			cameraSystem_->SetZoom(editorCamera_, currentEditorCameraState_.zoom);
 
 		}
+	}
+
+	void Editor::ResetEditor3DCamera() {
+		editor3DCameraState_ = {};
+	}
+
+	bool Editor::FocusEditor3DCameraOnScene() {
+		if (!gameManager_ || !gameManager_->GetSystems().ecs_) {
+			return false;
+		}
+
+		EntityManager entityMgr(*gameManager_->GetSystems().ecs_);
+		const std::vector<Entity> primitiveEntities = entityMgr.GetAllEntitiesWithComponent(true, ComponentType::Primitive3DComponentType);
+		if (primitiveEntities.empty()) {
+			return false;
+		}
+
+		glm::vec3 center(0.0f);
+		float radius = 1.0f;
+		int count = 0;
+
+		for (Entity entity : primitiveEntities) {
+			if (!entityMgr.HasComponent(entity, ComponentType::Transform3DType)) {
+				continue;
+			}
+
+			const Transform3D& transform3D = entityMgr.GetComponent<Transform3D>(entity);
+			center += transform3D.position;
+			++count;
+
+			const glm::vec3 absScale = glm::abs(transform3D.scale);
+			const float entityRadius = 0.5f * std::max({ absScale.x, absScale.y, absScale.z, 0.25f });
+			radius = std::max(radius, entityRadius);
+		}
+
+		if (count <= 0) {
+			return false;
+		}
+
+		center /= static_cast<float>(count);
+
+		const float distance = std::max(8.0f, radius * 7.0f);
+		const float height = std::max(3.0f, radius * 2.5f);
+		const glm::vec3 target = center;
+		const glm::vec3 cameraPos = target + glm::vec3(0.0f, height, distance);
+		const glm::vec3 toTarget = glm::normalize(target - cameraPos);
+
+		editor3DCameraState_.position = cameraPos;
+		editor3DCameraState_.yaw = glm::degrees(std::atan2(toTarget.z, toTarget.x));
+		editor3DCameraState_.pitch = glm::degrees(std::asin(std::clamp(toTarget.y, -1.0f, 1.0f)));
+		editor3DCameraState_.fov = 60.0f;
+		return true;
 	}
 
 	/*********************************************************************//**
@@ -546,10 +605,6 @@ namespace Editor {
 			if (!transformationSystem_) {
 				Framework::Logger::Get().Error(DebugType::Editor) << "Transformation system not available" << std::endl;
 			}
-			// Tell the InputSystem whether to lock gameplay input
-			Framework::InputSystem* input = gameManager_->GetSystems().input_;
-			input->SetCursorLocked(false);
-
 			GLFWwindow* editorWindow = gameManager_->GetSystems().win_ ? gameManager_->GetSystems().win_->window() : nullptr;
 			if (editorWindow) {
 				const bool isFocusedNow = glfwGetWindowAttrib(editorWindow, GLFW_FOCUSED) == GLFW_TRUE;
@@ -655,8 +710,6 @@ namespace Editor {
 
 		// --- UPDATE VIEWPORT DATA ---
 		UpdateViewportData();
-
-		gameManager_->GetSystems().input_->SetCursorLocked(false);
 
 		// --- Handle Editor Logic ---
 		HandleSpawning();
@@ -787,6 +840,7 @@ namespace Editor {
 	*          and its associated backends.
 	*********************************************************************/
 	void Editor::Shutdown() {
+		viewport3DRenderer_.Shutdown();
 		std::cout << "Freeing IMGUI" << std::endl;
 		ImGui_ImplOpenGL3_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
@@ -1316,6 +1370,33 @@ namespace Editor {
 		if (selectedPrefabType_ != PrefabType::None) return;
 
 		if (!isMouseOverGameViewport_) {
+			return;
+		}
+
+		if (is3DViewportMode_) {
+			if (!input->MousePressed(Framework::InputSystem::MouseButton::Left)) {
+				return;
+			}
+
+			editSession.Flush();
+			Entity bestCandidate = Get3DObjAtMousePos();
+			if (bestCandidate > 0) {
+				selectedEntityIndex = bestCandidate + 1;
+				selectedEntities_.clear();
+				selectedEntities_.push_back(bestCandidate);
+				lastClickedEntity_ = bestCandidate;
+				isEntitySelected_ = true;
+				selectedComponentIndex = 0;
+				selectedTagIndex = 0;
+			}
+			else {
+				selectedEntityIndex = 0;
+				selectedEntities_.clear();
+				lastClickedEntity_ = 0;
+				isEntitySelected_ = false;
+				selectedComponentIndex = 0;
+				selectedTagIndex = 0;
+			}
 			return;
 		}
 
@@ -1899,6 +1980,7 @@ namespace Editor {
 			ImGui::SeparatorText("Reset Editor Camera");
 			if (ImGui::Button("Reset Editor Camera")) {
 				ResetEditorCamera();
+				ResetEditor3DCamera();
 			}
 		}
 
@@ -2176,6 +2258,10 @@ namespace Editor {
 								<< "Successfully reloaded prefabs before scene load" << std::endl;
 						}
 						sceneMgr.LoadScene(id);
+						ResetEditor3DCamera();
+						if (FocusEditor3DCameraOnScene()) {
+							is3DViewportMode_ = true;
+						}
 
 						editorCamera_ = 0;
 						if (cameraSystem_) {
@@ -3750,6 +3836,132 @@ namespace Editor {
 			break;
 		}
 
+		case ComponentType::Transform3DType: {
+			Transform3D& transform3D = entityMgr.GetComponent<Transform3D>(selectedEntity);
+			bool activeNow = false;
+
+			ImGui::InputFloat3("Position (XYZ)", glm::value_ptr(transform3D.position), "%.3f");
+			if (ImGui::IsItemActive()) activeNow = true;
+			ImGui::InputFloat3("Rotation (XYZ)", glm::value_ptr(transform3D.rotationDegrees), "%.3f");
+			if (ImGui::IsItemActive()) activeNow = true;
+			ImGui::InputFloat3("Scale (XYZ)", glm::value_ptr(transform3D.scale), "%.3f");
+			if (ImGui::IsItemActive()) activeNow = true;
+
+			if (activeNow && !editSession.wasItemActive) {
+				editSession.Begin(selectedEntity, selectedComponent);
+			}
+			if (!activeNow && editSession.wasItemActive) {
+				std::stringstream ss;
+				ss << "Modified " << ComponentToString(selectedComponent) << " in " << entityMgr.GetProperties(selectedEntity).name << std::endl;
+				editSession.End(selectedEntity, selectedComponent, ss.str(), historyManager_);
+			}
+
+			editSession.wasItemActive = activeNow;
+			break;
+		}
+
+		case ComponentType::Primitive3DComponentType: {
+			Primitive3D& primitive3D = entityMgr.GetComponent<Primitive3D>(selectedEntity);
+			bool activeNow = false;
+			const std::string beforeJSON = EntitySerializer::SerializeComponentToString(selectedEntity, selectedComponent, *ecs);
+			bool changedNow = false;
+
+			int shape = static_cast<int>(primitive3D.type);
+			if (ImGui::Combo("Shape", &shape, "Cube\0Circle\0")) {
+				primitive3D.type = (shape == static_cast<int>(Primitive3DType::Circle)) ? Primitive3DType::Circle : Primitive3DType::Cube;
+				changedNow = true;
+			}
+			if (ImGui::IsItemActive()) activeNow = true;
+
+			if (ImGui::InputText("Texture Key", &primitive3D.textureKey)) {
+				changedNow = true;
+			}
+			if (ImGui::IsItemActive()) activeNow = true;
+
+			if (ImGui::ColorEdit4("Tint", &primitive3D.tint.r)) {
+				changedNow = true;
+			}
+			if (ImGui::IsItemActive()) activeNow = true;
+
+			if (ImGui::Checkbox("Cast Shadow", &primitive3D.castShadow)) {
+				changedNow = true;
+			}
+
+			if (activeNow && !editSession.wasItemActive) {
+				editSession.Begin(selectedEntity, selectedComponent);
+			}
+			if (!activeNow && editSession.wasItemActive) {
+				std::stringstream ss;
+				ss << "Modified " << ComponentToString(selectedComponent) << " in " << entityMgr.GetProperties(selectedEntity).name << std::endl;
+				editSession.End(selectedEntity, selectedComponent, ss.str(), historyManager_);
+			}
+			if (changedNow && !activeNow) {
+				const std::string afterJSON = EntitySerializer::SerializeComponentToString(selectedEntity, selectedComponent, *ecs);
+				if (beforeJSON != afterJSON) {
+					std::stringstream ss;
+					ss << "Modified " << ComponentToString(selectedComponent) << " in " << entityMgr.GetProperties(selectedEntity).name << std::endl;
+					historyManager_.RecordModifyComponent(selectedEntity, ss.str(), beforeJSON, afterJSON, selectedComponent);
+				}
+			}
+
+			editSession.wasItemActive = activeNow;
+			break;
+		}
+
+		case ComponentType::DirectionalLight3DType: {
+			DirectionalLight3D& light3D = entityMgr.GetComponent<DirectionalLight3D>(selectedEntity);
+			bool activeNow = false;
+			const std::string beforeJSON = EntitySerializer::SerializeComponentToString(selectedEntity, selectedComponent, *ecs);
+			bool changedNow = false;
+
+			if (ImGui::InputFloat3("Direction", glm::value_ptr(light3D.direction), "%.3f")) {
+				changedNow = true;
+			}
+			if (ImGui::IsItemActive()) activeNow = true;
+
+			if (ImGui::Button("Normalize Direction")) {
+				if (glm::length(light3D.direction) > 0.0001f) {
+					light3D.direction = glm::normalize(light3D.direction);
+					changedNow = true;
+				}
+			}
+
+			if (ImGui::ColorEdit4("Light Color", &light3D.color.r)) {
+				changedNow = true;
+			}
+			if (ImGui::IsItemActive()) activeNow = true;
+
+			if (ImGui::DragFloat("Intensity", &light3D.intensity, 0.01f, 0.0f, 8.0f, "%.2f")) {
+				changedNow = true;
+			}
+			if (ImGui::IsItemActive()) activeNow = true;
+
+			if (ImGui::DragFloat("Ambient", &light3D.ambient, 0.01f, 0.0f, 1.0f, "%.2f")) {
+				changedNow = true;
+			}
+			if (ImGui::IsItemActive()) activeNow = true;
+
+			if (activeNow && !editSession.wasItemActive) {
+				editSession.Begin(selectedEntity, selectedComponent);
+			}
+			if (!activeNow && editSession.wasItemActive) {
+				std::stringstream ss;
+				ss << "Modified " << ComponentToString(selectedComponent) << " in " << entityMgr.GetProperties(selectedEntity).name << std::endl;
+				editSession.End(selectedEntity, selectedComponent, ss.str(), historyManager_);
+			}
+			if (changedNow && !activeNow) {
+				const std::string afterJSON = EntitySerializer::SerializeComponentToString(selectedEntity, selectedComponent, *ecs);
+				if (beforeJSON != afterJSON) {
+					std::stringstream ss;
+					ss << "Modified " << ComponentToString(selectedComponent) << " in " << entityMgr.GetProperties(selectedEntity).name << std::endl;
+					historyManager_.RecordModifyComponent(selectedEntity, ss.str(), beforeJSON, afterJSON, selectedComponent);
+				}
+			}
+
+			editSession.wasItemActive = activeNow;
+			break;
+		}
+
 		case ComponentType::NativeScriptsComponentType: {
 			NativeScriptsComponent& comp = entityMgr.GetComponent<NativeScriptsComponent>(selectedEntity);
 
@@ -4975,7 +5187,7 @@ namespace Editor {
 	void Editor::HandleGameViewportInput() {
 
 		// Handle inputs for gizmos/modes (QTYUI)
-		if (gizmoSystem_) {
+		if (gizmoSystem_ && !(engine_->IsEditorMode() && is3DViewportMode_)) {
 			// I: Marquee mode
 			if (ImGui::IsKeyPressed(ImGuiKey_I)) {
 				isMarqueeMode_ = true;
@@ -5008,8 +5220,100 @@ namespace Editor {
 			}
 		}
 
-		// Camera Controls (WASD, Up/Down Arrows, R)
-		if (editorCamera_ != 0) {
+		// Camera Controls
+		if (engine_->IsEditorMode() && is3DViewportMode_) {
+			GLFWwindow* editorWindow = (gameManager_ && gameManager_->GetSystems().win_)
+				? gameManager_->GetSystems().win_->window()
+				: nullptr;
+
+			if (editorWindow && isMouseOverGameViewport_ && ImGui::IsMouseClicked(ImGuiMouseButton_Right) && !is3DMouseLookActive_) {
+				is3DMouseLookActive_ = true;
+				glfwGetCursorPos(editorWindow, &mouseLookAnchorX_, &mouseLookAnchorY_);
+				glfwSetInputMode(editorWindow, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+#ifdef GLFW_RAW_MOUSE_MOTION
+				if (glfwRawMouseMotionSupported()) {
+					glfwSetInputMode(editorWindow, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+				}
+#endif
+			}
+
+			if (is3DMouseLookActive_ && (!editorWindow || !ImGui::IsMouseDown(ImGuiMouseButton_Right))) {
+				is3DMouseLookActive_ = false;
+				if (editorWindow) {
+#ifdef GLFW_RAW_MOUSE_MOTION
+					if (glfwRawMouseMotionSupported()) {
+						glfwSetInputMode(editorWindow, GLFW_RAW_MOUSE_MOTION, GLFW_FALSE);
+					}
+#endif
+					glfwSetInputMode(editorWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+					glfwSetCursorPos(editorWindow, mouseLookAnchorX_, mouseLookAnchorY_);
+				}
+			}
+
+			if (is3DMouseLookActive_) {
+				double currentMouseX = mouseLookAnchorX_;
+				double currentMouseY = mouseLookAnchorY_;
+				if (editorWindow) {
+					glfwGetCursorPos(editorWindow, &currentMouseX, &currentMouseY);
+					glfwSetCursorPos(editorWindow, mouseLookAnchorX_, mouseLookAnchorY_);
+				}
+
+				float dx = static_cast<float>(currentMouseX - mouseLookAnchorX_);
+				float dy = static_cast<float>(currentMouseY - mouseLookAnchorY_);
+				dx = std::clamp(dx, -80.0f, 80.0f);
+				dy = std::clamp(dy, -80.0f, 80.0f);
+				if (std::abs(dx) < 0.01f) dx = 0.0f;
+				if (std::abs(dy) < 0.01f) dy = 0.0f;
+
+				editor3DCameraState_.yaw += dx * editor3DCameraState_.mouseSensitivity;
+				editor3DCameraState_.pitch -= dy * editor3DCameraState_.mouseSensitivity;
+				editor3DCameraState_.pitch = std::clamp(editor3DCameraState_.pitch, -89.0f, 89.0f);
+
+				const float yawRad = glm::radians(editor3DCameraState_.yaw);
+				const float pitchRad = glm::radians(editor3DCameraState_.pitch);
+
+				glm::vec3 forward{
+					std::cos(pitchRad) * std::cos(yawRad),
+					std::sin(pitchRad),
+					std::cos(pitchRad) * std::sin(yawRad)
+				};
+				forward = glm::normalize(forward);
+				glm::vec3 right = glm::normalize(glm::cross(forward, glm::vec3{ 0.0f, 1.0f, 0.0f }));
+				const glm::vec3 worldUp{ 0.0f, 1.0f, 0.0f };
+
+				float moveSpeed = editor3DCameraState_.moveSpeed;
+				if (ImGui::IsKeyDown(ImGuiKey_LeftShift)) {
+					moveSpeed *= 2.5f;
+				}
+				const float dt = Framework::Time::UnscaledDeltaTime();
+				const float moveStep = moveSpeed * dt;
+
+				if (ImGui::IsKeyDown(ImGuiKey_W)) editor3DCameraState_.position += forward * moveStep;
+				if (ImGui::IsKeyDown(ImGuiKey_S)) editor3DCameraState_.position -= forward * moveStep;
+				if (ImGui::IsKeyDown(ImGuiKey_A)) editor3DCameraState_.position -= right * moveStep;
+				if (ImGui::IsKeyDown(ImGuiKey_D)) editor3DCameraState_.position += right * moveStep;
+				if (ImGui::IsKeyDown(ImGuiKey_Q)) editor3DCameraState_.position -= worldUp * moveStep;
+				if (ImGui::IsKeyDown(ImGuiKey_E)) editor3DCameraState_.position += worldUp * moveStep;
+			}
+
+			if (ImGui::IsKeyPressed(ImGuiKey_R)) {
+				ResetEditor3DCamera();
+			}
+		}
+		else if (editorCamera_ != 0) {
+			is3DMouseLookActive_ = false;
+			GLFWwindow* editorWindow = (gameManager_ && gameManager_->GetSystems().win_)
+				? gameManager_->GetSystems().win_->window()
+				: nullptr;
+			if (editorWindow) {
+#ifdef GLFW_RAW_MOUSE_MOTION
+				if (glfwRawMouseMotionSupported()) {
+					glfwSetInputMode(editorWindow, GLFW_RAW_MOUSE_MOTION, GLFW_FALSE);
+				}
+#endif
+				glfwSetInputMode(editorWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+			}
+
 			Framework::Camera& cam = cameraSystem_->GetCamera(editorCamera_);
 
 			// Mark this camera as editor-controlled
@@ -5098,24 +5402,33 @@ namespace Editor {
 			SpriteRenderSystem* spriteRenderer_ = gameManager_->GetSystems().spriteRenderer_;
 			TextRenderSystem* textRenderer_ = gameManager_->GetSystems().textRenderer_;
 			CameraSystem* camSystem = gameManager_->GetSystems().camera_;
+			EntityStorage* ecs = gameManager_->GetSystems().ecs_;
+			int submitted3DPrimitives = 0;
+			bool sceneHas3DPrimitives = false;
+			bool renderer3DReady = true;
+			if (ecs) {
+				EntityManager entityMgr(*ecs);
+				sceneHas3DPrimitives = !entityMgr.GetAllEntitiesWithComponent(true, ComponentType::Primitive3DComponentType).empty();
+			}
 
-			if (gfx && spriteRenderer_ && camSystem) {
+			const bool use3DViewport = is3DViewportMode_;
+			if (gfx && camSystem && ecs && (use3DViewport || (spriteRenderer_ && textRenderer_))) {
 
 				// Calculate the aspect ratio of the specific ImGui Window
 				float viewportAspect = viewportPanelSize.x / viewportPanelSize.y;
 
 				// Determine which camera is currently being used
 				Entity cameraInUse = 0;
-				if (engine_->IsEditorMode() && editorCamera_ != 0) {
+				if (!use3DViewport && engine_->IsEditorMode() && editorCamera_ != 0) {
 					cameraInUse = editorCamera_;
 				}
-				else {
+				else if (!use3DViewport) {
 					// If in Play Mode, we are using the Game's active camera
 					cameraInUse = camSystem->GetActiveCamera();
 				}
 
 				// Force that camera to match the ImGui window dimensions
-				if (cameraInUse != 0) {
+				if (!use3DViewport && cameraInUse != 0) {
 					camSystem->SetAspectRatio(cameraInUse, viewportAspect);
 				}
 
@@ -5124,38 +5437,99 @@ namespace Editor {
 				gfx->BindGameFramebuffer();
 				gfx->beginFrame({ 0.1f, 0.1f, 0.12f, 1.0f }); // clear frame buffer first
 
-				// ===  TEMPORARILY SWITCH TO EDITOR CAMERA ===
-				Entity prevCamera = camSystem->GetActiveCamera();
+				if (use3DViewport) {
+					if (!viewport3DRenderer_.IsInitialized()) {
+						viewport3DRenderer_.Initialize();
+					}
+					renderer3DReady = viewport3DRenderer_.IsInitialized();
 
-				// Save current editor camera state before any rendering
-				if (editorCamera_ != 0 && engine_->IsEditorMode()) {
-					SaveEditorCameraState();
+					if (renderer3DReady) {
+						EntityManager entityMgr(*ecs);
+						Viewport3DRenderer::LightState light{};
+						const auto lightEntities = entityMgr.GetAllEntitiesWithComponent(true, ComponentType::DirectionalLight3DType);
+						if (!lightEntities.empty()) {
+							const DirectionalLight3D& sceneLight = entityMgr.GetComponent<DirectionalLight3D>(lightEntities.front());
+							light.direction = sceneLight.direction;
+							light.color = sceneLight.color;
+							light.intensity = sceneLight.intensity;
+							light.ambient = sceneLight.ambient;
+						}
+
+						Viewport3DRenderer::CameraState cameraState{};
+						cameraState.position = editor3DCameraState_.position;
+						cameraState.yaw = editor3DCameraState_.yaw;
+						cameraState.pitch = editor3DCameraState_.pitch;
+						cameraState.fov = editor3DCameraState_.fov;
+
+						viewport3DRenderer_.Begin(cameraState, viewportAspect, light);
+
+						const auto primitiveEntities = entityMgr.GetAllEntitiesWithComponent(true, ComponentType::Primitive3DComponentType);
+						for (Entity primitiveEntity : primitiveEntities) {
+							if (!entityMgr.HasComponent(primitiveEntity, ComponentType::Transform3DType)) {
+								continue;
+							}
+
+							const Transform3D& transform3D = entityMgr.GetComponent<Transform3D>(primitiveEntity);
+							const Primitive3D& primitive3D = entityMgr.GetComponent<Primitive3D>(primitiveEntity);
+
+							Viewport3DRenderer::PrimitiveRenderData renderData{};
+							renderData.type = primitive3D.type;
+							renderData.position = transform3D.position;
+							renderData.rotationDegrees = transform3D.rotationDegrees;
+							renderData.scale = transform3D.scale;
+							renderData.tint = primitive3D.tint;
+							renderData.castShadow = primitive3D.castShadow;
+
+							if (resourceManager_ && !primitive3D.textureKey.empty()) {
+								if (!resourceManager_->has<Texture>(primitive3D.textureKey)) {
+									resourceManager_->loadTexture(primitive3D.textureKey);
+								}
+								if (resourceManager_->has<Texture>(primitive3D.textureKey)) {
+									renderData.texture = resourceManager_->get<Texture>(primitive3D.textureKey);
+								}
+							}
+
+							viewport3DRenderer_.Submit(renderData);
+							++submitted3DPrimitives;
+						}
+
+						viewport3DRenderer_.Render();
+					}
 				}
+				else {
+					// ===  TEMPORARILY SWITCH TO EDITOR CAMERA ===
+					Entity prevCamera = camSystem->GetActiveCamera();
 
-				if (engine_->IsEditorMode() && editorCamera_ != 0) {
-					//  Update Aspect Ratio based on the actual ImGui Window size
-					float aspect = (viewportPanelSize.y > 0) ? (viewportPanelSize.x / viewportPanelSize.y) : 1.0f;
-					camSystem->SetAspectRatio(editorCamera_, aspect);
+					// Save current editor camera state before any rendering
+					if (editorCamera_ != 0 && engine_->IsEditorMode()) {
+						SaveEditorCameraState();
+					}
 
-					//  Manually update the camera.size. 
-					Framework::Camera& cam = camSystem->GetCamera(editorCamera_);
-					cam.size.x = 2.0f * cam.zoom * cam.aspectRatio;
-					cam.size.y = 2.0f * cam.zoom;
+					if (engine_->IsEditorMode() && editorCamera_ != 0) {
+						//  Update Aspect Ratio based on the actual ImGui Window size
+						float aspect = (viewportPanelSize.y > 0) ? (viewportPanelSize.x / viewportPanelSize.y) : 1.0f;
+						camSystem->SetAspectRatio(editorCamera_, aspect);
 
-					camSystem->SetActiveCamera(editorCamera_);
-				}
+						//  Manually update the camera.size. 
+						Framework::Camera& cam = camSystem->GetCamera(editorCamera_);
+						cam.size.x = 2.0f * cam.zoom * cam.aspectRatio;
+						cam.size.y = 2.0f * cam.zoom;
 
-				// ===  RENDER TEXTS & SPRITES ===
-				textRenderer_->Update();
-				spriteRenderer_->Update();
+						camSystem->SetActiveCamera(editorCamera_);
+					}
 
-				// ===  RESTORE ORIGINAL CAMERA ===
-				if (engine_->IsEditorMode()) {
-					camSystem->SetActiveCamera(prevCamera);
+					// ===  RENDER TEXTS & SPRITES ===
+					textRenderer_->Update();
+					spriteRenderer_->Update();
 
-					// Ensure editor camera state is preserved
-					if (prevCamera == editorCamera_ && editorCamera_ != 0) {
-						RestoreEditorCameraState();
+					// ===  RESTORE ORIGINAL CAMERA ===
+					if (engine_->IsEditorMode()) {
+						camSystem->SetActiveCamera(prevCamera);
+
+						// Ensure editor camera state is preserved
+						if (prevCamera == editorCamera_ && editorCamera_ != 0) {
+							RestoreEditorCameraState();
+						}
 					}
 				}
 
@@ -5175,7 +5549,23 @@ namespace Editor {
 					gameViewportPos_.y + gameViewportSize_.y);
 				drawList->PushClipRect(clipMin, clipMax, true);
 
-				if (showGrid_) {
+				if (engine_->IsEditorMode() && !use3DViewport && sceneHas3DPrimitives) {
+					drawList->AddText(ImVec2(gameViewportPos_.x + 12.0f, gameViewportPos_.y + 12.0f),
+						IM_COL32(255, 220, 60, 255),
+						"3D entities detected. Switch Viewport to 3D to see them.");
+				}
+				if (engine_->IsEditorMode() && use3DViewport && submitted3DPrimitives == 0) {
+					drawList->AddText(ImVec2(gameViewportPos_.x + 12.0f, gameViewportPos_.y + 12.0f),
+						IM_COL32(255, 220, 60, 255),
+						"No Primitive3D entities found in this scene.");
+				}
+				if (engine_->IsEditorMode() && use3DViewport && !renderer3DReady) {
+					drawList->AddText(ImVec2(gameViewportPos_.x + 12.0f, gameViewportPos_.y + 32.0f),
+						IM_COL32(255, 100, 100, 255),
+						"3D renderer failed to initialize (shader/context issue).");
+				}
+
+				if (!use3DViewport && showGrid_) {
 					DrawEditorGrid(drawList);
 				}
 
@@ -5186,7 +5576,7 @@ namespace Editor {
 				if (engine_->IsEditorMode()) {
 
 					// Draw placeholders for invisible entities (e.g. SpawnPoint)
-					if (gizmoSystem_) {
+					if (!use3DViewport && gizmoSystem_) {
 						gizmoSystem_->DrawInvisPlaceholders(drawList);
 					}
 
@@ -5194,7 +5584,7 @@ namespace Editor {
 						HandleGameViewportInput();
 					}
 
-					if (isEntitySelected_ && selectedEntityIndex > 1) {
+					if (!use3DViewport && isEntitySelected_ && selectedEntityIndex > 1) {
 						if (gizmoSystem_) {
 							// draw transform gizmos on selected entity
 							gizmoSystem_->DrawGizmos(drawList, selectedEntityIndex);
@@ -5277,7 +5667,7 @@ namespace Editor {
 				}
 
 				AISystem* aiSystem = gameManager_->GetSystems().aiSystem_;
-				if (aiSystem && camSystem && aiSystem->debugVisualization) {
+				if (!use3DViewport && aiSystem && camSystem && aiSystem->debugVisualization) {
 					Entity activeCam = engine_->IsEditorMode() && editorCamera_ != 0
 						? editorCamera_
 						: camSystem->GetActiveCamera();
@@ -5288,7 +5678,7 @@ namespace Editor {
 
 				Framework::PhysicsSystem* physicsSystem = gameManager_->GetSystems().physics_;
 				// Check the flag here
-				if (physicsSystem && camSystem && physicsSystem->drawDebugGrid) {
+				if (!use3DViewport && physicsSystem && camSystem && physicsSystem->drawDebugGrid) {
 					Entity activeCam = engine_->IsEditorMode() && editorCamera_ != 0
 						? editorCamera_
 						: camSystem->GetActiveCamera();
@@ -6574,6 +6964,29 @@ namespace Editor {
 				ImGui::MenuItem("Hierarchy", NULL, &settings.showHierarchy);
 				ImGui::MenuItem("Level Editor", NULL, &settings.showLevelEditor);
 				ImGui::MenuItem("LayerManager", NULL, &settings.showLayerManager);
+				ImGui::Separator();
+				if (ImGui::MenuItem("2D Viewport", nullptr, !is3DViewportMode_)) {
+					is3DViewportMode_ = false;
+					is3DMouseLookActive_ = false;
+					ResetEditor3DCamera();
+					if (gameManager_ && gameManager_->GetSystems().input_) {
+						gameManager_->GetSystems().input_->SetCursorLocked(false);
+					}
+					if (gameManager_ && gameManager_->GetSystems().win_) {
+						GLFWwindow* editorWindow = gameManager_->GetSystems().win_->window();
+#ifdef GLFW_RAW_MOUSE_MOTION
+						if (glfwRawMouseMotionSupported()) {
+							glfwSetInputMode(editorWindow, GLFW_RAW_MOUSE_MOTION, GLFW_FALSE);
+						}
+#endif
+						glfwSetInputMode(editorWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+					}
+				}
+				if (ImGui::MenuItem("3D Viewport", nullptr, is3DViewportMode_)) {
+					is3DViewportMode_ = true;
+					ResetEditor3DCamera();
+					FocusEditor3DCameraOnScene();
+				}
 				ImGui::EndMenu();
 			}
 			// End Window Submenu
@@ -6698,6 +7111,7 @@ namespace Editor {
 				if (isGamePlaying) {
 					gameManager_->OnEndPlay();
 					ResetEditorCamera();
+					ResetEditor3DCamera();
 					gameManager_->GetSystems().input_->SetKeyboardLocked(true);
 				}
 				else {
@@ -6817,6 +7231,33 @@ namespace Editor {
 			ImGui::SameLine(0.f, historySpacing);
 			if (ImGui::Button(settings.showDebugConsole ? "Hide Debug Console" : "Show Debug Console")) {
 				settings.showDebugConsole = !settings.showDebugConsole;
+			}
+
+			ImGui::SameLine(0.f, historySpacing);
+			ImGui::TextUnformatted("Viewport:");
+			ImGui::SameLine(0.f, 6.f);
+			if (ImGui::RadioButton("2D", !is3DViewportMode_)) {
+				is3DViewportMode_ = false;
+				is3DMouseLookActive_ = false;
+				ResetEditor3DCamera();
+				if (gameManager_ && gameManager_->GetSystems().input_) {
+					gameManager_->GetSystems().input_->SetCursorLocked(false);
+				}
+				if (gameManager_ && gameManager_->GetSystems().win_) {
+					GLFWwindow* editorWindow = gameManager_->GetSystems().win_->window();
+#ifdef GLFW_RAW_MOUSE_MOTION
+					if (glfwRawMouseMotionSupported()) {
+						glfwSetInputMode(editorWindow, GLFW_RAW_MOUSE_MOTION, GLFW_FALSE);
+					}
+#endif
+					glfwSetInputMode(editorWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+				}
+			}
+			ImGui::SameLine(0.f, 4.f);
+			if (ImGui::RadioButton("3D", is3DViewportMode_)) {
+				is3DViewportMode_ = true;
+				ResetEditor3DCamera();
+				FocusEditor3DCameraOnScene();
 			}
 		}
 		ImGui::End();
@@ -8827,6 +9268,102 @@ namespace Editor {
 		}
 
 		ImGui::End();
+	}
+
+	/*********************************************************************//**
+	 * \brief   Casts a ray from the mouse cursor through the editor 3D camera
+	 *          and returns the closest primitive entity hit.
+	 *
+	 * \return  The closest intersected 3D primitive entity ID, or 0 if none.
+	 *********************************************************************/
+	Entity Editor::Get3DObjAtMousePos() {
+		Framework::EntityStorage* ecs = gameManager_->GetSystems().ecs_;
+		if (!ecs || gameViewportSize_.x <= 0.0f || gameViewportSize_.y <= 0.0f) {
+			return 0;
+		}
+
+		const ImVec2 mousePos = ImGui::GetMousePos();
+		const float mouseX = mousePos.x - gameViewportPos_.x;
+		const float mouseY = mousePos.y - gameViewportPos_.y;
+		if (mouseX < 0.0f || mouseX > gameViewportSize_.x || mouseY < 0.0f || mouseY > gameViewportSize_.y) {
+			return 0;
+		}
+
+		const float ndcX = (2.0f * mouseX / gameViewportSize_.x) - 1.0f;
+		const float ndcY = 1.0f - (2.0f * mouseY / gameViewportSize_.y);
+		const float aspect = gameViewportSize_.x / gameViewportSize_.y;
+		const float tanHalfFov = std::tan(glm::radians(editor3DCameraState_.fov) * 0.5f);
+
+		const float yawRadians = glm::radians(editor3DCameraState_.yaw);
+		const float pitchRadians = glm::radians(editor3DCameraState_.pitch);
+		const glm::vec3 forward = glm::normalize(glm::vec3(
+			std::cos(yawRadians) * std::cos(pitchRadians),
+			std::sin(pitchRadians),
+			std::sin(yawRadians) * std::cos(pitchRadians)
+		));
+
+		const glm::vec3 worldUp(0.0f, 1.0f, 0.0f);
+		glm::vec3 right = glm::cross(forward, worldUp);
+		if (glm::dot(right, right) < 1.0e-6f) {
+			right = glm::vec3(1.0f, 0.0f, 0.0f);
+		}
+		right = glm::normalize(right);
+		const glm::vec3 up = glm::normalize(glm::cross(right, forward));
+
+		const glm::vec3 rayOrigin = editor3DCameraState_.position;
+		const glm::vec3 rayDirection = glm::normalize(
+			forward + (right * ndcX * aspect * tanHalfFov) + (up * ndcY * tanHalfFov)
+		);
+
+		Framework::EntityManager entityMgr(*ecs);
+		Framework::SceneManager& sceneMgr = Framework::SceneManager::GetInstance();
+		const std::vector<Entity>& activeEntities = sceneMgr.GetEntitiesInScene(sceneMgr.GetActiveScene().name);
+
+		Entity nearestEntity = 0;
+		float nearestHitT = std::numeric_limits<float>::max();
+		constexpr float cubeRadiusFactor = 0.8660254f; // sqrt(3) / 2 for a unit cube.
+
+		for (Entity entity : activeEntities) {
+			if (!entityMgr.ValidateEntity(entity)
+				|| !entityMgr.HasComponent(entity, Framework::ComponentType::Transform3DType)
+				|| !entityMgr.HasComponent(entity, Framework::ComponentType::Primitive3DComponentType)) {
+				continue;
+			}
+
+			const Framework::Transform3D& transform = entityMgr.GetComponent<Framework::Transform3D>(entity);
+			const Framework::Primitive3D& primitive = entityMgr.GetComponent<Framework::Primitive3D>(entity);
+			const glm::vec3 absScale = glm::abs(transform.scale);
+			const float maxScale = std::max(absScale.x, std::max(absScale.y, absScale.z));
+			if (maxScale <= 0.0f) {
+				continue;
+			}
+
+			const float radius = (primitive.type == Framework::Primitive3DType::Cube)
+				? (maxScale * cubeRadiusFactor)
+				: (maxScale * 0.5f);
+
+			const glm::vec3 toCenter = rayOrigin - transform.position;
+			const float b = glm::dot(toCenter, rayDirection);
+			const float c = glm::dot(toCenter, toCenter) - (radius * radius);
+			const float discriminant = (b * b) - c;
+			if (discriminant < 0.0f) {
+				continue;
+			}
+
+			const float sqrtDiscriminant = std::sqrt(discriminant);
+			float hitT = -b - sqrtDiscriminant;
+			if (hitT < 0.0f) {
+				hitT = -b + sqrtDiscriminant;
+			}
+			if (hitT < 0.0f || hitT >= nearestHitT) {
+				continue;
+			}
+
+			nearestHitT = hitT;
+			nearestEntity = entity;
+		}
+
+		return nearestEntity;
 	}
 
 	/*********************************************************************//**

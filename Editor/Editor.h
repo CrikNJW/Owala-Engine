@@ -38,6 +38,7 @@
 #include "Gizmo.h"
 #include "ProjectScaffold.h"
 #include "BuildSizeAnalyzer.h"
+#include "Viewport3DRenderer.h"
 
 // Imgui Dependencies
 #include "imgui.h"
@@ -50,6 +51,7 @@
 #include <optional>
 #include <unordered_map>
 #include <unordered_set>
+#include <glm/vec3.hpp>
 
 namespace Framework {
 	class GameManager; // Forward Declaration
@@ -169,6 +171,7 @@ namespace Editor {
 		Framework::Graphics* graphicsSystem_ = nullptr; //  Pointer to Graphics system
 		Framework::ResourceManager* resourceManager_ = nullptr; // Pointer to ResourceManager for asset loading
 		Framework::TransformationSystem* transformationSystem_ = nullptr;
+		Viewport3DRenderer viewport3DRenderer_{};
 
 		// --- Codependent Systems ---
 		HistoryManager historyManager_; // HistoryManager for Undo/Redo System.
@@ -179,6 +182,10 @@ namespace Editor {
 		Entity editorCamera_ = 0;
 		float editorZoom_ = 1.0f;
 		Vector2D editorCamPos_ = { 0.0f, 0.0f };
+		bool is3DViewportMode_ = false;
+		bool is3DMouseLookActive_ = false;
+		double mouseLookAnchorX_ = 0.0;
+		double mouseLookAnchorY_ = 0.0;
 		bool isEditorFocused_ = true; // toggled when ImGui viewport or editor window is active
 
 		AssetBrowser assetBrowser;
@@ -293,9 +300,19 @@ namespace Editor {
 			float zoom = 1.0f;
 		};
 
+		struct Editor3DCameraState {
+			glm::vec3 position{ 0.0f, 3.0f, 10.0f };
+			float yaw = -90.0f;
+			float pitch = -18.0f;
+			float moveSpeed = 8.0f;
+			float mouseSensitivity = 0.13f;
+			float fov = 60.0f;
+		};
+
 		CameraState defaultEditorCameraState_{ {0.0f, 0.0f}, 1.0f };
 		CameraState currentEditorCameraState_;
 		bool editorCameraNeedsReset_ = false;
+		Editor3DCameraState editor3DCameraState_{};
 
 		// -------------------------------------------------------
 		// --- Project Management State (New / Import Project) ---
@@ -334,6 +351,9 @@ namespace Editor {
 		 *          editor camera.
 		 *********************************************************************/
 		void RestoreEditorCameraState();
+		void ResetEditor3DCamera();
+		bool FocusEditor3DCameraOnScene();
+		void Render3DViewport(float viewportAspect);
 
 		// --- Private Helper Functions ---
 
@@ -601,6 +621,14 @@ namespace Editor {
 		 * \return  The entity ID at the mouse coordinate, or 0 if none.
 		 *********************************************************************/
 		Entity GetObjAtMousePos();
+
+		/*********************************************************************//**
+		 * \brief   Determines the closest 3D primitive under the mouse cursor
+		 *          using editor 3D camera ray casting.
+		 *
+		 * \return  The selected 3D entity ID, or 0 if none.
+		 *********************************************************************/
+		Entity Get3DObjAtMousePos();
 
 		/*********************************************************************//**
 		 * \brief   Prepares texture resources for general palette platform items.

@@ -8,6 +8,10 @@
         "path": "Data/Scenes/test_scene.json"
     },
     {
+        "name": "3D Demo Scene",
+        "path": "Data/Scenes/demo_3d_scene.json"
+    },
+    {
         "name": "MainMenu",
         "path": "Data/Scenes/mainmenu.json"
     },
