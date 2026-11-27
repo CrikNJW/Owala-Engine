@@ -2,6 +2,52 @@
     "scene_name": "MainMenu",
     "entities": [
         {
+          "name": "FMOD attribution",
+          "layer": 0,
+          "layer_collision_name": "Default",
+          "render_layer": 0,
+          "custom_render_order": 221,
+          "layer_render_name": "Custom",
+          "active": true,
+          "uuid": 8479260211920624751,
+          "components": {
+            "Transform": {
+              "Position": {
+                "y": -0.91,
+                "x": 0.0
+              },
+              "Rotation": {
+                "angle": 0.0,
+                "texture_angle": 0.0,
+                "collider_angle": 0.0
+              },
+              "Scale": {
+                "y": 1.0,
+                "x": 1.0
+              }
+            },
+            "TextComponent": {
+              "text": "Audio powered by FMOD by Firelight Technologies Pty Ltd",
+              "font_key": "Amethysta-Regular.ttf",
+              "font_color": [
+                1.0,
+                0.95,
+                0.86,
+                1.0
+              ],
+              "font_size": 0.48,
+              "max_width": 24.0
+            },
+            "SceneOwned": {
+              "sceneName": "MainMenu",
+              "scene_id": 3
+            }
+          },
+          "tags": [
+            "GUITag"
+          ]
+        },
+        {
             "name": "TurningGearR",
             "layer": 0,
             "layer_collision_name": "Default",
